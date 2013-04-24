@@ -1,0 +1,21 @@
+/*
++----------------------------------------------------------------+
+|																							|
+|	WordPress Plugin: WP-PostRatings								|
+|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
+|																							|
+|	File Written By:																	|
+|	- Lester "GaMerZ" Chan															|
+|	- http://lesterchan.net															|
+|																							|
+|	File Information:																	|
+|	- Post Ratings Admin CSS File													|
+|	- wp-content/plugins/wp-postratings/postratings-admin-css.css	|
+|																							|
++----------------------------------------------------------------+
+*/
+
+
+#icon-wp-postratings {
+	background: transparent url(images/ratings_admin_icon.png) no-repeat;
+}
