@@ -1,10 +1,10 @@
 # WP-PostRatings
-Contributors: GamerZ
-Donate link: http://lesterchan.net/site/donation/
-Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post
-Requires at least: 2.8
-Tested up to: 3.5
-Stable tag: trunk
+Contributors: GamerZ  
+Donate link: http://lesterchan.net/site/donation/  
+Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
+Requires at least: 2.8  
+Tested up to: 3.5  
+Stable tag: trunk  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
 
