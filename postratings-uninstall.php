@@ -26,7 +26,7 @@ if(!current_user_can('manage_ratings')) {
 ### Ratings Variables
 $base_name = plugin_basename('wp-postratings/postratings-manager.php');
 $base_page = 'admin.php?page='.$base_name;
-$mode = trim($_GET['mode']);
+$mode = isset( $_GET['mode'] ) ? trim( $_GET['mode'] ) : '';
 $ratings_tables = array($wpdb->ratings);
 $ratings_settings = array('postratings_image', 'postratings_max', 'postratings_template_vote', 'postratings_template_text', 'postratings_template_none', 'postratings_logging_method', 'postratings_allowtorate', 'postratings_ratingstext', 'postratings_template_highestrated', 'postratings_ajax_style', 'widget_ratings_highest_rated', 'widget_ratings_most_rated', 'postratings_customrating', 'postratings_ratingsvalue', 'postratings_template_permission', 'postratings_template_mostrated', 'widget_ratings', 'widget_ratings-widget');
 $ratings_postmetas = array('ratings_users', 'ratings_score', 'ratings_average');
