@@ -122,7 +122,7 @@ if(!empty($postratings_filterid)) {
 if(!empty($postratings_filteruser)) {
 	$postratings_sort_url .= '&amp;user='.$postratings_filteruser;
 }
-if($_GET['rating'] != '') {
+if ( ! empty( $postratings_filterrating ) ) {
 	$postratings_filterrating = intval($postratings_filterrating);
 	$postratings_sort_url .= '&amp;rating='.$postratings_filterrating;
 }
@@ -196,7 +196,7 @@ if(!empty($postratings_filterid)) {
 if(!empty($postratings_filteruser)) {
 	$postratings_where .= " AND rating_username = '$postratings_filteruser'";
 }
-if($_GET['rating'] != '') {
+if ( ! empty( $postratings_filterrating ) ) {
 	$postratings_where .= " AND rating_rating = '$postratings_filterrating'";
 }
 // Get Post Ratings Logs Data
