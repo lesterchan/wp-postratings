@@ -26,16 +26,16 @@ if(!current_user_can('manage_ratings')) {
 ### Ratings Variables
 $base_name = plugin_basename('wp-postratings/postratings-manager.php');
 $base_page = 'admin.php?page='.$base_name;
-$mode = trim($_GET['mode']);
-$postratings_page = intval($_GET['ratingpage']);
-$postratings_filterid = trim(addslashes($_GET['id']));
-$postratings_filteruser = trim(addslashes($_GET['user']));
-$postratings_filterrating = trim(addslashes($_GET['rating']));
-$postratings_sortby = trim($_GET['by']);
+$mode = isset( $_GET['mode'] ) ? trim( $_GET['mode'] ) : '';
+$postratings_page = isset( $_GET['ratingpage']) ? intval( $_GET['ratingpage'] ) : 0;
+$postratings_filterid = isset( $_GET['id'] ) ? trim( addslashes( $_GET['id'] ) ) : '';
+$postratings_filteruser = isset( $_GET['user'] ) ? trim( addslashes( $_GET['user'] ) ) : '';
+$postratings_filterrating = isset( $_GET['rating'] ) ? trim( addslashes( $_GET['rating'] ) ) : '';
+$postratings_sortby = isset( $_GET['by'] ) ? trim( $_GET['by'] ) : '';
 $postratings_sortby_text = '';
-$postratings_sortorder = trim($_GET['order']);
+$postratings_sortorder = isset( $_GET['order'] ) ? trim( $_GET['order'] ) : '';
 $postratings_sortorder_text = '';
-$postratings_log_perpage = intval($_GET['perpage']);
+$postratings_log_perpage = isset( $_GET['perpage'] ) ? intval( $_GET['perpage'] ) : 0;
 $postratings_sort_url = '';
 $ratings_image = get_option('postratings_image');
 $ratings_max = intval(get_option('postratings_max'));
