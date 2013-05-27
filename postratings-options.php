@@ -29,7 +29,7 @@ $base_page = 'admin.php?page='.$base_name;
 
 
 ### If Form Is Submitted
-if($_POST['Submit']) {
+if ( isset( $_POST['Submit'] ) ) {
 	check_admin_referer('wp-postratings_options');
 	$postratings_customrating = intval($_POST['postratings_customrating']);
 	$postratings_template_vote = trim($_POST['postratings_template_vote']);
@@ -238,7 +238,7 @@ $postratings_image = get_option('postratings_image');
 									echo '<input type="radio" name="postratings_image" onclick="set_custom('.$value['custom'].', '.$value['max'].');" value="'.$key.'" />';
 								}
 								echo '&nbsp;&nbsp;&nbsp;';
-								if('rtl' == $text_direction && file_exists($postratings_path.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
+								if(is_rtl() && file_exists($postratings_path.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT.'" alt="rating_start-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								} else if(file_exists($postratings_path.'/'.$key.'/rating_start.'.RATINGS_IMG_EXT)) {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_start.'.RATINGS_IMG_EXT.'" alt="rating_start.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -246,7 +246,7 @@ $postratings_image = get_option('postratings_image');
 								echo '<img src="'.$postratings_url.'/'.$key.'/rating_over.'.RATINGS_IMG_EXT.'" alt="rating_over.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								echo '<img src="'.$postratings_url.'/'.$key.'/rating_on.'.RATINGS_IMG_EXT.'" alt="rating_on.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								echo '<img src="'.$postratings_url.'/'.$key.'/rating_on.'.RATINGS_IMG_EXT.'" alt="rating_on.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
-								if('rtl' == $text_direction && file_exists($postratings_path.'/'.$key.'/rating_half-rtl.'.RATINGS_IMG_EXT)) {
+								if(is_rtl() && file_exists($postratings_path.'/'.$key.'/rating_half-rtl.'.RATINGS_IMG_EXT)) {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_half-rtl.'.RATINGS_IMG_EXT.'" alt="rating_half-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								} else {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_half.'.RATINGS_IMG_EXT.'" alt="rating_half.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -259,7 +259,7 @@ $postratings_image = get_option('postratings_image');
 									echo '<input type="radio" name="postratings_image" onclick="set_custom('.$value['custom'].', '.$value['max'].');" value="'.$key.'" />';
 								}
 								echo '&nbsp;&nbsp;&nbsp;';
-								if('rtl' == $text_direction && file_exists($postratings_path.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
+								if(is_rtl() && file_exists($postratings_path.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_start-rtl.'.RATINGS_IMG_EXT.'" alt="rating_start-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								} elseif(file_exists($postratings_path.'/'.$key.'/rating_start.'.RATINGS_IMG_EXT)) {
 									echo '<img src="'.$postratings_url.'/'.$key.'/rating_start.'.RATINGS_IMG_EXT.'" alt="rating_start.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -270,7 +270,7 @@ $postratings_image = get_option('postratings_image');
 										}
 								}
 							}
-							if('rtl' == $text_direction && file_exists($postratings_path.'/'.$key.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
+							if(is_rtl() && file_exists($postratings_path.'/'.$key.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$key.'/rating_end-rtl.'.RATINGS_IMG_EXT.'" alt="rating_end-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 							} elseif(file_exists($postratings_path.'/'.$key.'/rating_end.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$key.'/rating_end.'.RATINGS_IMG_EXT.'" alt="rating_end.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -304,7 +304,7 @@ $postratings_image = get_option('postratings_image');
 						for($i = 1; $i <= $postratings_max; $i++) {
 							echo '<tr>'."\n";
 							echo '<td>'."\n";
-							if('rtl' == $text_direction && file_exists($postratings_path.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
+							if(is_rtl() && file_exists($postratings_path.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT.'" alt="rating_start-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 							} elseif(file_exists($postratings_path.'/'.$postratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_start.'.RATINGS_IMG_EXT.'" alt="rating_start.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -322,7 +322,7 @@ $postratings_image = get_option('postratings_image');
 									echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_on.'.RATINGS_IMG_EXT.'" alt="rating_on.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 								}
 							}
-							if('rtl' == $text_direction && file_exists($postratings_path.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
+							if(is_rtl() && file_exists($postratings_path.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT.'" alt="rating_end-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 							} elseif(file_exists($postratings_path.'/'.$postratings_image.'/rating_end.'.RATINGS_IMG_EXT)) {
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_end.'.RATINGS_IMG_EXT.'" alt="rating_end.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
