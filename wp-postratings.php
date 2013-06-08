@@ -28,6 +28,8 @@ Text Domain: wp-postratings
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Define Image Extension
 define('RATINGS_IMG_EXT', 'gif');

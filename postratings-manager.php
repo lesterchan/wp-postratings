@@ -16,6 +16,8 @@
 +----------------------------------------------------------------+
 */
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Check Whether User Can Manage Ratings
 if(!current_user_can('manage_ratings')) {
