@@ -16,6 +16,8 @@
 +----------------------------------------------------------------+
 */
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Function: Display Most Rated Page/Post
 if(!function_exists('get_most_rated')) {
