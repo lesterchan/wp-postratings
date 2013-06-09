@@ -63,6 +63,7 @@ if ( ! empty( $_POST['do'] ) ) {
 			// delete_postid is either a comma-separated list of integers, or "all".
 			if ( ! empty( $_POST['delete_postid'] ) ) {
 
+				// "all" is the only string value accepted
 				if ( $_POST['delete_postid'] != 'all' ) {
 					$post_ids_list = wp_parse_id_list( $_POST['delete_postid'] );
 					$post_ids      = implode( ',', $post_ids_list );
@@ -137,6 +138,7 @@ if ( ! empty( $_POST['do'] ) ) {
 										delete_post_meta( $the_post_id, $meta_key );
 
 										$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</font><br />';
+									}
 								}
 							}
 							break;
