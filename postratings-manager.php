@@ -50,15 +50,26 @@ if ( isset( $_GET['order'] ) && in_array( $_GET['order'], array( 'ASC', 'DESC', 
 
 
 ### Form Processing 
-if(!empty($_POST['do'])) {
-	// Decide What To Do
+if ( ! empty( $_POST['do'] ) ) {
 	switch($_POST['do']) {
+
 		case __('Delete Data/Logs', 'wp-postratings'):
 			check_admin_referer('wp-postratings_logs');
-			$post_ids = trim($_POST['delete_postid']);
-			$delete_datalog = intval($_POST['delete_datalog']);
-			$ratings_postmeta = array('ratings_users', 'ratings_score', 'ratings_average');
-			if(!empty($post_ids)) {
+			$delete_datalog   = isset( $_POST['delete_datalog'] ) ? (int) $_POST['delete_datalog'] : 1;
+			$post_ids         = '';
+			$post_ids_list    = array();
+			$ratings_postmeta = array( 'ratings_users', 'ratings_score', 'ratings_average', );
+
+			// delete_postid is either a comma-separated list of integers, or "all".
+			if ( ! empty( $_POST['delete_postid'] ) ) {
+
+				if ( $_POST['delete_postid'] != 'all' ) {
+					$post_ids_list = wp_parse_id_list( $_POST['delete_postid'] );
+					$post_ids      = implode( ',', $post_ids_list );
+				}
+			}
+
+			if ( $post_ids ) {
 				switch($delete_datalog) {
 						case 1:
 							if($post_ids == 'all') {
@@ -68,8 +79,9 @@ if(!empty($_POST['do'])) {
 								} else {
 									$text = '<font color="red">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</font>';
 								}
+
 							} else {
-								$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings WHERE rating_postid IN($post_ids)");
+								$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 								if($delete_logs) {
 									$text = '<font color="green">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</font>';
 								} else {
@@ -77,19 +89,26 @@ if(!empty($_POST['do'])) {
 								}
 							}
 							break;
+
 						case 2:
+							// @todo Deleting meta records like will not clear the post's object cache
 							if($post_ids == 'all') {
 								foreach($ratings_postmeta as $postmeta) {
-									$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key = '$postmeta'");
+									$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
 									$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
 								}	
+
 							} else {
-								foreach($ratings_postmeta as $postmeta) {
-									$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key = '$postmeta' AND post_id IN($post_ids)");
-									$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>", $post_ids).'</font><br />';
-								}	
+								foreach ( $post_ids_list as $the_post_id ) {
+									foreach( $ratings_postmeta as $meta_key ) {
+										delete_post_meta( $the_post_id, $meta_key );
+
+										$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</font><br />';
+									}
+								}
 							}
 							break;
+
 						case 3:
 							if($post_ids == 'all') {
 								$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings");
@@ -98,21 +117,27 @@ if(!empty($_POST['do'])) {
 								} else {
 									$text = '<font color="red">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</font><br />';
 								}
+
+								// @todo Deleting meta records like will not clear the post's object cache
 								foreach($ratings_postmeta as $postmeta) {
-									$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key = '$postmeta'");
+									$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
 									$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
 								}	
+
 							} else {
-								$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings WHERE rating_postid IN($post_ids)");
+								$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 								if($delete_logs) {
 									$text = '<font color="green">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</font><br />';
 								} else {
 									$text = '<font color="red">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</font><br />';
 								}
-								foreach($ratings_postmeta as $postmeta) {
-									$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key = '$postmeta' AND post_id IN($post_ids)");
-									$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>", $post_ids).'</font><br />';
-								}	
+
+								foreach ( $post_ids_list as $the_post_id ) {
+									foreach( $ratings_postmeta as $meta_key ) {
+										delete_post_meta( $the_post_id, $meta_key );
+
+										$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</font><br />';
+								}
 							}
 							break;
 				}
@@ -121,8 +146,8 @@ if(!empty($_POST['do'])) {
 	}
 }
 
-
 ### Form Sorting URL
+// @todo Use add_query_arg() for these
 if(!empty($postratings_filterid)) {
 	$postratings_sort_url .= '&amp;id='.$postratings_filterid;
 }
@@ -133,10 +158,10 @@ if ( ! empty( $postratings_filterrating ) ) {
 	$postratings_sort_url .= '&amp;rating='.$postratings_filterrating;
 }
 if(!empty($postratings_sortby)) {
-	$postratings_sort_url .= '&amp;by='.$postratings_sortby;
+	$postratings_sort_url .= '&amp;by='.urlencode( $postratings_sortby );
 }
 if(!empty($postratings_sortorder)) {
-	$postratings_sort_url .= '&amp;order='.$postratings_sortorder;
+	$postratings_sort_url .= '&amp;order='.urlencode( $postratings_sortorder );
 }
 if(!empty($postratings_log_perpage)) {
 	$postratings_sort_url .= '&amp;perpage='.$postratings_log_perpage;
@@ -181,29 +206,21 @@ switch($postratings_sortby) {
 
 
 ### Get Sort Order
-switch($postratings_sortorder) {
-	case 'asc':
-		$postratings_sortorder = 'ASC';
-		$postratings_sortorder_text = __('Ascending', 'wp-postratings');
-		break;
-	case 'desc':
-	default:
-		$postratings_sortorder = 'DESC';
-		$postratings_sortorder_text = __('Descending', 'wp-postratings');
-}
-
+if ( $postratings_sortorder == 'ASC' )
+	$postratings_sortorder_text = __('Ascending', 'wp-postratings');
+else
+	$postratings_sortorder_text = __('Descending', 'wp-postratings');
 
 // Where
 $postratings_where = '';
-if(!empty($postratings_filterid)) {
-	$postratings_where = "AND rating_postid =$postratings_filterid";
-}
-if(!empty($postratings_filteruser)) {
-	$postratings_where .= " AND rating_username = '$postratings_filteruser'";
-}
-if ( ! empty( $postratings_filterrating ) ) {
-	$postratings_where .= " AND rating_rating = '$postratings_filterrating'";
-}
+if ( $postratings_filterid )
+	$postratings_where = $wpdb->prepare( "AND rating_postid = %d", $postratings_filterid );;
+
+if ( ! empty( $postratings_filteruser ) )
+	$postratings_where .= $wpdb->prepare( " AND rating_username = %s", $postratings_filteruser );
+
+if ( ! empty( $postratings_filterrating ) )
+	$postratings_where .= $wpdb->prepare( " AND rating_rating = %d", $postratings_filterrating );
 
 // Get Post Ratings Logs Data
 $total_ratings = $wpdb->get_var("SELECT COUNT(rating_id) FROM $wpdb->ratings WHERE 1=1 $postratings_where");
@@ -237,7 +254,7 @@ if (($offset + 1) > ($total_ratings)) {
 $total_pages = ceil($total_ratings / $postratings_log_perpage);
 
 // Get The Logs
-$postratings_logs = $wpdb->get_results("SELECT * FROM $wpdb->ratings WHERE 1=1 $postratings_where ORDER BY $postratings_sortby $postratings_sortorder LIMIT $offset, $postratings_log_perpage");
+$postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->ratings} WHERE 1=1 {$postratings_where} ORDER BY {$postratings_sortby} {$postratings_sortorder} LIMIT %d, %d", $offset, $postratings_log_perpage ) );
 ?>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <!-- Manage Post Ratings -->
@@ -400,7 +417,7 @@ $postratings_logs = $wpdb->get_results("SELECT * FROM $wpdb->ratings WHERE 1=1 $
 					<select name="user" size="1">
 						<option value=""></option>
 						<?php
-							$filter_users = $wpdb->get_results("SELECT DISTINCT rating_username, rating_userid FROM $wpdb->ratings WHERE rating_username != '".__('Guest', 'wp-postratings')."' ORDER BY rating_userid ASC, rating_username ASC");
+							$filter_users = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT rating_username, rating_userid FROM {$wpdb->ratings} WHERE rating_username != %s ORDER BY rating_userid ASC, rating_username ASC", __(' Guest', 'wp-postratings' ) ) );
 							if($filter_users) {
 								foreach($filter_users as $filter_user) {
 									$rating_username = stripslashes($filter_user->rating_username);
