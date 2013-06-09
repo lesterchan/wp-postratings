@@ -408,7 +408,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 			}
 		?>
 	<br />
-	<form action="<?php echo admin_url('admin.php'); ?>" method="get">
+	<form action="<?php echo esc_url( $base_page ); ?>" method="get">
 		<input type="hidden" name="page" value="<?php echo $base_name; ?>" />
 		<table class="widefat">
 			<tr>
@@ -524,7 +524,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 	<h3><?php _e('Delete Post Ratings Data/Logs', 'wp-postratings'); ?></h3>
 	<br style="clear" />
 	<div align="center">
-		<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
+		<form method="post" action="<?php echo esc_url( $base_page ); ?>">
 		<?php wp_nonce_field('wp-postratings_logs'); ?>
 		<table class="widefat">
 			<tr>
