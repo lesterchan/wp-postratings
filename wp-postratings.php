@@ -627,7 +627,7 @@ function process_ratings() {
 						$rate_cookie = setcookie("rated_".$post_id, $ratings_value[$rate-1], time() + 30000000, COOKIEPATH);
 					}
 					// Log Ratings No Matter What
-					$rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} (%d, %d, %s, %d, NOW(), %s, %s, %s, %d )" ), 0, $post_id, $post_title, $ratings_value[$rate-1], get_ipaddress(), @gethostbyaddr( get_ipaddress() ), $rate_user, $rate_userid );
+					$rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} (%d, %d, %s, %d, NOW(), %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate-1], get_ipaddress(), @gethostbyaddr( get_ipaddress() ), $rate_user, $rate_userid ) );
 					// Allow Other Plugins To Hook When A Post Is Rated
 					do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
 					// Output AJAX Result
