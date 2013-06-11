@@ -23,21 +23,63 @@
 	opacity: 1;
 	/* background-color: #ffffff; */
 }
+
+.post-ratings ol li {
+	display: inline-block;
+	background-repeat: no-repeat;
+	text-indent: -1000000px;
+	width: 20px;
+}
+
+.post-ratings ol.vote li {
+	cursor: pointer;
+}
+
+/* TODO: Add CSS for the rest of the image types. */
+/**
+  * Stars
+  */
+.post-ratings ol.stars li.on {
+	background-image: url('images/stars/rating_on.gif');
+}
+
+.post-ratings ol.stars li.off {
+	background-image: url('images/stars/rating_off.gif');
+}
+
+.post-ratings ol.stars li.half {
+	background-image: url('images/stars/rating_half.gif');
+}
+
+.post-ratings ol.stars.rtl li.half {
+	background-image: url('images/stars/rating_half-rtl.gif');
+}
+
+.post-ratings ol.stars.vote li.o,
+.post-ratings ol.stars.vote li:hover {
+	background-image: url('images/stars/rating_over.gif');
+}
+
+
 .post-ratings-loading {
 	display: none;
 	height: 16px;
 	text-align: left;
 }
+
 .post-ratings-image {
 	border: 0px;
 }
+
 .post-ratings IMG, .post-ratings-loading IMG, .post-ratings-image IMG {
 	border: 0px;
 	padding: 0px;
 	margin: 0px;
 }
+
 .post-ratings-text {
 }
+
 .post-ratings-comment-author {
 	font-weight: normal;
 	font-style: italic;
