@@ -36,7 +36,7 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
-### Version 1.70
+### Version 1.70 (01-07-2013)
 * Add rate_post action for other plugins to use. Props paulgibbs.
 * Prevent direct access to PHP files to avoid PHP errors. Props paulgibbs.
 * Fixes for PHP Notices. Props paulgibbs.
