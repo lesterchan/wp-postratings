@@ -49,7 +49,7 @@ if ( isset( $_GET['order'] ) && in_array( $_GET['order'], array( 'ASC', 'DESC', 
 	$postratings_sortorder = $_GET['order'];
 
 
-### Form Processing 
+### Form Processing
 if ( ! empty( $_POST['do'] ) ) {
 
 	check_admin_referer('wp-postratings_logs');
@@ -68,7 +68,7 @@ if ( ! empty( $_POST['do'] ) ) {
 		}
 	}
 
-	if ( $post_ids )
+	if ( empty( $post_ids ) )
 		return;
 
 	switch($delete_datalog) {
@@ -97,7 +97,7 @@ if ( ! empty( $_POST['do'] ) ) {
 				foreach($ratings_postmeta as $postmeta) {
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
 					$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
-				}	
+				}
 
 			} else {
 				foreach ( $post_ids_list as $the_post_id ) {
@@ -123,7 +123,7 @@ if ( ! empty( $_POST['do'] ) ) {
 				foreach($ratings_postmeta as $postmeta) {
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
 					$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
-				}	
+				}
 
 			} else {
 				$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
@@ -226,7 +226,7 @@ $total_ratings = $wpdb->get_var("SELECT COUNT(rating_id) FROM $wpdb->ratings WHE
 $total_users = $wpdb->get_var("SELECT SUM(meta_value) FROM $wpdb->postmeta WHERE meta_key = 'ratings_users'");
 $total_score = $wpdb->get_var("SELECT SUM((meta_value+0.00)) FROM $wpdb->postmeta WHERE meta_key = 'ratings_score'");
 $ratings_custom = intval(get_option('postratings_customrating'));
-if($total_users == 0) { 
+if($total_users == 0) {
 	$total_average = 0;
 } else {
 	$total_average = $total_score/$total_users;
@@ -236,17 +236,17 @@ if($total_users == 0) {
 $offset = ($postratings_page-1) * $postratings_log_perpage;
 
 // Determine Max Number Of Ratings To Display On Page
-if(($offset + $postratings_log_perpage) > $total_ratings) { 
-	$max_on_page = $total_ratings; 
-} else { 
-	$max_on_page = ($offset + $postratings_log_perpage); 
+if(($offset + $postratings_log_perpage) > $total_ratings) {
+	$max_on_page = $total_ratings;
+} else {
+	$max_on_page = ($offset + $postratings_log_perpage);
 }
 
 // Determine Number Of Ratings To Display On Page
-if (($offset + 1) > ($total_ratings)) { 
-	$display_on_page = $total_ratings; 
-} else { 
-	$display_on_page = ($offset + 1); 
+if (($offset + 1) > ($total_ratings)) {
+	$display_on_page = $total_ratings;
+} else {
+	$display_on_page = ($offset + 1);
 }
 
 // Determing Total Amount Of Pages
@@ -270,9 +270,9 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				<th width="10%"><?php _e('Username', 'wp-postratings'); ?></th>
 				<th width="10%"><?php _e('Rating', 'wp-postratings'); ?></th>
 				<th width="8%"><?php _e('Post ID', 'wp-postratings'); ?></th>
-				<th width="25%"><?php _e('Post Title', 'wp-postratings'); ?></th>	
+				<th width="25%"><?php _e('Post Title', 'wp-postratings'); ?></th>
 				<th width="20%"><?php _e('Date / Time', 'wp-postratings'); ?></th>
-				<th width="25%"><?php _e('IP / Host', 'wp-postratings'); ?></th>			
+				<th width="25%"><?php _e('IP / Host', 'wp-postratings'); ?></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -292,7 +292,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				$postratings_posttitle = stripslashes($postratings_log->rating_posttitle);
 				$postratings_date = mysql2date(sprintf(__('%s @ %s', 'wp-postratings'), get_option('date_format'), get_option('time_format')), gmdate('Y-m-d H:i:s', $postratings_log->rating_timestamp));
 				$postratings_ip = $postratings_log->rating_ip;
-				$postratings_host = $postratings_log->rating_host;				
+				$postratings_host = $postratings_log->rating_host;
 				echo "<tr $style>\n";
 				echo '<td>'.$postratings_id.'</td>'."\n";
 				echo "<td>$postratings_username</td>\n";
@@ -399,7 +399,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					?>
 				</td>
 			</tr>
-		</table>	
+		</table>
 		<!-- </Paging> -->
 		<?php
 			}
@@ -531,7 +531,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 						<option value="1"><?php _e('Logs Only', 'wp-postratings'); ?></option>
 						<option value="2"><?php _e('Data Only', 'wp-postratings'); ?></option>
 						<option value="3"><?php _e('Logs And Data', 'wp-postratings'); ?></option>
-					</select>				
+					</select>
 				</td>
 			</tr>
 			<tr>
@@ -549,7 +549,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				</td>
 			</tr>
 		</table>
-		</form>	
+		</form>
 	</div>
 	<h3><?php _e('Note:', 'wp-postratings'); ?></h3>
 	<ul>
