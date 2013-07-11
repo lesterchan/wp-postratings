@@ -45,7 +45,7 @@ $postratings_sortorder    = 'DESC';
 if ( isset( $_GET['by'] ) && in_array( $_GET['by'], array( 'date', 'host', 'id', 'ip', 'postid', 'posttitle', 'rating', 'username', ) ) )
 	$postratings_sortby = $_GET['by'];
 
-if ( isset( $_GET['order'] ) && in_array( $_GET['order'], array( 'ASC', 'DESC', ) ) )
+if ( isset( $_GET['order'] ) && in_array( $_GET['order'], array( 'asc', 'desc', ) ) )
 	$postratings_sortorder = $_GET['order'];
 
 
@@ -66,10 +66,10 @@ if ( ! empty( $_POST['do'] ) ) {
 			$post_ids_list = wp_parse_id_list( $_POST['delete_postid'] );
 			$post_ids      = implode( ',', $post_ids_list );
 		}
+		else {
+			$post_ids = 'all';
+		}
 	}
-
-	if ( empty( $post_ids ) )
-		return;
 
 	switch($delete_datalog) {
 		case 1:
@@ -470,8 +470,8 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					</select>
 					&nbsp;&nbsp;&nbsp;
 					<select name="order" size="1">
-						<option value="asc"<?php if($postratings_sortorder == 'ASC') { echo ' selected="selected"'; }?>><?php _e('Ascending', 'wp-postratings'); ?></option>
-						<option value="desc"<?php if($postratings_sortorder == 'DESC') { echo ' selected="selected"'; } ?>><?php _e('Descending', 'wp-postratings'); ?></option>
+						<option value="asc"<?php if($postratings_sortorder == 'asc') { echo ' selected="selected"'; }?>><?php _e('Ascending', 'wp-postratings'); ?></option>
+						<option value="desc"<?php if($postratings_sortorder == 'desc') { echo ' selected="selected"'; } ?>><?php _e('Descending', 'wp-postratings'); ?></option>
 					</select>
 					&nbsp;&nbsp;&nbsp;
 					<select name="perpage" size="1">

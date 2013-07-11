@@ -36,6 +36,10 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
+## Version 1.72 (11-07-2013)
+* Fixed not logging ratings
+* Fixed sorting of ratings logs
+
 ## Version 1.71 (10-07-2013)
 * Fixed "unable to delete logs/data"
 

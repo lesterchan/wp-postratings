@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.70
+Version: 1.72
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -627,7 +627,7 @@ function process_ratings() {
 						$rate_cookie = setcookie("rated_".$post_id, $ratings_value[$rate-1], time() + 30000000, COOKIEPATH);
 					}
 					// Log Ratings No Matter What
-					$rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} (%d, %d, %s, %d, NOW(), %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate-1], get_ipaddress(), @gethostbyaddr( get_ipaddress() ), $rate_user, $rate_userid ) );
+					$rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate-1], current_time('timestamp'), get_ipaddress(), @gethostbyaddr( get_ipaddress() ), $rate_user, $rate_userid ) );
 					// Allow Other Plugins To Hook When A Post Is Rated
 					do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
 					// Output AJAX Result
