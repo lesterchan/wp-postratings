@@ -83,7 +83,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$user_voted = check_rated($ratings_id);
 	// HTML Attributes
 	if(is_single())
-		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" itemscope itemtype="http://schema.org/Product"';
+		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" itemscope itemtype="http://schema.org/Article"';
 	else
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
 	// If User Voted Or Is Not Allowed To Rate

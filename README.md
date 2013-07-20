@@ -38,6 +38,7 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 ## Changelog
 ## Version 1.73
 * Add Stars Flat (PNG) Icons. Props hebaf.
+* Change Schema From http://schema.org/Product To http://schema.org/Article
 
 ## Version 1.72 (11-07-2013)
 * Fixed not logging ratings
