@@ -36,6 +36,9 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
+## Version 1.74
+*  check_rated_username() should be using $user_ID. Props Artem Gordinsky.
+
 ## Version 1.73
 * Add Stars Flat (PNG) Icons. Props hebaf.
 * Change Schema From http://schema.org/Product To http://schema.org/Article
