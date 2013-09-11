@@ -517,11 +517,11 @@ define('RATINGS_IMG_EXT', 'png');
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Sort Highest/Lowest Rated Posts
-* You can use: `<?php query_posts($query_string.'&r_sortby=highest_rated&amp;r_orderby=desc') ?>`
+* You can use: ``<?php query_posts( array( 'meta_key' => 'ratings_average', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>``
 * Or pass in the variables to the URL: `http://yoursite.com/?r_sortby=highest_rated&amp;r_orderby=desc`
 * You can replace desc with asc if you want the lowest rated posts.
 
 ### To Sort Most/Least Rated Posts
-* You can use: `<?php query_posts($query_string.'&r_sortby=most_rated&amp;r_orderby=desc') ?>`
+* You can use: ``<?php query_posts( array( 'meta_key' => 'ratings_users', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>``
 * Or pass in the variables to the URL: `http://yoursite.com/?r_sortby=most_rated&amp;r_orderby=desc`
 * You can replace desc with asc if you want the least rated posts.
