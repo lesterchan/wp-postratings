@@ -1139,9 +1139,9 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	// Get post related variables
 	if(is_null($post_ratings_data)) {
 		$post_ratings_data = get_post_custom($post_id);
-		$post_ratings_users = intval($post_ratings_data['ratings_users'][0]);
-		$post_ratings_score = intval($post_ratings_data['ratings_score'][0]);
-		$post_ratings_average = floatval($post_ratings_data['ratings_average'][0]);
+		$post_ratings_users = array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
+		$post_ratings_score = array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
+		$post_ratings_average = array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
 	} else {
 		$post_ratings_users = intval($post_ratings_data->ratings_users);
 		$post_ratings_score = intval($post_ratings_data->ratings_score);
