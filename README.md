@@ -3,7 +3,7 @@ Contributors: GamerZ
 Donate link: http://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 2.8  
-Tested up to: 3.5  
+Tested up to: 3.6
 Stable tag: trunk  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
@@ -36,6 +36,9 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.75
+* Change esc_attr() to wp_kses() For itemprop. Props oneTarek
+
 ### Version 1.74
 *  check_rated_username() should be using $user_ID. Props Artem Gordinsky.
 
