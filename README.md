@@ -37,7 +37,8 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 
 ## Changelog
 ### Version 1.75
-* Change esc_attr() to wp_kses() For itemprop. Props oneTarek
+* Change htmlspecialchars to esc_attr(). Props Ryan Satterfield.
+* Change esc_attr() to wp_kses() For itemprop. Props oneTarek.
 
 ### Version 1.74
 *  check_rated_username() should be using $user_ID. Props Artem Gordinsky.

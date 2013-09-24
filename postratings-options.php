@@ -205,12 +205,12 @@ $postratings_image = get_option('postratings_image');
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>"> 
 		<?php wp_nonce_field('wp-postratings_options'); ?>
 		<input type="hidden" id="postratings_customrating" name="postratings_customrating" value="<?php echo $postratings_customrating; ?>" />
-		<input type="hidden" id="postratings_template_vote" name="postratings_template_vote" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_vote'))); ?>" />
-		<input type="hidden" id="postratings_template_text" name="postratings_template_text" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_text'))); ?>" />
-		<input type="hidden" id="postratings_template_permission" name="postratings_template_permission" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_permission'))); ?>" />
-		<input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_none'))); ?>" />
-		<input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_highestrated'))); ?>" />
-		<input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo htmlspecialchars(stripslashes(get_option('postratings_template_mostrated'))); ?>" />
+		<input type="hidden" id="postratings_template_vote" name="postratings_template_vote" value="<?php echo esc_attr(get_option('postratings_template_vote')); ?>" />
+		<input type="hidden" id="postratings_template_text" name="postratings_template_text" value="<?php echo esc_attr(get_option('postratings_template_text')); ?>" />
+		<input type="hidden" id="postratings_template_permission" name="postratings_template_permission" value="<?php echo esc_attr(get_option('postratings_template_permission')); ?>" />
+		<input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo esc_attr(get_option('postratings_template_none')); ?>" />
+		<input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo esc_attr(get_option('postratings_template_highestrated')); ?>" />
+		<input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo esc_attr(get_option('postratings_template_mostrated')); ?>" />
 		<h3><?php _e('Ratings Settings', 'wp-postratings'); ?></h3>
 		<table class="form-table">
 			 <tr>

@@ -427,9 +427,9 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 										$prefix = __('Comment Author: ', 'wp-postratings');
 									}
 									if($rating_username == $postratings_filteruser) {
-										echo '<option value="'.htmlspecialchars($rating_username).'" selected="selected">'.$prefix.' '.$rating_username.'</option>'."\n";
+										echo '<option value="'.esc_attr($rating_username).'" selected="selected">'.$prefix.' '.$rating_username.'</option>'."\n";
 									} else {
-										echo '<option value="'.htmlspecialchars($rating_username).'">'.$prefix.' '.$rating_username.'</option>'."\n";
+										echo '<option value="'.esc_attr($rating_username).'">'.$prefix.' '.$rating_username.'</option>'."\n";
 									}
 								}
 							}
