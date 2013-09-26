@@ -1227,12 +1227,12 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 		if(!isset($post_link))
 			$post_link = get_permalink($post_id);
 
-		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'"><meta itemprop="description" content="'.wp_kses($post_excerpt, array()).'"><meta itemprop="url" content="'.$post_link.'">';
+		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'" /><meta itemprop="description" content="'.wp_kses($post_excerpt, array()).'" /><meta itemprop="url" content="'.$post_link.'" />';
 		$ratings_meta = '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
-		$ratings_meta .= '<meta itemprop="bestRating" content="'.$ratings_max.'">';
-		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'">';
-		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'">';
-		$ratings_meta .= '<meta itemprop="reviewCount" content="'.$post_ratings_users.'">';
+		$ratings_meta .= '<meta itemprop="bestRating" content="'.$ratings_max.'" />';
+		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'" />';
+		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'" />';
+		$ratings_meta .= '<meta itemprop="reviewCount" content="'.$post_ratings_users.'" />';
 		$ratings_meta .= '</div>';
 
 		$value = $value.$post_meta.$ratings_meta;
