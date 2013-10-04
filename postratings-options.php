@@ -201,16 +201,16 @@ $postratings_image = get_option('postratings_image');
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
 	<div id="icon-wp-postratings" class="icon32"><br /></div>
-	<h2><?php _e('Post Ratings Options', 'wp-postratings'); ?></h2> 
-	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>"> 
+	<h2><?php _e('Post Ratings Options', 'wp-postratings'); ?></h2>
+	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_options'); ?>
 		<input type="hidden" id="postratings_customrating" name="postratings_customrating" value="<?php echo $postratings_customrating; ?>" />
-		<input type="hidden" id="postratings_template_vote" name="postratings_template_vote" value="<?php echo esc_attr(get_option('postratings_template_vote')); ?>" />
-		<input type="hidden" id="postratings_template_text" name="postratings_template_text" value="<?php echo esc_attr(get_option('postratings_template_text')); ?>" />
-		<input type="hidden" id="postratings_template_permission" name="postratings_template_permission" value="<?php echo esc_attr(get_option('postratings_template_permission')); ?>" />
-		<input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo esc_attr(get_option('postratings_template_none')); ?>" />
-		<input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo esc_attr(get_option('postratings_template_highestrated')); ?>" />
-		<input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo esc_attr(get_option('postratings_template_mostrated')); ?>" />
+		<input type="hidden" id="postratings_template_vote" name="postratings_template_vote" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_vote'))); ?>" />
+		<input type="hidden" id="postratings_template_text" name="postratings_template_text" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_text'))); ?>" />
+		<input type="hidden" id="postratings_template_permission" name="postratings_template_permission" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_permission'))); ?>" />
+		<input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_none'))); ?>" />
+		<input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_highestrated'))); ?>" />
+		<input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_mostrated'))); ?>" />
 		<h3><?php _e('Ratings Settings', 'wp-postratings'); ?></h3>
 		<table class="form-table">
 			 <tr>
@@ -218,14 +218,14 @@ $postratings_image = get_option('postratings_image');
 				<td>
 					<?php
 						$postratings_images_array = array();
-						if($handle = @opendir($postratings_path)) {     
-							while (false !== ($filename = readdir($handle))) {  
+						if($handle = @opendir($postratings_path)) {
+							while (false !== ($filename = readdir($handle))) {
 								if ($filename != '.' && $filename != '..' && strpos($filename, '.') !== 0) {
 									if(is_dir($postratings_path.'/'.$filename)) {
 										$postratings_images_array[$filename] = ratings_images_folder($filename);
 									}
-								} 
-							} 
+								}
+							}
 							closedir($handle);
 						}
 						foreach($postratings_images_array as $key => $value) {
@@ -341,7 +341,7 @@ $postratings_image = get_option('postratings_image');
 							echo $postratings_ratingsvalue[$i-1].'" size="3" maxlength="5" />'."\n";
 							echo '</td>'."\n";
 							echo '</tr>'."\n";
-						}								
+						}
 					?>
 				</tbody>
 			</table>
@@ -365,7 +365,7 @@ $postratings_image = get_option('postratings_image');
 						<option value="0"<?php selected('0', $postratings_ajax_style['fading']); ?>><?php _e('No', 'wp-postratings'); ?></option>
 						<option value="1"<?php selected('1', $postratings_ajax_style['fading']); ?>><?php _e('Yes', 'wp-postratings'); ?></option>
 					</select>
-				</td> 
+				</td>
 			</tr>
 		</table>
 		<h3><?php _e('Allow To Rate', 'wp-postratings'); ?></h3>

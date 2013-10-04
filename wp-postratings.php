@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.75
+Version: 1.76
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -204,6 +204,7 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
   if($new_user == 0 && $new_score == 0 && $new_average == 0) {
     $post_ratings_data = null;
   } else {
+	$post_ratings_data = new stdClass();
     $post_ratings_data->ratings_users = $new_user;
     $post_ratings_data->ratings_score = $new_score;
     $post_ratings_data->ratings_average = $new_average;
@@ -603,15 +604,10 @@ function process_ratings() {
 					$post_ratings_users = ($post_ratings_users+1);
 					$post_ratings_score = ($post_ratings_score+intval($ratings_value[$rate-1]));
 					$post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
-					if (!update_post_meta($post_id, 'ratings_users', $post_ratings_users)) {
-						add_post_meta($post_id, 'ratings_users', $post_ratings_users, true);
-					}
-					if(!update_post_meta($post_id, 'ratings_score', $post_ratings_score)) {
-						add_post_meta($post_id, 'ratings_score', $post_ratings_score, true);
-					}
-					if(!update_post_meta($post_id, 'ratings_average', $post_ratings_average)) {
-						add_post_meta($post_id, 'ratings_average', $post_ratings_average, true);
-					}
+					update_post_meta($post_id, 'ratings_users', $post_ratings_users);
+					update_post_meta($post_id, 'ratings_score', $post_ratings_score);
+					update_post_meta($post_id, 'ratings_average', $post_ratings_average);
+
 					// Add Log
 					if(!empty($user_identity)) {
 						$rate_user = addslashes($user_identity);
@@ -1139,9 +1135,9 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	// Get post related variables
 	if(is_null($post_ratings_data)) {
 		$post_ratings_data = get_post_custom($post_id);
-		$post_ratings_users = array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
-		$post_ratings_score = array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
-		$post_ratings_average = array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
+		$post_ratings_users = is_array($post_ratings_data) && array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
+		$post_ratings_score = is_array($post_ratings_data) &&  array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
+		$post_ratings_average = is_array($post_ratings_data) &&  array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
 	} else {
 		$post_ratings_users = intval($post_ratings_data->ratings_users);
 		$post_ratings_score = intval($post_ratings_data->ratings_score);

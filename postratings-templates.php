@@ -129,7 +129,7 @@ if ( isset( $_POST['Submit'] ) ) {
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
 	<div id="icon-wp-postratings" class="icon32"><br /></div>
-	<h2><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h2> 
+	<h2><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h2>
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_templates'); ?>
 		<h3><?php _e('Template Variables', 'wp-postratings'); ?></h3>
@@ -140,7 +140,7 @@ if ( isset( $_POST['Submit'] ) ) {
 			</tr>
 			<tr>
 				<td><strong>%RATINGS_AVERAGE%</strong> - <?php _e('Display the average ratings', 'wp-postratings'); ?></td>
-				<td><strong>%RATINGS_USERS%</strong> - <?php _e('Display the total number of users rated for the post', 'wp-postratings'); ?></td>						
+				<td><strong>%RATINGS_USERS%</strong> - <?php _e('Display the total number of users rated for the post', 'wp-postratings'); ?></td>
 			</tr>
 			<tr>
 				<td><strong>%RATINGS_MAX%</strong> - <?php _e('Display the max number of ratings', 'wp-postratings'); ?></td>
@@ -168,7 +168,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('vote', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_vote" name="postratings_template_vote"><?php echo esc_attr(get_option('postratings_template_vote')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_vote" name="postratings_template_vote"><?php echo esc_attr(stripslashes(get_option('postratings_template_vote'))); ?></textarea></td>
 			</tr>
 			<tr>
 				<td width="30%">
@@ -183,7 +183,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('text', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('text', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_text" name="postratings_template_text"><?php echo esc_attr(get_option('postratings_template_text')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_text" name="postratings_template_text"><?php echo esc_attr(stripslashes(get_option('postratings_template_text'))); ?></textarea></td>
 			</tr>
 			<tr>
 				<td width="30%">
@@ -198,7 +198,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('permission', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('permission', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_permission" name="postratings_template_permission"><?php echo esc_attr(get_option('postratings_template_permission')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_permission" name="postratings_template_permission"><?php echo esc_attr(stripslashes(get_option('postratings_template_permission'))); ?></textarea></td>
 			</tr>
 			<tr>
 				<td width="30%">
@@ -214,7 +214,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('none', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('none', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_none" name="postratings_template_none"><?php echo esc_attr(get_option('postratings_template_none')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_none" name="postratings_template_none"><?php echo esc_attr(stripslashes(get_option('postratings_template_none'))); ?></textarea></td>
 			</tr>
 			<tr>
 				<td width="30%">
@@ -233,7 +233,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('highestrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('highestrated', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_highestrated" name="postratings_template_highestrated"><?php echo esc_attr(get_option('postratings_template_highestrated')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_highestrated" name="postratings_template_highestrated"><?php echo esc_attr(stripslashes(get_option('postratings_template_highestrated'))); ?></textarea></td>
 			</tr>
 			<tr>
 				<td width="30%">
@@ -248,9 +248,9 @@ if ( isset( $_POST['Submit'] ) ) {
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('mostrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('mostrated', true);" class="button" />
 				</td>
-				<td><textarea cols="80" rows="15" id="postratings_template_mostrated" name="postratings_template_mostrated"><?php echo esc_attr(get_option('postratings_template_mostrated')); ?></textarea></td>
+				<td><textarea cols="80" rows="15" id="postratings_template_mostrated" name="postratings_template_mostrated"><?php echo esc_attr(stripslashes(get_option('postratings_template_mostrated'))); ?></textarea></td>
 			</tr>
-		</table>	
+		</table>
 		<p class="submit">
 			<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'wp-postratings'); ?>" />
 		</p>
