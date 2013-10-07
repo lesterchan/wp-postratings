@@ -36,6 +36,9 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
+* Version 1.77
+* Removed reviewCount From Google Rich Snippet
+
 ### Version 1.76
 * FIXED: No longer needing add_post_meta() if update_post_meta() fails
 * FIXED: Update 'Individual Rating Text/Value' Display no working due to missing nonce
