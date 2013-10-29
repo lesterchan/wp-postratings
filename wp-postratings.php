@@ -595,8 +595,8 @@ function process_ratings() {
 					$ratings_value = get_option('postratings_ratingsvalue');
 					$post_title = addslashes($post->post_title);
 					$post_ratings = get_post_custom($post_id);
-					$post_ratings_users = intval($post_ratings['ratings_users'][0]);
-					$post_ratings_score = intval($post_ratings['ratings_score'][0]);
+					$post_ratings_users = ! empty( $post_ratings['ratings_users'] ) ? intval($post_ratings['ratings_users'][0]) : 0;
+					$post_ratings_score = ! empty( $post_ratings['ratings_score'] ) ? intval($post_ratings['ratings_score'][0]) : 0;
 					// Check For Ratings Lesser Than 1 And Greater Than $ratings_max
 					if($rate < 1 || $rate > $ratings_max) {
 						$rate = 0;
