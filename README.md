@@ -3,7 +3,7 @@ Contributors: GamerZ
 Donate link: http://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 2.8  
-Tested up to: 3.6  
+Tested up to: 3.7
 Stable tag: trunk  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
@@ -37,7 +37,8 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 
 ## Changelog
 * Version 1.77
-* Removed reviewCount From Google Rich Snippet
+* FIXED: Ensure Google Rich Snippet only displays in main loop and not in the widget
+* FIXED: Removed reviewCount From Google Rich Snippet
 
 ### Version 1.76
 * FIXED: No longer needing add_post_meta() if update_post_meta() fails

@@ -853,7 +853,7 @@ function add_postratings_column_content($column_name) {
     if($column_name == 'ratings') {
         if(function_exists('the_ratings')) {
         	$template = str_replace('%RATINGS_IMAGES_VOTE%', '%RATINGS_IMAGES%<br />', stripslashes(get_option('postratings_template_vote')));
-        	echo expand_ratings_template($template, get_the_id());
+		echo expand_ratings_template($template, get_the_id(), null, 0, false);
         }
     }
 }
@@ -1125,8 +1125,8 @@ function get_ratings_images_comment_author($ratings_custom, $ratings_max, $comme
 }
 
 ### Function: Replaces the template's variables with appropriate values
-function expand_ratings_template($template, $post_id, $post_ratings_data = null, $max_post_title_chars = 0) {
-	global $post;
+function expand_ratings_template($template, $post_id, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true) {
+	global $post, $wp_query;
 	$temp_post = $post;
 	// Get global variables
 	$ratings_image = get_option('postratings_image');
@@ -1214,7 +1214,7 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	}
 
 	// Google Rich Snippet
-	if(is_single() || is_page())
+	if((is_single() || is_page()) && $is_main_loop)
 	{
 		if(!isset($post_title))
 			$post_title = get_the_title($post_id);
@@ -1483,4 +1483,3 @@ function create_ratinglogs_table() {
 
 ### Seperate PostRatings Stats For Readability
 require_once('postratings-stats.php');
-?>
