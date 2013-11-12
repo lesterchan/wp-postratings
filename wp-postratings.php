@@ -850,10 +850,11 @@ function add_postratings_column($defaults) {
 
 ### Functions Fill In The Ratings
 function add_postratings_column_content($column_name) {
+	global $post;
     if($column_name == 'ratings') {
         if(function_exists('the_ratings')) {
         	$template = str_replace('%RATINGS_IMAGES_VOTE%', '%RATINGS_IMAGES%<br />', stripslashes(get_option('postratings_template_vote')));
-		echo expand_ratings_template($template, get_the_id(), null, 0, false);
+			echo expand_ratings_template($template, $post, null, 0, false);
         }
     }
 }
@@ -1125,24 +1126,42 @@ function get_ratings_images_comment_author($ratings_custom, $ratings_max, $comme
 }
 
 ### Function: Replaces the template's variables with appropriate values
-function expand_ratings_template($template, $post_id, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true) {
-	global $post, $wp_query;
-	$temp_post = $post;
+function expand_ratings_template($template, $post_data, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true) {
+	global $post;
+
 	// Get global variables
 	$ratings_image = get_option('postratings_image');
 	$ratings_max = intval(get_option('postratings_max'));
 	$ratings_custom = intval(get_option('postratings_customrating'));
-	// Get post related variables
-	if(is_null($post_ratings_data)) {
-		$post_ratings_data = get_post_custom($post_id);
-		$post_ratings_users = is_array($post_ratings_data) && array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
-		$post_ratings_score = is_array($post_ratings_data) &&  array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
-		$post_ratings_average = is_array($post_ratings_data) &&  array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
+
+	if(is_object($post_data)) {
+		$post_id = $post_data->ID;
 	} else {
+		$post_id = $post_data;
+	}
+
+	// Most likely from coming from Widget
+	if(isset($post_data->ratings_users)) {
+		$post_ratings_users = intval($post_data->ratings_users);
+		$post_ratings_score = intval($post_data->ratings_score);
+		$post_ratings_average = floatval($post_data->ratings_average);
+	// Most Likely coming from the_ratings_vote or the_ratings_rate
+	} else if(isset($post_ratings_data->ratings_users)) {
 		$post_ratings_users = intval($post_ratings_data->ratings_users);
 		$post_ratings_score = intval($post_ratings_data->ratings_score);
 		$post_ratings_average = floatval($post_ratings_data->ratings_average);
+	} else {
+		if(get_the_ID() != $post_id) {
+			$post_ratings_data = get_post_custom($post_id);
+		} else {
+			$post_ratings_data = get_post_custom();
+		}
+
+		$post_ratings_users = is_array($post_ratings_data) && array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
+		$post_ratings_score = is_array($post_ratings_data) && array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
+		$post_ratings_average = is_array($post_ratings_data) && array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
 	}
+
 	if($post_ratings_score == 0 || $post_ratings_users == 0) {
 		$post_ratings = 0;
 		$post_ratings_average = 0;
@@ -1188,26 +1207,25 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	$value = str_replace("%RATINGS_AVERAGE%", number_format_i18n($post_ratings_average, 2), $value);
 	$value = str_replace("%RATINGS_PERCENTAGE%", number_format_i18n($post_ratings_percentage, 2), $value);
 	$value = str_replace("%RATINGS_USERS%", number_format_i18n($post_ratings_users), $value);
-	if (strpos($template, '%POST_URL%') !== false) {
-		$post_link = get_permalink($post_id);
-		$value = str_replace("%POST_URL%", $post_link, $value);
+
+	// Post Template Variables
+	$post_link = get_permalink($post_data);
+	$value = str_replace("%POST_URL%", $post_link, $value);
+	$post_title = get_the_title($post_data);
+	if ($max_post_title_chars > 0) {
+		$post_title = snippet_text($post_title, $max_post_title_chars);
 	}
-	if (strpos($template, '%POST_TITLE%') !== false) {
-		$post_title = get_the_title($post_id);
-		if ($max_post_title_chars > 0) {
-			$post_title = snippet_text($post_title, $max_post_title_chars);
-		}
-		$value = str_replace("%POST_TITLE%", $post_title, $value);
-	}
+	$value = str_replace("%POST_TITLE%", $post_title, $value);
+
 	if (strpos($template, '%POST_EXCERPT%') !== false) {
-		if ($post->ID != $post_id) {
+		if (get_the_ID() != $post_id) {
 			$post = &get_post($post_id);
 		}
 		$post_excerpt = ratings_post_excerpt($post_id, $post->post_excerpt, $post->post_content, $post->post_password);
 		$value = str_replace("%POST_EXCERPT%", $post_excerpt, $value);
 	}
 	if (strpos($template, '%POST_CONTENT%') !== false) {
-		if ($post->ID != $post_id) {
+		if (get_the_ID() != $post_id) {
 			$post = &get_post($post_id);
 		}
 		$value = str_replace("%POST_CONTENT%", get_the_content(), $value);
@@ -1216,12 +1234,8 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	// Google Rich Snippet
 	if((is_single() || is_page()) && $is_main_loop)
 	{
-		if(!isset($post_title))
-			$post_title = get_the_title($post_id);
 		if(!isset($post_excerpt))
 			$post_excerpt = ratings_post_excerpt($post_id, $post->post_excerpt, $post->post_content, $post->post_password);
-		if(!isset($post_link))
-			$post_link = get_permalink($post_id);
 
 		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'" /><meta itemprop="description" content="'.wp_kses($post_excerpt, array()).'" /><meta itemprop="url" content="'.$post_link.'" />';
 		$ratings_meta = '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
@@ -1232,9 +1246,6 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 
 		$value = $value.$post_meta.$ratings_meta;
 	}
-
-	// Return value
-	$post = $temp_post;
 
 	return apply_filters('expand_ratings_template', $value);
 }

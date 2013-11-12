@@ -40,7 +40,7 @@ if(!function_exists('get_most_rated')) {
 		$most_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND t2.meta_value >= $min_votes AND $where ORDER BY ratings_users DESC, $order_by DESC LIMIT $limit");
 		if($most_rated) {
 			foreach ($most_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -80,7 +80,7 @@ if(!function_exists('get_most_rated_category')) {
 		$most_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND t2.meta_value >= $min_votes AND $where ORDER BY ratings_users DESC, $order_by DESC LIMIT $limit");
 		if($most_rated) {
 			foreach ($most_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -116,7 +116,7 @@ if(!function_exists('get_most_rated_range')) {
 		$most_rated = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY ratings_users DESC, $order_by DESC LIMIT $limit");
 		if($most_rated) {
 			foreach ($most_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -158,7 +158,7 @@ if(!function_exists('get_most_rated_range_category')) {
 		$most_rated = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY ratings_users DESC, $order_by DESC LIMIT $limit");
 		if($most_rated) {
 			foreach ($most_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -193,7 +193,7 @@ if(!function_exists('get_highest_rated')) {
 		$highest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by DESC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -234,7 +234,7 @@ if(!function_exists('get_highest_rated_category')) {
 		$highest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta AS t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by DESC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -270,7 +270,7 @@ if(!function_exists('get_highest_rated_range')) {
 		$highest_rated = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY $order_by DESC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -312,7 +312,7 @@ if(!function_exists('get_highest_rated_range_category')) {
 		$highest_rated = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY $order_by DESC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -347,7 +347,7 @@ if(!function_exists('get_lowest_rated')) {
 		$lowest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by ASC, ratings_users DESC LIMIT $limit");
 		if($lowest_rated) {
 			foreach($lowest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -388,7 +388,7 @@ if(!function_exists('get_lowest_rated_category')) {
 		$lowest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta AS t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by ASC, ratings_users DESC LIMIT $limit");
 		if($lowest_rated) {
 			foreach($lowest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -424,7 +424,7 @@ if(!function_exists('get_lowest_rated_range')) {
 		$highest_rated = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY $order_by ASC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -451,7 +451,7 @@ if(!function_exists('get_highest_score')) {
 		$highest_score = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND t2.meta_value >= $min_votes AND $where ORDER BY ratings_score DESC, ratings_average DESC LIMIT $limit");
 		if($highest_score) {
 			foreach ($highest_score as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -484,7 +484,7 @@ if(!function_exists('get_highest_score_category')) {
 		$highest_score = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."' AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND t2.meta_value >= $min_votes AND $where ORDER BY ratings_score DESC, ratings_average DESC LIMIT $limit");
 		if($highest_score) {
 			foreach ($highest_score as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -513,7 +513,7 @@ if(!function_exists('get_highest_score_range')) {
 		$highest_score = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY ratings_score DESC, ratings_average DESC LIMIT $limit");
 		if($highest_score) {
 			foreach ($highest_score as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -548,7 +548,7 @@ if(!function_exists('get_highest_score_range_category')) {
 		$highest_score = $wpdb->get_results("SELECT COUNT($wpdb->ratings.rating_postid) AS ratings_users, SUM($wpdb->ratings.rating_rating) AS ratings_score, ROUND(((SUM($wpdb->ratings.rating_rating)/COUNT($wpdb->ratings.rating_postid))), 2) AS ratings_average, $wpdb->posts.* FROM $wpdb->posts LEFT JOIN $wpdb->ratings ON $wpdb->ratings.rating_postid = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE rating_timestamp >= $min_time AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'category' AND $category_sql AND $where GROUP BY $wpdb->ratings.rating_postid ORDER BY ratings_score DESC, ratings_average DESC LIMIT $limit");
 		if($highest_score) {
 			foreach ($highest_score as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -588,7 +588,7 @@ if(!function_exists('get_highest_rated_tag')) {
 		$highest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta AS t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'post_tag' AND $tag_sql AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by DESC, ratings_users DESC LIMIT $limit");
 		if($highest_rated) {
 			foreach($highest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
@@ -628,7 +628,7 @@ if(!function_exists('get_lowest_rated_tag')) {
 		$lowest_rated = $wpdb->get_results("SELECT DISTINCT $wpdb->posts.*, (t1.meta_value+0.00) AS ratings_average, (t2.meta_value+0.00) AS ratings_users, (t3.meta_value+0.00) AS ratings_score FROM $wpdb->posts LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID LEFT JOIN $wpdb->postmeta AS t2 ON t1.post_id = t2.post_id LEFT JOIN $wpdb->postmeta AS t3 ON t3.post_id = $wpdb->posts.ID INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) WHERE t1.meta_key = 'ratings_average' AND t2.meta_key = 'ratings_users' AND t3.meta_key = 'ratings_score' AND $wpdb->posts.post_password = '' AND $wpdb->posts.post_date < '".current_time('mysql')."'  AND $wpdb->posts.post_status = 'publish' AND $wpdb->term_taxonomy.taxonomy = 'post_tag' AND $tag_sql AND t2.meta_value >= $min_votes AND $where ORDER BY $order_by ASC, ratings_users DESC LIMIT $limit");
 		if($lowest_rated) {
 			foreach($lowest_rated as $post) {
-				$output .= expand_ratings_template($temp, $post->ID, $post, $chars, false)."\n";
+				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
 			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
