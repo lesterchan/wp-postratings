@@ -37,9 +37,10 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 
 ## Changelog
 * Version 1.77
+* NEW: Add in %POST_ID% template variables
 * FIXED: Ensure Google Rich Snippet only displays in main loop and not in the widget
-* FIXED: Removed reviewCount From Google Rich Snippet
-* FIXED: Make The Ratings Widget More Optimized. 
+* FIXED: Removed reviewCount from Google Rich Snippet
+* FIXED: Make the ratings widget more optimized
 
 ### Version 1.76
 * FIXED: No longer needing add_post_meta() if update_post_meta() fails

@@ -174,12 +174,12 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td width="30%">
 					<strong><?php _e('Ratings Voted Text:', 'wp-postratings'); ?></strong><br /><br />
 					<?php _e('Allowed Variables:', 'wp-postratings'); ?>
-          <p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
-          <p style="margin: 2px 0">- %RATINGS_MAX%</p>
-          <p style="margin: 2px 0">- %RATINGS_SCORE%</p>
-          <p style="margin: 2px 0">- %RATINGS_USERS%</p>
-          <p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
-          <p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
+					<p style="margin: 2px 0">- %RATINGS_MAX%</p>
+					<p style="margin: 2px 0">- %RATINGS_SCORE%</p>
+					<p style="margin: 2px 0">- %RATINGS_USERS%</p>
+					<p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('text', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('text', true);" class="button" />
 				</td>
@@ -189,12 +189,12 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td width="30%">
 					<strong><?php _e('Ratings No Permission Text:', 'wp-postratings'); ?></strong><br /><br />
 					<?php _e('Allowed Variables:', 'wp-postratings'); ?>
-          <p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
-          <p style="margin: 2px 0">- %RATINGS_MAX%</p>
-          <p style="margin: 2px 0">- %RATINGS_SCORE%</p>
-          <p style="margin: 2px 0">- %RATINGS_USERS%</p>
-          <p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
-          <p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
+					<p style="margin: 2px 0">- %RATINGS_MAX%</p>
+					<p style="margin: 2px 0">- %RATINGS_SCORE%</p>
+					<p style="margin: 2px 0">- %RATINGS_USERS%</p>
+					<p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('permission', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('permission', true);" class="button" />
 				</td>
@@ -204,13 +204,13 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td width="30%">
 					<strong><?php _e('Ratings None:', 'wp-postratings'); ?></strong><br /><br />
 					<?php _e('Allowed Variables:', 'wp-postratings'); ?><br />
-          <p style="margin: 2px 0">- %RATINGS_IMAGES_VOTE%</p>
-          <p style="margin: 2px 0">- %RATINGS_MAX%</p>
-          <p style="margin: 2px 0">- %RATINGS_SCORE%</p>
-          <p style="margin: 2px 0">- %RATINGS_TEXT%</p>
-          <p style="margin: 2px 0">- %RATINGS_USERS%</p>
-          <p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
-          <p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_IMAGES_VOTE%</p>
+					<p style="margin: 2px 0">- %RATINGS_MAX%</p>
+					<p style="margin: 2px 0">- %RATINGS_SCORE%</p>
+					<p style="margin: 2px 0">- %RATINGS_TEXT%</p>
+					<p style="margin: 2px 0">- %RATINGS_USERS%</p>
+					<p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('none', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('none', true);" class="button" />
 				</td>
@@ -220,16 +220,17 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td width="30%">
 					<strong><?php _e('Highest Rated:', 'wp-postratings'); ?></strong><br /><br />
 					<?php _e('Allowed Variables:', 'wp-postratings'); ?><br />
-          <p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
-          <p style="margin: 2px 0">- %RATINGS_MAX%</p>
-          <p style="margin: 2px 0">- %RATINGS_SCORE%</p>
-          <p style="margin: 2px 0">- %RATINGS_USERS%</p>
-          <p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
-          <p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
-          <p style="margin: 2px 0">- %POST_TITLE%</p>
-          <p style="margin: 2px 0">- %POST_EXCERPT%</p>
-          <p style="margin: 2px 0">- %POST_CONTENT%</p>
-          <p style="margin: 2px 0">- %POST_URL%</p>
+					<p style="margin: 2px 0">- %RATINGS_IMAGES%</p>
+					<p style="margin: 2px 0">- %RATINGS_MAX%</p>
+					<p style="margin: 2px 0">- %RATINGS_SCORE%</p>
+					<p style="margin: 2px 0">- %RATINGS_USERS%</p>
+					<p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
+					<p style="margin: 2px 0">- %RATINGS_PERCENTAGE%</p>
+					<p style="margin: 2px 0">- %POST_ID%</p>
+					<p style="margin: 2px 0">- %POST_TITLE%</p>
+					<p style="margin: 2px 0">- %POST_EXCERPT%</p>
+					<p style="margin: 2px 0">- %POST_CONTENT%</p>
+					<p style="margin: 2px 0">- %POST_URL%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('highestrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('highestrated', true);" class="button" />
 				</td>
@@ -239,12 +240,13 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td width="30%">
 					<strong><?php _e('Most Rated:', 'wp-postratings'); ?></strong><br /><br />
 					<?php _e('Allowed Variables:', 'wp-postratings'); ?><br />
-          <p style="margin: 2px 0">- %RATINGS_USERS%</p>
-          <p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
-          <p style="margin: 2px 0">- %POST_TITLE%</p>
-          <p style="margin: 2px 0">- %POST_EXCERPT%</p>
-          <p style="margin: 2px 0">- %POST_CONTENT%</p>
-          <p style="margin: 2px 0">- %POST_URL%</p>
+					<p style="margin: 2px 0">- %RATINGS_USERS%</p>
+					<p style="margin: 2px 0">- %RATINGS_AVERAGE%</p>
+					<p style="margin: 2px 0">- %POST_ID%</p>
+					<p style="margin: 2px 0">- %POST_TITLE%</p>
+					<p style="margin: 2px 0">- %POST_EXCERPT%</p>
+					<p style="margin: 2px 0">- %POST_CONTENT%</p>
+					<p style="margin: 2px 0">- %POST_URL%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('mostrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('mostrated', true);" class="button" />
 				</td>

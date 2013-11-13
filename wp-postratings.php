@@ -1210,12 +1210,13 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
 	// Post Template Variables
 	$post_link = get_permalink($post_data);
-	$value = str_replace("%POST_URL%", $post_link, $value);
 	$post_title = get_the_title($post_data);
 	if ($max_post_title_chars > 0) {
 		$post_title = snippet_text($post_title, $max_post_title_chars);
 	}
+	$value = str_replace("%POST_ID%", $post_id, $value);
 	$value = str_replace("%POST_TITLE%", $post_title, $value);
+	$value = str_replace("%POST_URL%", $post_link, $value);
 
 	if (strpos($template, '%POST_EXCERPT%') !== false) {
 		if (get_the_ID() != $post_id) {
