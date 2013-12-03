@@ -36,7 +36,10 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
-* Version 1.77
+### Version 1.78
+* FIXED: Use SITECOOKIEPATH instead of COOKIEPATH. Props jbrule.
+
+### Version 1.77
 * NEW: Add in %POST_ID% template variables
 * FIXED: Ensure Google Rich Snippet only displays in main loop and not in the widget
 * FIXED: Removed reviewCount from Google Rich Snippet
