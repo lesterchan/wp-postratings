@@ -3,7 +3,7 @@ Contributors: GamerZ
 Donate link: http://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 2.8  
-Tested up to: 3.7  
+Tested up to: 3.8  
 Stable tag: trunk  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
@@ -38,6 +38,7 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 ## Changelog
 ### Version 1.78
 * FIXED: Use SITECOOKIEPATH instead of COOKIEPATH. Props jbrule.
+* FIXED: If global $id is 0, use get_the_ID(). Props instruite.
 
 ### Version 1.77
 * NEW: Add in %POST_ID% template variables
