@@ -1138,6 +1138,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	$ratings_image = get_option('postratings_image');
 	$ratings_max = intval(get_option('postratings_max'));
 	$ratings_custom = intval(get_option('postratings_customrating'));
+	$ratings_options = get_option('postratings_options');
 
 	if(is_object($post_data)) {
 		$post_id = $post_data->ID;
@@ -1238,7 +1239,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	}
 
 	// Google Rich Snippet
-	if((is_single() || is_page()) && $is_main_loop)
+	$ratings_options['richsnippet'] = isset($ratings_options['richsnippet']) ? $ratings_options['richsnippet'] : 1;
+	if($ratings_options['richsnippet'] && (is_single() || is_page()) && $is_main_loop)
 	{
 		if(!isset($post_excerpt))
 			$post_excerpt = ratings_post_excerpt($post_id, $post->post_excerpt, $post->post_content, $post->post_password);

@@ -37,6 +37,7 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 
 ## Changelog
 ### Version 1.78
+* NEW: Option to turn off Google Rich Snippets
 * FIXED: Use SITECOOKIEPATH instead of COOKIEPATH. Props jbrule.
 * FIXED: If global $id is 0, use get_the_ID(). Props instruite.
 

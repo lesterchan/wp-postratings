@@ -30,11 +30,11 @@ $base_name = plugin_basename('wp-postratings/postratings-manager.php');
 $base_page = 'admin.php?page='.$base_name;
 $mode = isset( $_GET['mode'] ) ? trim( $_GET['mode'] ) : '';
 $ratings_tables = array($wpdb->ratings);
-$ratings_settings = array('postratings_image', 'postratings_max', 'postratings_template_vote', 'postratings_template_text', 'postratings_template_none', 'postratings_logging_method', 'postratings_allowtorate', 'postratings_ratingstext', 'postratings_template_highestrated', 'postratings_ajax_style', 'widget_ratings_highest_rated', 'widget_ratings_most_rated', 'postratings_customrating', 'postratings_ratingsvalue', 'postratings_template_permission', 'postratings_template_mostrated', 'widget_ratings', 'widget_ratings-widget');
+$ratings_settings = array('postratings_image', 'postratings_max', 'postratings_template_vote', 'postratings_template_text', 'postratings_template_none', 'postratings_logging_method', 'postratings_allowtorate', 'postratings_ratingstext', 'postratings_template_highestrated', 'postratings_ajax_style', 'widget_ratings_highest_rated', 'widget_ratings_most_rated', 'postratings_customrating', 'postratings_ratingsvalue', 'postratings_template_permission', 'postratings_template_mostrated', 'postratings_options', 'widget_ratings', 'widget_ratings-widget');
 $ratings_postmetas = array('ratings_users', 'ratings_score', 'ratings_average');
 
 
-### Form Processing 
+### Form Processing
 if(!empty($_POST['do'])) {
 	// Decide What To Do
 	switch($_POST['do']) {
@@ -79,7 +79,7 @@ if(!empty($_POST['do'])) {
 					}
 				}
 				echo '</p>';
-				echo '</div>'; 
+				echo '</div>';
 				$mode = 'end-UNINSTALL';
 			}
 			break;
@@ -92,7 +92,7 @@ switch($mode) {
 		//  Deactivating WP-PostRatings
 		case 'end-UNINSTALL':
 			$deactivate_url = 'plugins.php?action=deactivate&amp;plugin=wp-postratings/wp-postratings.php';
-			if(function_exists('wp_nonce_url')) { 
+			if(function_exists('wp_nonce_url')) {
 				$deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_wp-postratings/wp-postratings.php');
 			}
 			echo '<div class="wrap">';

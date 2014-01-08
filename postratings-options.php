@@ -42,6 +42,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$postratings_template_mostrated = trim($_POST['postratings_template_mostrated']);
 	$postratings_image = strip_tags(trim($_POST['postratings_image']));
 	$postratings_max = intval($_POST['postratings_max']);
+	$postratings_richsnippet = intval($_POST['postratings_richsnippet']);
 	$postratings_ratingstext_array = $_POST['postratings_ratingstext'];
 	$postratings_ratingstext = array();
 	foreach($postratings_ratingstext_array as $ratingstext) {
@@ -57,6 +58,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$postratings_allowtorate = intval($_POST['postratings_allowtorate']);
 	$update_ratings_queries = array();
 	$update_ratings_text = array();
+	$postratings_options = array('richsnippet' => $postratings_richsnippet);
 	$update_ratings_queries[] = update_option('postratings_customrating', $postratings_customrating);
 	$update_ratings_queries[] = update_option('postratings_template_vote', $postratings_template_vote);
 	$update_ratings_queries[] = update_option('postratings_template_text', $postratings_template_text);
@@ -71,6 +73,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$update_ratings_queries[] = update_option('postratings_ajax_style', $postratings_ajax_style);
 	$update_ratings_queries[] = update_option('postratings_logging_method', $postratings_logging_method);
 	$update_ratings_queries[] = update_option('postratings_allowtorate', $postratings_allowtorate);
+	$update_ratings_queries[] = update_option('postratings_options', $postratings_options);
 	$update_ratings_text[] = __('Custom Rating', 'wp-postratings');
 	$update_ratings_text[] = __('Ratings Template Vote', 'wp-postratings');
 	$update_ratings_text[] = __('Ratings Template Voted', 'wp-postratings');
@@ -85,6 +88,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$update_ratings_text[] = __('Ratings AJAX Style', 'wp-postratings');
 	$update_ratings_text[] = __('Logging Method', 'wp-postratings');
 	$update_ratings_text[] = __('Allow To Vote Option', 'wp-postratings');
+	$update_ratings_text[] = __('Ratings Settings', 'wp-postratings');
 	$i = 0;
 	$text = '';
 	foreach($update_ratings_queries as $update_ratings_query) {
@@ -101,6 +105,7 @@ if ( isset( $_POST['Submit'] ) ) {
 
 ### Needed Variables
 $postratings_max = intval(get_option('postratings_max'));
+$postratings_options = get_option('postratings_options');
 $postratings_customrating = intval(get_option('postratings_customrating'));
 $postratings_url = plugins_url('wp-postratings/images');
 $postratings_path = WP_PLUGIN_DIR.'/wp-postratings/images';
@@ -286,6 +291,14 @@ $postratings_image = get_option('postratings_image');
 			<tr>
 				<th scope="row" valign="top"><?php _e('Max Ratings:', 'wp-postratings'); ?></th>
 				<td><input type="text" id="postratings_max" name="postratings_max" value="<?php echo $postratings_max; ?>" size="3" <?php if($postratings_customrating) { echo 'readonly="readonly"'; } ?> /></td>
+			</tr>
+			<tr>
+				<th scope="row" valign="top"><?php _e('Enable Google Rich Snippets?', 'wp-postratings'); ?></th>
+				<td>
+					<input type="radio" id="postratings_richsnippet_on" name="postratings_richsnippet" value="1" <?php if($postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php _e('Yes', 'wp-postratings'); ?>
+					&nbsp;&nbsp;
+					<input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php _e('No', 'wp-postratings'); ?>
+				</td>
 			</tr>
 			<tr>
 				<td colspan="2" align="center"><input type="button" name="update" value="<?php _e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
