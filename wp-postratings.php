@@ -1251,7 +1251,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	/**
 	  * Added this function to give the option to add %RATINGS_PLURAL% to the admin template area
 	  * This allows the option to display an "s" for more than one rating
-	  * ie: "/%RATINGS_USERS%/ vote/%RATINGS_PLURAL%/"" would output "1 vote / 2 votes"
+	  * ie: "%RATINGS_USERS% vote%RATINGS_PLURAL%" would output "1 vote / 2 votes"
 	  * 
 	*/
 	if ($post_ratings_users != 1 ) {
