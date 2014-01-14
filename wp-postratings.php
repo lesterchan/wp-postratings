@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.78
+Version: 1.77
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -32,8 +32,9 @@ Text Domain: wp-postratings
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Define Image Extension
-define('RATINGS_IMG_EXT', 'gif');
-//define('RATINGS_IMG_EXT', 'png');
+//define('RATINGS_IMG_EXT', 'gif');
+define('RATINGS_IMG_EXT', 'png');
+
 
 ### Create Text Domain For Translations
 add_action('init', 'postratings_textdomain');
@@ -69,14 +70,8 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	if(intval($custom_id) > 0) {
 		$ratings_id = $custom_id;
 	} else {
-		// If Global $id is 0, Get The Loop Post ID
-		if($id === 0) {
-			$ratings_id = get_the_ID();
-		} else {
-			$ratings_id = $id;
-		}
+		$ratings_id = $id;
 	}
-
 	// Loading Style
 	$postratings_ajax_style = get_option('postratings_ajax_style');
 	if(intval($postratings_ajax_style['loading']) == 1) {
@@ -214,7 +209,7 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
     $post_ratings_data->ratings_score = $new_score;
     $post_ratings_data->ratings_average = $new_average;
   }
-	// If No Ratings, Return No Ratings templae
+	// If No Ratings, Return No Ratings template
 	if(get_post_meta($post_id, 'ratings_users', true) == 0) {
 		$template_postratings_none = stripslashes(get_option('postratings_template_none'));
 		// Return Post Ratings Template
@@ -625,7 +620,7 @@ function process_ratings() {
 					// Only Create Cookie If User Choose Logging Method 1 Or 3
 					$postratings_logging_method = intval(get_option('postratings_logging_method'));
 					if($postratings_logging_method == 1 || $postratings_logging_method == 3) {
-						$rate_cookie = setcookie("rated_".$post_id, $ratings_value[$rate-1], time() + 30000000, apply_filters('wp_postratings_cookiepath', SITECOOKIEPATH));
+						$rate_cookie = setcookie("rated_".$post_id, $ratings_value[$rate-1], time() + 30000000, COOKIEPATH);
 					}
 					// Log Ratings No Matter What
 					$rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate-1], current_time('timestamp'), get_ipaddress(), @gethostbyaddr( get_ipaddress() ), $rate_user, $rate_userid ) );
@@ -1138,7 +1133,6 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	$ratings_image = get_option('postratings_image');
 	$ratings_max = intval(get_option('postratings_max'));
 	$ratings_custom = intval(get_option('postratings_customrating'));
-	$ratings_options = get_option('postratings_options');
 
 	if(is_object($post_data)) {
 		$post_id = $post_data->ID;
@@ -1239,8 +1233,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	}
 
 	// Google Rich Snippet
-	$ratings_options['richsnippet'] = isset($ratings_options['richsnippet']) ? $ratings_options['richsnippet'] : 1;
-	if($ratings_options['richsnippet'] && (is_single() || is_page()) && $is_main_loop)
+	if((is_single() || is_page()) && $is_main_loop)
 	{
 		if(!isset($post_excerpt))
 			$post_excerpt = ratings_post_excerpt($post_id, $post->post_excerpt, $post->post_content, $post->post_password);
@@ -1253,6 +1246,20 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$ratings_meta .= '</div>';
 
 		$value = $value.$post_meta.$ratings_meta;
+	}
+
+	/**
+	  * Added this function to give the option to add %RATINGS_PLURAL% to the admin template area
+	  * This allows the option to display an "s" for more than one rating
+	  * ie: "/%RATINGS_USERS%/ vote/%RATINGS_PLURAL%/"" would output "1 vote / 2 votes"
+	  * 
+	*/
+	if ($post_ratings_users != 1 ) {
+		$post_ratings_plural = 's';
+		$value = str_replace("%RATINGS_PLURAL%", $post_ratings_plural, $value);
+	} else {
+		$post_ratings_plural = '';
+		$value = str_replace("%RATINGS_PLURAL%", $post_ratings_plural, $value);
 	}
 
 	return apply_filters('expand_ratings_template', $value);
