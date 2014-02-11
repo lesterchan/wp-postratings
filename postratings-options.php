@@ -1,18 +1,18 @@
 <?php
 /*
 +----------------------------------------------------------------+
-|																							|
-|	WordPress Plugin: WP-PostRatings								|
-|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
-|																							|
-|	File Written By:																	|
-|	- Lester "GaMerZ" Chan															|
-|	- http://lesterchan.net															|
-|																							|
-|	File Information:																	|
-|	- Configure Post Ratings Options												|
-|	- wp-content/plugins/wp-postratings/postratings-options.php		|
-|																							|
+|																 |
+|	WordPress Plugin: WP-PostRatings							 |
+|	Copyright (c) 2012 Lester "GaMerZ" Chan						 |
+|																 |
+|	File Written By:											 |
+|	- Lester "GaMerZ" Chan										 |
+|	- http://lesterchan.net										 |
+|																 |
+|	File Information:											 |
+|	- Configure Post Ratings Options							 |
+|	- wp-content/plugins/wp-postratings/postratings-options.php	 |
+|																 |
 +----------------------------------------------------------------+
 */
 
@@ -107,8 +107,8 @@ if ( isset( $_POST['Submit'] ) ) {
 $postratings_max = intval(get_option('postratings_max'));
 $postratings_options = get_option('postratings_options');
 $postratings_customrating = intval(get_option('postratings_customrating'));
-$postratings_url = plugins_url('wp-postratings/images');
-$postratings_path = WP_PLUGIN_DIR.'/wp-postratings/images';
+$postratings_url = WP_POSTRATINGS_URL.'images';
+$postratings_path = WP_POSTRATINGS_PATH.'/images';
 $postratings_ratingstext = get_option('postratings_ratingstext');
 $postratings_ratingsvalue = get_option('postratings_ratingsvalue');
 $postratings_image = get_option('postratings_image');
