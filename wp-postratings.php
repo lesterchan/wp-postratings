@@ -1047,17 +1047,18 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
 			} else {
 				$use_half_rtl = 0;
 			}
-			$ratings_text = stripslashes($ratings_texts[$i-1]);
+			$ratings_text = esc_attr( stripslashes( $ratings_texts[$i-1] ) );
+			$ratings_text_js = esc_js( $ratings_text );
 			if($i <= $post_rating) {
-				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_on.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_on.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 			} elseif($i == $insert_half) {
 				if ($use_half_rtl) {
-					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_half-rtl.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_half-rtl.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 				} else {
-					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_half.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_half.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 				}
 			} else {
-				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_off.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_'.$i.'_off.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 			}
 		}
 	} else {
@@ -1067,17 +1068,18 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
 			$use_half_rtl = 0;
 		}
 		for($i=1; $i <= $ratings_max; $i++) {
-			$ratings_text = stripslashes($ratings_texts[$i-1]);
+			$ratings_text = esc_attr( stripslashes( $ratings_texts[$i-1] ) );
+			$ratings_text_js = esc_js( $ratings_text );
 			if($i <= $post_rating) {
-				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_on.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_on.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 			} elseif($i == $insert_half) {
 				if ($use_half_rtl) {
-					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_half-rtl.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_half-rtl.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 				} else {
-					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_half.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+					$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_half.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 				}
 			} else {
-				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_off.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
+				$ratings_images .= '<img id="rating_'.$post_id.'_'.$i.'" src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_off.'.RATINGS_IMG_EXT).'" alt="'.$ratings_text.'" title="'.$ratings_text.'" onmouseover="current_rating('.$post_id.', '.$i.', \''.$ratings_text_js.'\');" onmouseout="ratings_off('.$post_rating.', '.$insert_half.', '.$use_half_rtl.');" onclick="rate_post();" onkeypress="rate_post();" style="cursor: pointer; border: 0px;" />';
 			}
 		}
 	}
