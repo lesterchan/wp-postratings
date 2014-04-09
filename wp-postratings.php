@@ -50,15 +50,12 @@ $wpdb->ratings = $wpdb->prefix.'ratings';
 ### Function: Ratings Administration Menu
 add_action('admin_menu', 'ratings_menu');
 function ratings_menu() {
-	if (function_exists('add_menu_page')) {
-		add_menu_page(__('Ratings', 'wp-postratings'), __('Ratings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-manager.php', '', plugins_url('wp-postratings/images/stars(png)/rating_on.png'));
-	}
-	if (function_exists('add_submenu_page')) {
-		add_submenu_page('wp-postratings/postratings-manager.php', __('Manage Ratings', 'wp-postratings'), __('Manage Ratings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-manager.php');
-		add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Options', 'wp-postratings'), __('Ratings Options', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-options.php');
-		add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Templates', 'wp-postratings'), __('Ratings Templates', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-templates.php');
-		add_submenu_page('wp-postratings/postratings-manager.php', __('Uninstall WP-PostRatings', 'wp-postratings'), __('Uninstall WP-PostRatings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-uninstall.php');
-	}
+	add_menu_page(__('Ratings', 'wp-postratings'), __('Ratings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-manager.php', '', 'dashicons-star-filled');
+
+	add_submenu_page('wp-postratings/postratings-manager.php', __('Manage Ratings', 'wp-postratings'), __('Manage Ratings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-manager.php');
+	add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Options', 'wp-postratings'), __('Ratings Options', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-options.php');
+	add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Templates', 'wp-postratings'), __('Ratings Templates', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-templates.php');
+	add_submenu_page('wp-postratings/postratings-manager.php', __('Uninstall WP-PostRatings', 'wp-postratings'), __('Uninstall WP-PostRatings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-uninstall.php');
 }
 
 

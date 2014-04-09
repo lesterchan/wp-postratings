@@ -258,7 +258,6 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <!-- Manage Post Ratings -->
 <div class="wrap">
-	<div id="icon-wp-postratings" class="icon32"><br /></div>
 	<h2><?php _e('Manage Ratings', 'wp-postratings'); ?></h2>
 	<h3><?php _e('Post Ratings Logs', 'wp-postratings'); ?></h3>
 	<p><?php printf(__('Displaying <strong>%s</strong> to <strong>%s</strong> of <strong>%s</strong> Post Ratings log entries.', 'wp-postratings'), number_format_i18n($display_on_page), number_format_i18n($max_on_page), number_format_i18n($total_ratings)); ?></p>

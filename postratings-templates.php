@@ -128,7 +128,6 @@ if ( isset( $_POST['Submit'] ) ) {
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
-	<div id="icon-wp-postratings" class="icon32"><br /></div>
 	<h2><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h2>
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_templates'); ?>
