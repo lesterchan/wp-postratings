@@ -291,10 +291,12 @@ N/A
 ### How To Change Schema Type?
 * The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
 <code>
+<?php  
 add_filter('wp_postratings_schema_itemtype', 'wp_postratings_schema_itemtype');  
 function wp_postratings_schema_itemtype($itemtype) {  
 	return 'itemscope itemtype="http://schema.org/Recipe"';  
-}
+}  
+?>
 </code>
 
 ### How To Display Comment Author Ratings?
