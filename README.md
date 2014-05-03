@@ -4,7 +4,7 @@ Donate link: http://lesterchan.net/site/donation/
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 2.8  
 Tested up to: 3.9  
-Stable tag: 1.78  
+Stable tag: 1.79  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
 
@@ -25,6 +25,9 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 * I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appericiate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.79
+* NEW: Add 'wp_postratings_schema_itemtype' filter so that you can change the Schema Type. See the FAQ for sample.
+
 ### Version 1.78
 * NEW: Uses Dash Icons
 * NEW: Option to turn off Google Rich Snippets
@@ -284,6 +287,13 @@ N/A
 6. Ratings Hover
 
 ## Frequently Asked Questions
+
+### How To Change Schema Type?
+* The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
+<code>add_filter('wp_postratings_schema_itemtype', 'wp_postratings_schema_itemtype');  
+function wp_postratings_schema_itemtype($itemtype) {  
+	return 'itemscope itemtype="http://schema.org/Recipe"';  
+}</code>
 
 ### How To Display Comment Author Ratings?
 1. Open `wp-content/plugins/wp-postratings/wp-postratings.php`

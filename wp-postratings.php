@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.78
+Version: 1.79
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -84,10 +84,12 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	// Check To See Whether User Has Voted
 	$user_voted = check_rated($ratings_id);
 	// HTML Attributes
-	if(is_single())
-		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" itemscope itemtype="http://schema.org/Article"';
-	else
+	if( is_single() ) {
+		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
+		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
+	} else {
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
+	}
 	// If User Voted Or Is Not Allowed To Rate
 	if($user_voted) {
 		if(!$display) {
