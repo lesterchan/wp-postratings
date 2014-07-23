@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/lesterchan/wp-postratings.svg?branch=master)](https://travis-ci.org/lesterchan/wp-postratings)
 # WP-PostRatings
 Contributors: GamerZ  
 Donate link: http://lesterchan.net/site/donation/  
