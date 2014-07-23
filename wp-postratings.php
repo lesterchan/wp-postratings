@@ -156,7 +156,7 @@ function ratings_scripts() {
 	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/postratings-js.js'), array('jquery'), '1.63', true);
 	wp_localize_script('wp-postratings', 'ratingsL10n', array(
 		'plugin_url' => plugins_url('wp-postratings'),
-		'ajax_url' => admin_url('admin-ajax.php', (is_ssl() ? 'https' : 'http')),
+		'ajax_url' => admin_url('admin-ajax.php'),
 		'text_wait' => __('Please rate only 1 post at a time.', 'wp-postratings'),
 		'image' => get_option('postratings_image'),
 		'image_ext' => RATINGS_IMG_EXT,
@@ -177,7 +177,7 @@ function ratings_scripts_admin($hook_suffix) {
 		wp_enqueue_style('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-css.css'), false, '1.63', 'all');
 		wp_enqueue_script('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-js.js'), array('jquery'), '1.63', true);
 		wp_localize_script('wp-postratings-admin', 'ratingsAdminL10n', array(
-			'admin_ajax_url' => admin_url('admin-ajax.php', (is_ssl() ? 'https' : 'http'))
+			'admin_ajax_url' => admin_url('admin-ajax.php')
 		));
 	}
 }
