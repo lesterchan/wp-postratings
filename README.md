@@ -30,6 +30,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### Version 1.79
 * NEW: Add 'wp_postratings_schema_itemtype' filter so that you can change the Schema Type. See the FAQ for sample.
+* FIXED: Use 'is_rtl()' instead of $text_direction
 
 ### Version 1.78
 * NEW: Uses Dash Icons
