@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2013  Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2014  Lester Chan  (email : lesterchan@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@ Text Domain: wp-postratings
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+### Version
+define( 'WP_POSTRATINGS_VERSION', 1.79 );
 
 ### Define Image Extension
 define('RATINGS_IMG_EXT', 'gif');
@@ -130,15 +133,15 @@ function ratings_javascripts_header() {
 add_action('wp_enqueue_scripts', 'ratings_scripts');
 function ratings_scripts() {
 	if(@file_exists(TEMPLATEPATH.'/postratings-css.css')) {
-		wp_enqueue_style('wp-postratings', get_stylesheet_directory_uri().'/postratings-css.css', false, '1.63', 'all');
+		wp_enqueue_style('wp-postratings', get_stylesheet_directory_uri().'/postratings-css.css', false, WP_POSTRATINGS_VERSION, 'all');
 	} else {
-		wp_enqueue_style('wp-postratings', plugins_url('wp-postratings/postratings-css.css'), false, '1.63', 'all');
+		wp_enqueue_style('wp-postratings', plugins_url('wp-postratings/postratings-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
 	}
 	if(is_rtl()) {
 		if(@file_exists(TEMPLATEPATH.'/postratings-css-rtl.css')) {
-			wp_enqueue_style('wp-postratings-rtl', get_stylesheet_directory_uri().'/postratings-css-rtl.css', false, '1.63', 'all');
+			wp_enqueue_style('wp-postratings-rtl', get_stylesheet_directory_uri().'/postratings-css-rtl.css', false, WP_POSTRATINGS_VERSION, 'all');
 		} else {
-			wp_enqueue_style('wp-postratings-rtl', plugins_url('wp-postratings/postratings-css-rtl.css'), false, '1.63', 'all');
+			wp_enqueue_style('wp-postratings-rtl', plugins_url('wp-postratings/postratings-css-rtl.css'), false, WP_POSTRATINGS_VERSION, 'all');
 		}
 	}
 	$postratings_max = intval(get_option('postratings_max'));
@@ -152,7 +155,7 @@ function ratings_scripts() {
 	} else {
 		$postratings_javascript = 'var ratings_mouseover_image=new Image();ratings_mouseover_image.src=ratingsL10n.plugin_url+"/images/"+ratingsL10n.image+"/rating_over."+ratingsL10n.image_ext;';
 	}
-	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/postratings-js.js'), array('jquery'), '1.63', true);
+	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/postratings-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
 	wp_localize_script('wp-postratings', 'ratingsL10n', array(
 		'plugin_url' => plugins_url('wp-postratings'),
 		'ajax_url' => admin_url('admin-ajax.php'),
@@ -173,8 +176,8 @@ add_action('admin_enqueue_scripts', 'ratings_scripts_admin');
 function ratings_scripts_admin($hook_suffix) {
 	$postratings_admin_pages = array('wp-postratings/postratings-manager.php', 'wp-postratings/postratings-options.php', 'wp-postratings/postratings-templates.php', 'wp-postratings/postratings-uninstall.php');
 	if(in_array($hook_suffix, $postratings_admin_pages)) {
-		wp_enqueue_style('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-css.css'), false, '1.63', 'all');
-		wp_enqueue_script('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-js.js'), array('jquery'), '1.63', true);
+		wp_enqueue_style('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
+		wp_enqueue_script('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
 		wp_localize_script('wp-postratings-admin', 'ratingsAdminL10n', array(
 			'admin_ajax_url' => admin_url('admin-ajax.php')
 		));
