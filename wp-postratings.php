@@ -564,10 +564,10 @@ add_action('wp_ajax_nopriv_postratings', 'process_ratings');
 function process_ratings() {
 	global $wpdb, $user_identity, $user_ID;
 
-	if(isset($_GET['action']) && $_GET['action'] == 'postratings')
+	if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
 	{
-		$rate = intval($_GET['rate']);
-		$post_id = intval($_GET['pid']);
+		$rate = intval($_REQUEST['rate']);
+		$post_id = intval($_REQUEST['pid']);
 
 		// Verify Referer
 		if(!check_ajax_referer('postratings_'.$post_id.'-nonce', 'postratings_'.$post_id.'_nonce', false))
@@ -642,7 +642,7 @@ function process_ratings() {
 				exit();
 			}// End if(!$rated)
 		} // End if($rate && $post_id && check_allowtorate())
-	} // End if(isset($_GET['action']) && $_GET['action'] == 'postratings')
+	} // End if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
 }
 
 
