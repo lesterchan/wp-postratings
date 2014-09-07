@@ -39,9 +39,9 @@ define('RATINGS_IMG_EXT', 'gif');
 //define('RATINGS_IMG_EXT', 'png');
 
 ### Create Text Domain For Translations
-add_action('init', 'postratings_textdomain');
+add_action( 'plugins_loaded', 'postratings_textdomain' );
 function postratings_textdomain() {
-	load_plugin_textdomain('wp-postratings', false, 'wp-postratings');
+	load_plugin_textdomain( 'wp-postratings', false, dirname( plugin_basename( __FILE__ ) ) );
 }
 
 
