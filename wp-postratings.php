@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.79
+Version: 1.80
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -32,7 +32,7 @@ Text Domain: wp-postratings
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Version
-define( 'WP_POSTRATINGS_VERSION', 1.79 );
+define( 'WP_POSTRATINGS_VERSION', 1.80 );
 
 ### Define Image Extension
 define('RATINGS_IMG_EXT', 'gif');
@@ -259,37 +259,40 @@ function check_allowtorate() {
 
 
 ### Function: Check Whether User Have Rated For The Post
-function check_rated($post_id) {
-	global $user_ID;
-	$postratings_logging_method = intval(get_option('postratings_logging_method'));
-	switch($postratings_logging_method) {
+function check_rated( $post_id ) {
+	$postratings_logging_method = intval( get_option( 'postratings_logging_method' ) );
+	$rated = false;
+	switch( $postratings_logging_method ) {
 		// Do Not Log
 		case 0:
-			return false;
+			$rated = false;
 			break;
 		// Logged By Cookie
 		case 1:
-			return check_rated_cookie($post_id);
+			$rated = check_rated_cookie( $post_id );
 			break;
 		// Logged By IP
 		case 2:
-			return check_rated_ip($post_id);
+			$rated = check_rated_ip( $post_id );
 			break;
 		// Logged By Cookie And IP
 		case 3:
-			$rated_cookie = check_rated_cookie($post_id);
-			if($rated_cookie > 0) {
-				return true;
+			$rated_cookie = check_rated_cookie( $post_id );
+			if( $rated_cookie > 0 ) {
+				$rated = true;
 			} else {
-				return check_rated_ip($post_id);
+				$rated = check_rated_ip( $post_id );
 			}
 			break;
 		// Logged By Username
 		case 4:
-			return check_rated_username($post_id);
+			$rated = check_rated_username( $post_id );
 			break;
 	}
-	return false;
+
+	$rated = apply_filters( 'wp_postratings_check_rated', $rated );
+
+	return $rated;
 }
 
 
@@ -485,18 +488,18 @@ function add_ratings_to_content($content) {
 
 
 ### Function: Short Code For Inserting Ratings Into Posts
-add_shortcode('ratings', 'ratings_shortcode');
-function ratings_shortcode($atts) {
-	extract(shortcode_atts(array('id' => '0', 'results' => false), $atts));
-	if(!is_feed()) {
-		$id = intval($id);
-		if($results) {
-			return the_ratings_results($id);
+add_shortcode( 'ratings', 'ratings_shortcode' );
+function ratings_shortcode( $atts ) {
+	$attributes = shortcode_atts( array( 'id' => 0, 'results' => false ), $atts );
+	if( ! is_feed() ) {
+		$id = intval( $attributes['id'] );
+		if( $attributes['results'] ) {
+			return the_ratings_results( $id );
 		} else {
-			return the_ratings('span', $id, false);
+			return the_ratings( 'span', $id, false );
 		}
 	} else {
-		return __('Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings');
+		return __( 'Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings' );
 	}
 }
 
@@ -623,7 +626,9 @@ function process_ratings() {
 					} else {
 						$rate_user = __('Guest', 'wp-postratings');
 					}
-					$rate_userid = intval($user_ID);
+					$rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
+					$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', intval( $user_ID ) );
+
 					// Only Create Cookie If User Choose Logging Method 1 Or 3
 					$postratings_logging_method = intval(get_option('postratings_logging_method'));
 					if($postratings_logging_method == 1 || $postratings_logging_method == 3) {
@@ -1350,15 +1355,18 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	// DIsplay Widget Control Form
 	function form($instance) {
 		global $wpdb;
-		$instance = wp_parse_args((array) $instance, array('title' => __('Ratings', 'wp-postratings'), 'type' => 'highest_rated', 'mode' => 'both', 'limit' => 10, 'min_votes' => 0, 'chars' => 200, 'cat_ids' => '0', 'time_range' => '1 day'));
+		$instance = wp_parse_args((array) $instance, array('title' => __('Ratings', 'wp-postratings'), 'type' => 'highest_rated', 'mode' => '', 'limit' => 10, 'min_votes' => 0, 'chars' => 200, 'cat_ids' => '0', 'time_range' => '1 day'));
 		$title = esc_attr($instance['title']);
 		$type = esc_attr($instance['type']);
-		$mode = esc_attr($instance['mode']);
+		$mode = trim( esc_attr( $instance['mode'] ) );
 		$limit = intval($instance['limit']);
 		$min_votes = intval($instance['min_votes']);
 		$chars = intval($instance['chars']);
 		$cat_ids = esc_attr($instance['cat_ids']);
 		$time_range = esc_attr($instance['time_range']);
+		$post_types = get_post_types( array(
+			'public' => true
+		) );
 ?>
 		<p>
 			<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'wp-postratings'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label>
@@ -1390,9 +1398,12 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		<p>
 			<label for="<?php echo $this->get_field_id('mode'); ?>"><?php _e('Include Ratings From:', 'wp-postratings'); ?>
 				<select name="<?php echo $this->get_field_name('mode'); ?>" id="<?php echo $this->get_field_id('mode'); ?>" class="widefat">
-					<option value="both"<?php selected('both', $mode); ?>><?php _e('Posts &amp; Pages', 'wp-postratings'); ?></option>
-					<option value="post"<?php selected('post', $mode); ?>><?php _e('Posts Only', 'wp-postratings'); ?></option>
-					<option value="page"<?php selected('page', $mode); ?>><?php _e('Pages Only', 'wp-postratings'); ?></option>
+					<option value=""<?php selected( '', $mode ); ?>><?php _e( 'All', 'wp-postratings' ); ?></option>
+						<?php if( $post_types > 0 ): ?>
+							<?php foreach( $post_types as $post_type ): ?>
+								<option value="<?php echo $post_type; ?>"<?php selected( $post_type, $mode ); ?>><?php printf( __( '%s Only', 'wp-postratings' ), ucfirst( $post_type ) ); ?></option>
+							<?php endforeach; ?>
+						<?php endif; ?>
 				</select>
 			</label>
 		</p>
