@@ -76,17 +76,17 @@ if ( ! empty( $_POST['do'] ) ) {
 			if($post_ids == 'all') {
 				$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings");
 				if($delete_logs) {
-					$text = '<font color="green">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</font>';
+					$text = '<p style="color: green;">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</p>';
 				} else {
-					$text = '<font color="red">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</font>';
+					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</p>';
 				}
 
 			} else {
 				$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 				if($delete_logs) {
-					$text = '<font color="green">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</font>';
+					$text = '<p style="color: green;">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
 				} else {
-					$text = '<font color="red">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</font>';
+					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
 				}
 			}
 			break;
@@ -96,7 +96,7 @@ if ( ! empty( $_POST['do'] ) ) {
 			if($post_ids == 'all') {
 				foreach($ratings_postmeta as $postmeta) {
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
-					$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
+					$text .= '<p style="color: green;">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</p>';
 				}
 
 			} else {
@@ -104,7 +104,7 @@ if ( ! empty( $_POST['do'] ) ) {
 					foreach( $ratings_postmeta as $meta_key ) {
 						delete_post_meta( $the_post_id, $meta_key );
 
-						$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</font><br />';
+						$text .= '<p style="color: green;">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</p>';
 					}
 				}
 			}
@@ -114,30 +114,30 @@ if ( ! empty( $_POST['do'] ) ) {
 			if($post_ids == 'all') {
 				$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings");
 				if($delete_logs) {
-					$text = '<font color="green">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</font><br />';
+					$text = '<p style="color: green;">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</p>';
 				} else {
-					$text = '<font color="red">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</font><br />';
+					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</p>';
 				}
 
 				// @todo Deleting meta records like will not clear the post's object cache
 				foreach($ratings_postmeta as $postmeta) {
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $postmeta ) );
-					$text .= '<font color="green">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</font><br />';
+					$text .= '<p style="color: green;">'.sprintf(__('Rating Data "%s" Has Been Deleted.', 'wp-postratings'), "<strong><em>$postmeta</em></strong>").'</p>';
 				}
 
 			} else {
 				$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 				if($delete_logs) {
-					$text = '<font color="green">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</font><br />';
+					$text = '<p style="color: green;">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
 				} else {
-					$text = '<font color="red">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</font><br />';
+					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
 				}
 
 				foreach ( $post_ids_list as $the_post_id ) {
 					foreach( $ratings_postmeta as $meta_key ) {
 						delete_post_meta( $the_post_id, $meta_key );
 
-						$text .= '<font color="green">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</font><br />';
+						$text .= '<p style="color: green;">'.sprintf(__('Rating Data "%s" For Post ID(s) %s Has Been Deleted.', 'wp-postratings'), "<strong><em>$meta_key</em></strong>", $post_ids).'</p>';
 					}
 				}
 			}
