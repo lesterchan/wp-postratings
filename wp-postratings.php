@@ -58,7 +58,6 @@ function ratings_menu() {
 	add_submenu_page('wp-postratings/postratings-manager.php', __('Manage Ratings', 'wp-postratings'), __('Manage Ratings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-manager.php');
 	add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Options', 'wp-postratings'), __('Ratings Options', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-options.php');
 	add_submenu_page('wp-postratings/postratings-manager.php', __('Ratings Templates', 'wp-postratings'), __('Ratings Templates', 'wp-postratings'),  'manage_ratings', 'wp-postratings/postratings-templates.php');
-	add_submenu_page('wp-postratings/postratings-manager.php', __('Uninstall WP-PostRatings', 'wp-postratings'), __('Uninstall WP-PostRatings', 'wp-postratings'), 'manage_ratings', 'wp-postratings/postratings-uninstall.php');
 }
 
 
@@ -1444,16 +1443,42 @@ function widget_ratings_init() {
 }
 
 
-### Function: Create Rating Logs Table
-add_action('activate_wp-postratings/wp-postratings.php', 'create_ratinglogs_table');
-function create_ratinglogs_table() {
+### Function: Activate Plugin
+register_activation_hook( __FILE__, 'ratings_activation' );
+function ratings_activation( $network_wide )
+{
+	if ( is_multisite() && $network_wide )
+	{
+		$ms_sites = wp_get_sites();
+
+		if( 0 < sizeof( $ms_sites ) )
+		{
+			foreach ( $ms_sites as $ms_site )
+			{
+				switch_to_blog( $ms_site['blog_id'] );
+				ratings_activate();
+			}
+		}
+
+		restore_current_blog();
+	}
+	else
+	{
+		ratings_activate();
+	}
+}
+
+function ratings_activate() {
 	global $wpdb;
-	postratings_textdomain();
-	if(@is_file(ABSPATH.'/wp-admin/includes/upgrade.php')) {
+
+	if(@is_file(ABSPATH.'/wp-admin/upgrade-functions.php')) {
+		include_once(ABSPATH.'/wp-admin/upgrade-functions.php');
+	} elseif(@is_file(ABSPATH.'/wp-admin/includes/upgrade.php')) {
 		include_once(ABSPATH.'/wp-admin/includes/upgrade.php');
 	} else {
 		die('We have problem finding your \'/wp-admin/upgrade-functions.php\' and \'/wp-admin/includes/upgrade.php\'');
 	}
+
 	$charset_collate = '';
 	if( $wpdb->has_cap( 'collation' ) ) {
 		if(!empty($wpdb->charset)) {
