@@ -30,6 +30,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ### Version 1.80
 * NEW: Suppor Custom Post Types in Widgets
 * NEW: Added 'wp_postratings_process_ratings_user', 'wp_postratings_process_ratings_userid' & 'wp_postratings_check_rated' filters
+* NEW: Supports WordPress Multisite Network Activate
 * NEW: Uses WordPress native uninstall.php
 
 ### Version 1.79
