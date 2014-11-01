@@ -1472,25 +1472,8 @@ function ratings_activation( $network_wide )
 function ratings_activate() {
 	global $wpdb;
 
-	if(@is_file(ABSPATH.'/wp-admin/upgrade-functions.php')) {
-		include_once(ABSPATH.'/wp-admin/upgrade-functions.php');
-	} elseif(@is_file(ABSPATH.'/wp-admin/includes/upgrade.php')) {
-		include_once(ABSPATH.'/wp-admin/includes/upgrade.php');
-	} else {
-		die('We have problem finding your \'/wp-admin/upgrade-functions.php\' and \'/wp-admin/includes/upgrade.php\'');
-	}
-
-	$charset_collate = '';
-	if( $wpdb->has_cap( 'collation' ) ) {
-		if(!empty($wpdb->charset)) {
-			$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-		}
-		if(!empty($wpdb->collate)) {
-			$charset_collate .= " COLLATE $wpdb->collate";
-		}
-	}
 	// Create Post Ratings Table
-	$create_ratinglogs_sql = "CREATE TABLE $wpdb->ratings (".
+	$create_sql = "CREATE TABLE $wpdb->ratings (".
 			"rating_id INT(11) NOT NULL auto_increment,".
 			"rating_postid INT(11) NOT NULL ,".
 			"rating_posttitle TEXT NOT NULL,".
@@ -1500,8 +1483,10 @@ function ratings_activate() {
 			"rating_host VARCHAR(200) NOT NULL,".
 			"rating_username VARCHAR(50) NOT NULL,".
 			"rating_userid int(10) NOT NULL default '0',".
-			"PRIMARY KEY (rating_id)) $charset_collate;";
-	maybe_create_table($wpdb->ratings, $create_ratinglogs_sql);
+			"PRIMARY KEY (rating_id));";
+
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	dbDelta( $create_sql );
 
     // Add In Options (4 Records)
 	add_option('postratings_image', 'stars' );
@@ -1528,11 +1513,10 @@ function ratings_activate() {
 	// Database Upgrade For WP-PostRatings 1.50
 	delete_option('widget_ratings_highest_rated');
 	delete_option('widget_ratings_most_rated');
+
 	// Set 'manage_ratings' Capabilities To Administrator
-	$role = get_role('administrator');
-	if(!$role->has_cap('manage_ratings')) {
-		$role->add_cap('manage_ratings');
-	}
+	$role = get_role( 'administrator' );
+	$role->add_cap( 'manage_ratings' );
 }
 
 
