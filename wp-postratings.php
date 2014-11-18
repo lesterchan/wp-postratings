@@ -71,6 +71,9 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 		// If Global $id is 0, Get The Loop Post ID
 		if($id === 0) {
 			$ratings_id = get_the_ID();
+		} elseif (is_null($id)) {
+			global $post;
+			$ratings_id = $post->ID;
 		} else {
 			$ratings_id = $id;
 		}
