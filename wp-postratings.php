@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.80
+Version: 1.81
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2014  Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 20145 Lester Chan  (email : lesterchan@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ Text Domain: wp-postratings
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 ### Version
-define( 'WP_POSTRATINGS_VERSION', 1.80 );
+define( 'WP_POSTRATINGS_VERSION', 1.81 );
 
 ### Define Image Extension
 define('RATINGS_IMG_EXT', 'gif');
@@ -896,14 +896,12 @@ function sort_postratings($query) {
 
 
 ### Function: Plug Into WP-Stats
-add_action('wp','postratings_wp_stats');
+add_action( 'plugins_loaded','postratings_wp_stats' );
 function postratings_wp_stats() {
-	if(function_exists('stats_page')) {
-		add_filter('wp_stats_page_admin_plugins', 'postratings_page_admin_general_stats');
-		add_filter('wp_stats_page_admin_most', 'postratings_page_admin_most_stats');
-		add_filter('wp_stats_page_plugins', 'postratings_page_general_stats');
-		add_filter('wp_stats_page_most', 'postratings_page_most_stats');
-	}
+	add_filter( 'wp_stats_page_admin_plugins', 'postratings_page_admin_general_stats' );
+	add_filter( 'wp_stats_page_admin_most', 'postratings_page_admin_most_stats' );
+	add_filter( 'wp_stats_page_plugins', 'postratings_page_general_stats' );
+	add_filter( 'wp_stats_page_most', 'postratings_page_most_stats' );
 }
 
 
