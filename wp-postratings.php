@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 20145 Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2015 Lester Chan  (email : lesterchan@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'WP_POSTRATINGS_VERSION', 1.81 );
 
 ### Define Image Extension
-define('RATINGS_IMG_EXT', 'gif');
-//define('RATINGS_IMG_EXT', 'png');
+if( ! defined( 'RATINGS_IMG_EXT' ) ) {
+	define( 'RATINGS_IMG_EXT', 'gif' );
+	//define( 'RATINGS_IMG_EXT', 'png' );
+}
 
 ### Create Text Domain For Translations
 add_action( 'plugins_loaded', 'postratings_textdomain' );
