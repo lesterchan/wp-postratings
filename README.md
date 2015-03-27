@@ -28,6 +28,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.81
+* NEW: Added worstRating of 1. Props @rafaellop
 * NEW: Checked for defined() for RATINGS_IMG_EXT to allow overwrite
 * FIXED: Integration with WP-Stats
 
