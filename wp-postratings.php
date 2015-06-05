@@ -92,7 +92,9 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	// Check To See Whether User Has Voted
 	$user_voted = check_rated($ratings_id);
 	// HTML Attributes
-	if( is_single() || is_page() ) {
+	$ratings_options = get_option('postratings_options');
+
+	if( (is_single() || is_page()) && $ratings_options['richsnippet']) {	
 		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
 	} else {
