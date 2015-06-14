@@ -1262,7 +1262,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'" />';
 		$ratings_meta .= '</div>';
 		
-		$value = ($itemtype != '' )?$value.$post_meta.$ratings_meta:$value.$ratings_meta;
+		$value = empty( $itemtype ) ? $value . $ratings_meta : $value . $post_meta . $ratings_meta;
 	}
 
 	return apply_filters('expand_ratings_template', $value);
