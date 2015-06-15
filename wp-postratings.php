@@ -1261,8 +1261,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'" />';
 		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'" />';
 		$ratings_meta .= '</div>';
-
-		$value = $value.$post_meta.$ratings_meta;
+		
+		$value = empty( $itemtype ) ? $value . $ratings_meta : $value . $post_meta . $ratings_meta;
 	}
 
 	return apply_filters('expand_ratings_template', $value);
