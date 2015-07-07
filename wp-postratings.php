@@ -1272,9 +1272,9 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 ### Class: WP-PostRatings Widget
  class WP_Widget_PostRatings extends WP_Widget {
 	// Constructor
-	function WP_Widget_PostRatings() {
+	function __construct() {
 		$widget_ops = array('description' => __('WP-PostRatings ratings statistics', 'wp-postratings'));
-		$this->WP_Widget('ratings-widget', __('Ratings', 'wp-postratings'), $widget_ops);
+		parent::__construct('ratings-widget', __('Ratings', 'wp-postratings'), $widget_ops);
 	}
 
 	// Display Widget
