@@ -93,8 +93,8 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$user_voted = check_rated($ratings_id);
 	// HTML Attributes
 	$ratings_options = get_option('postratings_options');
-	$ratings_options['richsnippet'] = isset($ratings_options['richsnippet']) ? $ratings_options['richsnippet'] : 1;
-	if( (is_single() || is_page()) && $ratings_options['richsnippet']) {
+	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
+	if( (is_single() || is_page() ) && $ratings_options['richsnippet'] ) {
 		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
 	} else {
@@ -1248,24 +1248,34 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	}
 
 	// Google Rich Snippet
-	$ratings_options['richsnippet'] = isset($ratings_options['richsnippet']) ? $ratings_options['richsnippet'] : 1;
-	if($ratings_options['richsnippet'] && (is_single() || is_page()) && $is_main_loop && $post_ratings_average > 0)
-	{
-		if(!isset($post_excerpt))
-			$post_excerpt = ratings_post_excerpt($post_id, $post->post_excerpt, $post->post_content, $post->post_password);
+	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
+	if( $ratings_options['richsnippet'] && ( is_single() || is_page() ) && $is_main_loop && $post_ratings_average > 0 ) {
+		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
 
-		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'" /><meta itemprop="description" content="'.wp_kses($post_excerpt, array()).'" /><meta itemprop="url" content="'.$post_link.'" />';
+		if( ! empty( $post_excerpt ) ) {
+			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content, $post->post_password );
+		}
+		$post_meta = '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
+		$post_meta .= '<meta itemprop="description" content="' . wp_kses( $post_excerpt, array() ) . '" />';
+		$post_meta .= '<meta itemprop="datePublished" content="' . get_the_time( 'c' ) . '" />';
+		$post_meta .= '<meta itemprop="url" content="' . $post_link . '" />';
+		if( has_post_thumbnail() ) {
+			$thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( null ) );
+			if( ! empty( $thumbnail ) ) {
+				$post_meta .= '<meta itemprop="image" content="' . $thumbnail[0] . '" />';
+			}
+		}
 		$ratings_meta = '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
-		$ratings_meta .= '<meta itemprop="bestRating" content="'.$ratings_max.'" />';
+		$ratings_meta .= '<meta itemprop="bestRating" content="' . $ratings_max . '" />';
 		$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
-		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'" />';
-		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'" />';
+		$ratings_meta .= '<meta itemprop="ratingValue" content="' . $post_ratings_average . '" />';
+		$ratings_meta .= '<meta itemprop="ratingCount" content="' . $post_ratings_users . '" />';
 		$ratings_meta .= '</div>';
-		
+
 		$value = empty( $itemtype ) ? $value . $ratings_meta : $value . $post_meta . $ratings_meta;
 	}
 
-	return apply_filters('expand_ratings_template', $value);
+	return apply_filters( 'expand_ratings_template', $value );
 }
 
 
