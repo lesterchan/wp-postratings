@@ -36,8 +36,7 @@ define( 'WP_POSTRATINGS_VERSION', 1.81 );
 
 ### Define Image Extension
 if( ! defined( 'RATINGS_IMG_EXT' ) ) {
-	define( 'RATINGS_IMG_EXT', 'gif' );
-	//define( 'RATINGS_IMG_EXT', 'png' );
+	define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
 }
 
 ### Create Text Domain For Translations
