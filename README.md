@@ -28,6 +28,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.82
+* NEW: Added 'wp_postratings_image_extension' filter
 * FIXED: Added headline, datePublished, image to Article Schema type
 * FIXED: Deprecated PHP4 constructor in WordPress 4.3
 * FIXED: Remove schema code when Rich Snippets is off
@@ -324,17 +325,13 @@ function wp_postratings_schema_itemtype($itemtype) {
 2. Find: `//add_filter('comment_text', 'comment_author_ratings_filter');`
 3. Replace: `add_filter('comment_text', 'comment_author_ratings_filter');`
 
-### How To use PNG images instead of GIF images
-1. Open `wp-content/plugins/wp-postratings/wp-postratings.php`
-2. Find:
+### How To use PNG images instead of GIF images?
+* The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
 <code>
-define('RATINGS_IMG_EXT', 'gif');
-//define('RATINGS_IMG_EXT', 'png');
-</code>
-3. Replace:
-<code>
-//define('RATINGS_IMG_EXT', 'gif');
-define('RATINGS_IMG_EXT', 'png');
+function custom_rating_image_extension() {
+    return 'png';
+}
+add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
 </code>
 
 ### How Does WP-PostRatings Load CSS?
