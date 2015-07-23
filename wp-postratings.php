@@ -1251,7 +1251,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	if( $ratings_options['richsnippet'] && ( is_single() || is_page() ) && $is_main_loop && $post_ratings_average > 0 ) {
 		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
 
-		if( ! empty( $post_excerpt ) ) {
+		if( empty( $post_excerpt ) ) {
 			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content, $post->post_password );
 		}
 		$post_meta = '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
