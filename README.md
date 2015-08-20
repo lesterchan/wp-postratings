@@ -27,6 +27,9 @@ Adds an AJAX rating system for your WordPress blog's post/page.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.84
+* NEW: Added 'wp_postratings_display_comment_author_ratings' filter
+
 ### Version 1.83
 * FIXED: Move wp_postratings_image_extension filter to init()
 
@@ -324,9 +327,13 @@ function wp_postratings_schema_itemtype($itemtype) {
 </code>
 
 ### How To Display Comment Author Ratings?
-1. Open `wp-content/plugins/wp-postratings/wp-postratings.php`
-2. Find: `//add_filter('comment_text', 'comment_author_ratings_filter');`
-3. Replace: `add_filter('comment_text', 'comment_author_ratings_filter');`
+* By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code below:
+<code>
+function custom_display_comment_author_ratings() {
+    return true;
+}
+add_filter( 'wp_postratings_display_comment_author_ratings', 'custom_display_comment_author_ratings' );
+</code>
 
 ### How To use PNG images instead of GIF images?
 * The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
