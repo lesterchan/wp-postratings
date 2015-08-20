@@ -395,38 +395,43 @@ function comment_author_ratings($comment_author_specific = '', $display = true) 
 
 
 ### Function:  Display Comment Author Ratings
-//add_filter('comment_text', 'comment_author_ratings_filter');
+add_filter('comment_text', 'comment_author_ratings_filter');
 function comment_author_ratings_filter($comment_text) {
 	global $comment, $comment_authors_ratings;
+
 	$output = '';
-	if(!is_feed() && !is_admin()) {
-		if(get_comment_type() == 'comment') {
-			$post_ratings_images = '';
-			$ratings_image = get_option('postratings_image');
-			$ratings_max = intval(get_option('postratings_max'));
-			$ratings_custom = intval(get_option('postratings_customrating'));
-			$comment_author = get_comment_author();
-			$comment_author_rating = intval($comment_authors_ratings[$comment_author]);
-			if($comment_author_rating == 0) {
-				$comment_author_rating = intval($comment_authors_ratings[get_comment_author_IP()]);
-			}
-			if($comment_author_rating != 0) {
-				// Display Rated Images
-				if($ratings_custom && $ratings_max == 2) {
-					if($comment_author_rating > 0) {
-						$comment_author_rating = '+'.$comment_author_rating;
-					}
+	$display_comment_author_ratings = apply_filters( 'wp_postratings_display_comment_author_ratings', false );
+
+	if( $display_comment_author_ratings ) {
+		if(!is_feed() && !is_admin()) {
+			if(get_comment_type() == 'comment') {
+				$post_ratings_images = '';
+				$ratings_image = get_option('postratings_image');
+				$ratings_max = intval(get_option('postratings_max'));
+				$ratings_custom = intval(get_option('postratings_customrating'));
+				$comment_author = get_comment_author();
+				$comment_author_rating = intval($comment_authors_ratings[$comment_author]);
+				if($comment_author_rating == 0) {
+					$comment_author_rating = intval($comment_authors_ratings[get_comment_author_IP()]);
 				}
-				$image_alt = sprintf(__('%s gives a rating of %s', 'wp-postratings'), $comment_author, $comment_author_rating);
-				$post_ratings_images = get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt);
+				if($comment_author_rating != 0) {
+					// Display Rated Images
+					if($ratings_custom && $ratings_max == 2) {
+						if($comment_author_rating > 0) {
+							$comment_author_rating = '+'.$comment_author_rating;
+						}
+					}
+					$image_alt = sprintf(__('%s gives a rating of %s', 'wp-postratings'), $comment_author, $comment_author_rating);
+					$post_ratings_images = get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt);
+				}
+				$output .= '<div class="post-ratings-comment-author">';
+				if($post_ratings_images != '') {
+					$output .= get_comment_author().' ratings for this post: '.$post_ratings_images;
+				} else {
+					$output .= get_comment_author().' did not rate this post.';
+				}
+				$output .= '</div>';
 			}
-			$output .= '<div class="post-ratings-comment-author">';
-			if($post_ratings_images != '') {
-				$output .= get_comment_author().' ratings for this post: '.$post_ratings_images;
-			} else {
-				$output .= get_comment_author().' did not rate this post.';
-			}
-			$output .= '</div>';
 		}
 	}
 	return $comment_text.$output;
