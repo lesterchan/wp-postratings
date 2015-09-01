@@ -404,7 +404,7 @@ function comment_author_ratings_filter($comment_text) {
 
 	if( $display_comment_author_ratings ) {
 		if(!is_feed() && !is_admin()) {
-			if(get_comment_type() == 'comment') {
+			if( ! empty( $comment ) && get_comment_type() === 'comment' ) {
 				$post_ratings_images = '';
 				$ratings_image = get_option('postratings_image');
 				$ratings_max = intval(get_option('postratings_max'));
