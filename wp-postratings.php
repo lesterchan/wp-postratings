@@ -298,7 +298,7 @@ function check_rated( $post_id ) {
 			break;
 	}
 
-	$rated = apply_filters( 'wp_postratings_check_rated', $rated );
+	$rated = apply_filters( 'wp_postratings_check_rated', $rated, $post_id );
 
 	return $rated;
 }
