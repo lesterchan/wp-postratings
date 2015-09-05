@@ -1256,7 +1256,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
 	// Google Rich Snippet
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
-	if( $ratings_options['richsnippet'] && ( is_single() || is_page() ) && $is_main_loop && $post_ratings_average > 0 ) {
+	if( $ratings_options['richsnippet'] && ( is_single() || is_page() ) && $is_main_loop ) {
 		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
 
 		if( empty( $post_excerpt ) ) {
@@ -1272,12 +1272,17 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 				$post_meta .= '<meta itemprop="image" content="' . $thumbnail[0] . '" />';
 			}
 		}
-		$ratings_meta = '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
-		$ratings_meta .= '<meta itemprop="bestRating" content="' . $ratings_max . '" />';
-		$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
-		$ratings_meta .= '<meta itemprop="ratingValue" content="' . $post_ratings_average . '" />';
-		$ratings_meta .= '<meta itemprop="ratingCount" content="' . $post_ratings_users . '" />';
-		$ratings_meta .= '</div>';
+
+		$ratings_meta = '';
+		if( $post_ratings_average > 0 ) {
+			$ratings_meta .= '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
+			$ratings_meta .= '<meta itemprop="bestRating" content="' . $ratings_max . '" />';
+			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
+			$ratings_meta .= '<meta itemprop="ratingValue" content="' . $post_ratings_average . '" />';
+			$ratings_meta .= '<meta itemprop="ratingCount" content="' . $post_ratings_users . '" />';
+			$ratings_meta .= '</div>';
+		}
+
 
 		$value = empty( $itemtype ) ? $value . $ratings_meta : $value . $post_meta . $ratings_meta;
 	}
