@@ -3,7 +3,7 @@ Contributors: GamerZ
 Donate link: http://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 2.8  
-Tested up to: 4.3  
+Tested up to: 4.4  
 Stable tag: 1.83  
 
 Adds an AJAX rating system for your WordPress blog's post/page.
@@ -31,6 +31,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Added 'wp_postratings_display_comment_author_ratings' filter
 * FIXED: Move wp_postratings_image_extension filter to init()
 * FIXED: Show headline, datePublished and image despite there is no ratings
+* FIXED: Show post without ratings as well when sorting is done in URL. Props @talljosh.
 
 ### Version 1.82
 * NEW: Added 'wp_postratings_image_extension' filter
