@@ -260,8 +260,21 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 <div class="wrap">
 	<h2><?php _e('Manage Ratings', 'wp-postratings'); ?></h2>
 	<h3><?php _e('Post Ratings Logs', 'wp-postratings'); ?></h3>
-	<p><?php printf(__('Displaying <strong>%s</strong> to <strong>%s</strong> of <strong>%s</strong> Post Ratings log entries.', 'wp-postratings'), number_format_i18n($display_on_page), number_format_i18n($max_on_page), number_format_i18n($total_ratings)); ?></p>
-	<p><?php printf(__('Sorted by <strong>%s</strong> in <strong>%s</strong> order.', 'wp-postratings'), $postratings_sortby_text, $postratings_sortorder_text); ?></p>
+	<p><?php printf(
+		/* translators: 1: Number of ratings on page 2: Max on page 3: Total rating */
+		__('Displaying %1$s to %2$s of %3$s Post Ratings log entries.', 'wp-postratings'),
+		'<strong>' . number_format_i18n( $display_on_page ) . '</strong>',
+		'<strong>' . number_format_i18n( $max_on_page ) . '</strong>',
+		'<strong>' . number_format_i18n( $total_ratings ) . '</strong>'
+		);
+	?></p>
+	<p><?php printf(
+		/* translators: 1: Sort by text 2: Sort order text */
+		__('Sorted by %1$s in %2$s order.', 'wp-postratings'),
+		'<strong>' . $postratings_sortby_text . '</strong>',
+		'<strong>' . $postratings_sortorder_text . '</strong>'
+		);
+	?></p>
 	<table class="widefat">
 		<thead>
 			<tr>
