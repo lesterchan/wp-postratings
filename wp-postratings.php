@@ -166,7 +166,7 @@ function ratings_scripts() {
 	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/postratings-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
 	wp_localize_script('wp-postratings', 'ratingsL10n', array(
 		'plugin_url' => plugins_url('wp-postratings'),
-		'ajax_url' => admin_url('admin-ajax.php'),
+		'ajax_url' => admin_url('admin-ajax.php', ( is_ssl() ? 'https' : 'http') ),
 		'text_wait' => __('Please rate only 1 post at a time.', 'wp-postratings'),
 		'image' => get_option('postratings_image'),
 		'image_ext' => RATINGS_IMG_EXT,
