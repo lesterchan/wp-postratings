@@ -29,6 +29,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### Version 1.83
 * NEW: Added 'wp_postratings_display_comment_author_ratings' filter
+* FIXED: Removing Loading ... because SERP will index the text if the ratings is at the top of the article
 * FIXED: Move wp_postratings_image_extension filter to init()
 * FIXED: Show headline, datePublished and image despite there is no ratings
 * FIXED: Show post without ratings as well when sorting is done in URL. Props @talljosh.
