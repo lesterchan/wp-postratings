@@ -194,8 +194,8 @@ function ratings_scripts_admin($hook_suffix) {
 
 
 ### Function: Display Ratings Results
-function the_ratings_results($post_id, $new_user = 0, $new_score = 0, $new_average = 0, $type = 0) {
-	if($new_user == 0 && $new_score == 0 && $new_average == 0) {
+function the_ratings_results( $post_id, $new_user = 0, $new_score = 0, $new_average = 0, $type = 0 ) {
+	if( $new_user === 0 && $new_score === 0 && $new_average === 0 ) {
 		$post_ratings_data = null;
 	} else {
 		$post_ratings_data = new stdClass();
@@ -204,13 +204,17 @@ function the_ratings_results($post_id, $new_user = 0, $new_score = 0, $new_avera
 		$post_ratings_data->ratings_average = $new_average;
 	}
 	// Display The Contents
-	if($type == 1) {
-		$template_postratings_text = stripslashes(get_option('postratings_template_permission'));
+	if( $type === 1 ) {
+		$template_postratings_text = stripslashes( get_option( 'postratings_template_permission' ) );
 	} else {
-		$template_postratings_text = stripslashes(get_option('postratings_template_text'));
+		if( intval( get_post_meta($post_id, 'ratings_users', true ) ) === 0 ) {
+			$template_postratings_text = stripslashes( get_option( 'postratings_template_none' ) );
+		} else {
+			$template_postratings_text = stripslashes( get_option( 'postratings_template_text' ) );
+		}
 	}
 	// Return Post Ratings Template
-	return expand_ratings_template($template_postratings_text, $post_id, $post_ratings_data);
+	return expand_ratings_template( $template_postratings_text, $post_id, $post_ratings_data );
 }
 
 
@@ -225,7 +229,7 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
     $post_ratings_data->ratings_average = $new_average;
   }
 	// If No Ratings, Return No Ratings templae
-	if(get_post_meta($post_id, 'ratings_users', true) == 0) {
+	if( intval( get_post_meta($post_id, 'ratings_users', true ) ) === 0 ) {
 		$template_postratings_none = stripslashes(get_option('postratings_template_none'));
 		// Return Post Ratings Template
 		return expand_ratings_template($template_postratings_none, $post_id, $post_ratings_data);
