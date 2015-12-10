@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.83.1
+Version: 1.84
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -143,13 +143,13 @@ function ratings_scripts() {
 	if(@file_exists(TEMPLATEPATH.'/postratings-css.css')) {
 		wp_enqueue_style('wp-postratings', get_stylesheet_directory_uri().'/postratings-css.css', false, WP_POSTRATINGS_VERSION, 'all');
 	} else {
-		wp_enqueue_style('wp-postratings', plugins_url('wp-postratings/postratings-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
+		wp_enqueue_style('wp-postratings', plugins_url('wp-postratings/css/postratings-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
 	}
 	if(is_rtl()) {
 		if(@file_exists(TEMPLATEPATH.'/postratings-css-rtl.css')) {
 			wp_enqueue_style('wp-postratings-rtl', get_stylesheet_directory_uri().'/postratings-css-rtl.css', false, WP_POSTRATINGS_VERSION, 'all');
 		} else {
-			wp_enqueue_style('wp-postratings-rtl', plugins_url('wp-postratings/postratings-css-rtl.css'), false, WP_POSTRATINGS_VERSION, 'all');
+			wp_enqueue_style('wp-postratings-rtl', plugins_url('wp-postratings/css/postratings-css-rtl.css'), false, WP_POSTRATINGS_VERSION, 'all');
 		}
 	}
 	$postratings_max = intval(get_option('postratings_max'));
@@ -163,7 +163,7 @@ function ratings_scripts() {
 	} else {
 		$postratings_javascript = 'var ratings_mouseover_image=new Image();ratings_mouseover_image.src=ratingsL10n.plugin_url+"/images/"+ratingsL10n.image+"/rating_over."+ratingsL10n.image_ext;';
 	}
-	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/postratings-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
+	wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/js/postratings-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
 	wp_localize_script('wp-postratings', 'ratingsL10n', array(
 		'plugin_url' => plugins_url('wp-postratings'),
 		'ajax_url' => admin_url('admin-ajax.php'),
@@ -184,8 +184,8 @@ add_action('admin_enqueue_scripts', 'ratings_scripts_admin');
 function ratings_scripts_admin($hook_suffix) {
 	$postratings_admin_pages = array('wp-postratings/postratings-manager.php', 'wp-postratings/postratings-options.php', 'wp-postratings/postratings-templates.php', 'wp-postratings/postratings-uninstall.php');
 	if(in_array($hook_suffix, $postratings_admin_pages)) {
-		wp_enqueue_style('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
-		wp_enqueue_script('wp-postratings-admin', plugins_url('wp-postratings/postratings-admin-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
+		wp_enqueue_style('wp-postratings-admin', plugins_url('wp-postratings/css/postratings-admin-css.css'), false, WP_POSTRATINGS_VERSION, 'all');
+		wp_enqueue_script('wp-postratings-admin', plugins_url('wp-postratings/js/postratings-admin-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
 		wp_localize_script('wp-postratings-admin', 'ratingsAdminL10n', array(
 			'admin_ajax_url' => admin_url('admin-ajax.php')
 		));
