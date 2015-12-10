@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.83
+Version: 1.83.1
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -87,7 +87,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$postratings_ajax_style = get_option('postratings_ajax_style');
 	if(intval($postratings_ajax_style['loading']) == 1) {
 		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading">
-			<img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" alt="' . __( 'Loading...', 'wp-postratings' ) . '" title="' . __( 'Loading...', 'wp-postratings' ) . '" class="post-ratings-image" />' . __( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
+			<img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . __( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
 	} else {
 		$loading = '';
 	}
@@ -194,8 +194,8 @@ function ratings_scripts_admin($hook_suffix) {
 
 
 ### Function: Display Ratings Results
-function the_ratings_results($post_id, $new_user = 0, $new_score = 0, $new_average = 0, $type = 0) {
-	if($new_user == 0 && $new_score == 0 && $new_average == 0) {
+function the_ratings_results( $post_id, $new_user = 0, $new_score = 0, $new_average = 0, $type = 0 ) {
+	if( $new_user === 0 && $new_score === 0 && $new_average === 0 ) {
 		$post_ratings_data = null;
 	} else {
 		$post_ratings_data = new stdClass();
@@ -204,13 +204,13 @@ function the_ratings_results($post_id, $new_user = 0, $new_score = 0, $new_avera
 		$post_ratings_data->ratings_average = $new_average;
 	}
 	// Display The Contents
-	if($type == 1) {
-		$template_postratings_text = stripslashes(get_option('postratings_template_permission'));
+	if( $type === 1 ) {
+		$template_postratings_text = stripslashes( get_option( 'postratings_template_permission' ) );
 	} else {
-		$template_postratings_text = stripslashes(get_option('postratings_template_text'));
+		$template_postratings_text = stripslashes( get_option( 'postratings_template_text' ) );
 	}
 	// Return Post Ratings Template
-	return expand_ratings_template($template_postratings_text, $post_id, $post_ratings_data);
+	return expand_ratings_template( $template_postratings_text, $post_id, $post_ratings_data );
 }
 
 
@@ -225,7 +225,7 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
     $post_ratings_data->ratings_average = $new_average;
   }
 	// If No Ratings, Return No Ratings templae
-	if(get_post_meta($post_id, 'ratings_users', true) == 0) {
+	if( intval( get_post_meta($post_id, 'ratings_users', true ) ) === 0 ) {
 		$template_postratings_none = stripslashes(get_option('postratings_template_none'));
 		// Return Post Ratings Template
 		return expand_ratings_template($template_postratings_none, $post_id, $post_ratings_data);
