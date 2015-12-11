@@ -28,6 +28,8 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84
+* NEW: Remove po/mo files from the plugin
+* NEW: Use translate.wordpress.org to translate the plugin
 * FIXED: Move *.js files to /js/ sub-folder
 * FIXED: Move *.css files to /css/ sub-folder
 
@@ -353,7 +355,7 @@ add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
 </code>
 
 ### How Does WP-PostRatings Load CSS?
-* WP-PostRatings will load `postratings-css.css` from your theme's directory if it exists.
+* WP-PostRatings will load `postratings-css.css` from your theme's CSS directory if it exists.
 * If it doesn't exists, it will just load the default 'postratings-css.css' that comes with WP-PostRatings.
 * This will allow you to upgrade WP-PostRatings without worrying about overwriting your ratings styles that you have created.
 
