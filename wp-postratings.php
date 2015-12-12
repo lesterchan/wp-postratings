@@ -168,7 +168,7 @@ function ratings_scripts() {
     wp_localize_script('wp-postratings', 'ratingsL10n', array(
         'plugin_url' => plugins_url('wp-postratings'),
         'ajax_url' => admin_url('admin-ajax.php'),
-        'text_wait' => __('Please rate only 1 post at a time.', 'wp-postratings'),
+        'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
         'image' => get_option('postratings_image'),
         'image_ext' => RATINGS_IMG_EXT,
         'max' => $postratings_max,
@@ -657,7 +657,7 @@ function process_ratings() {
                     echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
                     exit();
                 } else {
-                    printf(__('Invalid Post ID. Post ID #%s.', 'wp-postratings'), $post_id);
+                    printf(__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
                     exit();
                 } // End if($post)
             } else {
@@ -693,8 +693,8 @@ function manage_ratings()
         if($postratings_customrating && $postratings_max == 2) {
             $postratings_ratingsvalue[0] = -1;
             $postratings_ratingsvalue[1] = 1;
-            $postratings_ratingstext[0] = __('Vote This Post Down', 'wp-postratings');
-            $postratings_ratingstext[1] = __('Vote This Post Up', 'wp-postratings');
+            $postratings_ratingstext[0] = __('Vote Down', 'wp-postratings');
+            $postratings_ratingstext[1] = __('Vote Up', 'wp-postratings');
         } else {
             for($i = 0; $i < $postratings_max; $i++) {
                 if($i > 0) {
@@ -1429,10 +1429,10 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         </p>
         <p>
             <label for="<?php echo $this->get_field_id('min_votes'); ?>"><?php _e('Minimum Votes:', 'wp-postratings'); ?> <span style="color: red;">*</span> <input class="widefat" id="<?php echo $this->get_field_id('min_votes'); ?>" name="<?php echo $this->get_field_name('min_votes'); ?>" type="text" value="<?php echo $min_votes; ?>" size="4" /></label><br />
-            <small><?php _e('You can set the minimum votes that a post or page must have before it gets displayed.', 'wp-postratings'); ?></small>
+            <small><?php _e('You can set the minimum votes, before the rating displayed.', 'wp-postratings'); ?></small>
         </p>
         <p>
-            <label for="<?php echo $this->get_field_id('chars'); ?>"><?php _e('Maximum Post Title Length (Characters):', 'wp-postratings'); ?> <input class="widefat" id="<?php echo $this->get_field_id('chars'); ?>" name="<?php echo $this->get_field_name('chars'); ?>" type="text" value="<?php echo $chars; ?>" /></label><br />
+            <label for="<?php echo $this->get_field_id('chars'); ?>"><?php _e('Maximum Title Length (Characters):', 'wp-postratings'); ?> <input class="widefat" id="<?php echo $this->get_field_id('chars'); ?>" name="<?php echo $this->get_field_name('chars'); ?>" type="text" value="<?php echo $chars; ?>" /></label><br />
             <small><?php _e('<strong>0</strong> to disable.', 'wp-postratings'); ?></small>
         </p>
         <p>
@@ -1524,7 +1524,7 @@ function ratings_activate() {
     // Database Upgrade For WP-PostRatings 1.20
     add_option('postratings_ratingsvalue', array(1,2,3,4,5) );
     add_option('postratings_customrating', 0 );
-    add_option('postratings_template_permission', '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> '.__('votes', 'wp-postratings').__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': <strong>%RATINGS_AVERAGE%</strong> '.__('out of', 'wp-postratings').' %RATINGS_MAX%</em>)<br /><em>'.__('You need to be a registered member to rate this post.', 'wp-postratings').'</em>' );
+    add_option('postratings_template_permission', '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> '.__('votes', 'wp-postratings').__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': <strong>%RATINGS_AVERAGE%</strong> '.__('out of', 'wp-postratings').' %RATINGS_MAX%</em>)<br /><em>'.__('You need to be a registered member to rate this.', 'wp-postratings').'</em>' );
     // Database Upgrade For WP-PostRatings 1.30
     add_option('postratings_template_mostrated', '<li><a href="%POST_URL%"  title="%POST_TITLE%">%POST_TITLE%</a> - %RATINGS_USERS% '.__('votes', 'wp-postratings').'</li>' );
     // Database Upgrade For WP-PostRatings 1.50
