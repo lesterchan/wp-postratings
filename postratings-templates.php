@@ -78,7 +78,7 @@ if ( isset( $_POST['Submit'] ) ) {
 				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)";
 				break;
 			case "permission":
-				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php _e('You need to be a registered member to rate this post.', 'wp-postratings'); ?></em>";
+				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php _e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
 				break;
 			case "none":
 				default_template = "%RATINGS_IMAGES_VOTE% (<?php _e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
@@ -106,7 +106,7 @@ if ( isset( $_POST['Submit'] ) ) {
 				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%<?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)";
 				break;
 			case "permission":
-				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php _e('You need to be a registered member to rate this post.', 'wp-postratings'); ?></em>";
+				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php _e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
 				break;
 			case "none":
 				default_template = "%RATINGS_IMAGES_VOTE% (<?php _e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
@@ -128,10 +128,10 @@ if ( isset( $_POST['Submit'] ) ) {
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
-	<h2><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h2>
+	<h1><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h1>
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_templates'); ?>
-		<h3><?php _e('Template Variables', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Template Variables', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			<tr>
 				<td><strong>%RATINGS_IMAGES%</strong> - <?php _e('Display the ratings images', 'wp-postratings'); ?></td>
@@ -150,7 +150,7 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td><strong>%RATINGS_TEXT%</strong> - <?php _e('Display the individual rating text. Eg: 1 Star, 2 Stars, etc', 'wp-postratings'); ?></td>
 			</tr>
 		</table>
-		<h3><?php _e('Ratings Templates', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Ratings Templates', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<td width="30%">

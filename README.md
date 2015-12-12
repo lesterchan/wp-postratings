@@ -32,6 +32,8 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Use translate.wordpress.org to translate the plugin
 * FIXED: Move *.js files to /js/ sub-folder
 * FIXED: Move *.css files to /css/ sub-folder
+* FIXED: Update translation strings to avoid using 'post' as the post type
+* FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags
 
 ### Version 1.83.1
 * FIXED: Remove No Results template from the_ratings_results()

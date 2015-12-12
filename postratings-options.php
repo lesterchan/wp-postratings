@@ -125,7 +125,7 @@ $postratings_image = get_option('postratings_image');
 				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)";
 				break;
 			case "permission":
-				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php _e('You need to be a registered member to rate this post.', 'wp-postratings'); ?></em>";
+				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php _e('rating', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php _e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
 				break;
 			case "none":
 				default_template = "%RATINGS_IMAGES_VOTE% (<?php _e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
@@ -153,7 +153,7 @@ $postratings_image = get_option('postratings_image');
 				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%<?php _e(',', 'wp-postratings'); ?> <strong><?php _e('rated', 'wp-postratings'); ?></strong></em>)";
 				break;
 			case "permission":
-				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php _e('You need to be a registered member to rate this post.', 'wp-postratings'); ?></em>";
+				default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php _e('votes', 'wp-postratings'); ?><?php _e(',', 'wp-postratings'); ?> <?php _e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php _e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php _e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
 				break;
 			case "none":
 				default_template = "%RATINGS_IMAGES_VOTE% (<?php _e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
@@ -205,7 +205,7 @@ $postratings_image = get_option('postratings_image');
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
-	<h2><?php _e('Post Ratings Options', 'wp-postratings'); ?></h2>
+	<h1><?php _e('Post Ratings Options', 'wp-postratings'); ?></h1>
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_options'); ?>
 		<input type="hidden" id="postratings_customrating" name="postratings_customrating" value="<?php echo $postratings_customrating; ?>" />
@@ -215,7 +215,7 @@ $postratings_image = get_option('postratings_image');
 		<input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_none'))); ?>" />
 		<input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_highestrated'))); ?>" />
 		<input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_mostrated'))); ?>" />
-		<h3><?php _e('Ratings Settings', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Ratings Settings', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<th scope="row" valign="top"><?php _e('Ratings Image:', 'wp-postratings'); ?></th>
@@ -303,7 +303,7 @@ $postratings_image = get_option('postratings_image');
 				<td colspan="2" align="center"><input type="button" name="update" value="<?php _e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
 			</tr>
 		</table>
-		<h3><?php _e('Individual Rating Text/Value', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Individual Rating Text/Value', 'wp-postratings'); ?></h2>
 		<div id="rating_text_value">
 			<table class="form-table">
 				<thead>
@@ -359,7 +359,7 @@ $postratings_image = get_option('postratings_image');
 			</table>
 		</div>
 		<?php $postratings_ajax_style = get_option('postratings_ajax_style'); ?>
-		<h3><?php _e('Ratings AJAX Style', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Ratings AJAX Style', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<th scope="row" valign="top"><?php _e('Show Loading Image With Text', 'wp-postratings'); ?></th>
@@ -380,7 +380,7 @@ $postratings_image = get_option('postratings_image');
 				</td>
 			</tr>
 		</table>
-		<h3><?php _e('Allow To Rate', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Allow To Rate', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<th scope="row" valign="top"><?php _e('Who Is Allowed To Rate?', 'wp-postratings'); ?></th>
@@ -393,7 +393,7 @@ $postratings_image = get_option('postratings_image');
 				</td>
 			</tr>
 		</table>
-		<h3><?php _e('Logging Method', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Logging Method', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<th scope="row" valign="top"><?php _e('Ratings Logging Method:', 'wp-postratings'); ?></th>
