@@ -258,8 +258,8 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <!-- Manage Post Ratings -->
 <div class="wrap">
-	<h2><?php _e('Manage Ratings', 'wp-postratings'); ?></h2>
-	<h3><?php _e('Rating Logs', 'wp-postratings'); ?></h3>
+	<h1><?php _e('Manage Ratings', 'wp-postratings'); ?></h1>
+	<h2><?php _e('Rating Logs', 'wp-postratings'); ?></h2>
 	<p><?php printf(
 		/* translators: 1: Number of ratings on page 2: Max on page 3: Total rating */
 		__('Displaying %1$s to %2$s of %3$s rating log entries.', 'wp-postratings'),
@@ -509,7 +509,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 
 <!-- Post Ratings Stats -->
 <div class="wrap">
-	<h3><?php _e('Rating Stats', 'wp-postratings'); ?></h3>
+	<h2><?php _e('Rating Stats', 'wp-postratings'); ?></h2>
 	<br style="clear" />
 	<table class="widefat">
 		<tr>
@@ -530,7 +530,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 
 <!-- Delete Post Ratings Logs -->
 <div class="wrap">
-	<h3><?php _e('Delete Ratings Data/Logs', 'wp-postratings'); ?></h3>
+	<h2><?php _e('Delete Ratings Data/Logs', 'wp-postratings'); ?></h2>
 	<br style="clear" />
 	<div align="center">
 		<form method="post" action="<?php echo esc_url( $base_page ); ?>">
@@ -563,7 +563,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 		</table>
 		</form>
 	</div>
-	<h3><?php _e('Note:', 'wp-postratings'); ?></h3>
+	<h2><?php _e('Note:', 'wp-postratings'); ?></h2>
 	<ul>
 		<li><?php _e('\'Logs Only\' means the logs generated when a user rates a post.', 'wp-postratings'); ?></li>
 		<li><?php _e('\'Data Only\' means the rating data for the post.', 'wp-postratings'); ?></li>

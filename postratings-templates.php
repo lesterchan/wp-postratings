@@ -128,10 +128,10 @@ if ( isset( $_POST['Submit'] ) ) {
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
-	<h2><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h2>
+	<h1><?php _e('Post Ratings Templates', 'wp-postratings'); ?></h1>
 	<form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
 		<?php wp_nonce_field('wp-postratings_templates'); ?>
-		<h3><?php _e('Template Variables', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Template Variables', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			<tr>
 				<td><strong>%RATINGS_IMAGES%</strong> - <?php _e('Display the ratings images', 'wp-postratings'); ?></td>
@@ -150,7 +150,7 @@ if ( isset( $_POST['Submit'] ) ) {
 				<td><strong>%RATINGS_TEXT%</strong> - <?php _e('Display the individual rating text. Eg: 1 Star, 2 Stars, etc', 'wp-postratings'); ?></td>
 			</tr>
 		</table>
-		<h3><?php _e('Ratings Templates', 'wp-postratings'); ?></h3>
+		<h2><?php _e('Ratings Templates', 'wp-postratings'); ?></h2>
 		<table class="form-table">
 			 <tr>
 				<td width="30%">
