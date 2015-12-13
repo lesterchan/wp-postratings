@@ -30,6 +30,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ### Version 1.84
 * NEW: Remove po/mo files from the plugin
 * NEW: Use translate.wordpress.org to translate the plugin
+* NEW: Added 'wp_postratings_cookie_expiration' filter
 * FIXED: Move *.js files to /js/ sub-folder
 * FIXED: Move *.css files to /css/ sub-folder
 * FIXED: Update translation strings to avoid using 'post' as the post type
