@@ -357,6 +357,15 @@ function custom_rating_image_extension() {
 add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
 </code>
 
+### How To change the cookie expiration time?
+* The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
+<code>
+function custom_rating_cookie_expiration() {
+	return strtotime( 'tomorrow' ) ;
+}
+add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration', 10, 0 );
+</code>
+
 ### How Does WP-PostRatings Load CSS?
 * WP-PostRatings will load `postratings-css.css` from your theme's CSS directory if it exists.
 * If it doesn't exists, it will just load the default 'postratings-css.css' that comes with WP-PostRatings.
