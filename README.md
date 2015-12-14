@@ -30,6 +30,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ### Version 1.84
 * NEW: Remove po/mo files from the plugin
 * NEW: Use translate.wordpress.org to translate the plugin
+* NEW: Added 'wp_postratings_cookie_expiration' filter
 * FIXED: Move *.js files to /js/ sub-folder
 * FIXED: Move *.css files to /css/ sub-folder
 * FIXED: Update translation strings to avoid using 'post' as the post type
@@ -354,6 +355,15 @@ function custom_rating_image_extension() {
     return 'png';
 }
 add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
+</code>
+
+### How To change the cookie expiration time?
+* The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
+<code>
+function custom_rating_cookie_expiration() {
+	return strtotime( 'tomorrow' ) ;
+}
+add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration', 10, 0 );
 </code>
 
 ### How Does WP-PostRatings Load CSS?
