@@ -1254,13 +1254,36 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         $post_meta = '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
         $post_meta .= '<meta itemprop="description" content="' . wp_kses( $post_excerpt, array() ) . '" />';
         $post_meta .= '<meta itemprop="datePublished" content="' . get_the_time( 'c' ) . '" />';
+        $post_meta .= '<meta itemprop="dateModified" content="' . get_the_modified_time( 'c' ) . '" />';
         $post_meta .= '<meta itemprop="url" content="' . $post_link . '" />';
+        $post_meta .= '<meta itemprop="author" content="' . get_the_author() . '" />';
+        $post_meta .= '<meta itemprop="mainEntityOfPage" content="' . get_permalink() . '" />';
+        // Image
         if( has_post_thumbnail() ) {
             $thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( null ) );
             if( ! empty( $thumbnail ) ) {
-                $post_meta .= '<meta itemprop="image" content="' . $thumbnail[0] . '" />';
+                $post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
+                $post_meta .= '<meta itemprop="url" content="' . $thumbnail[0] . '" />';
+                $post_meta .= '<meta itemprop="width" content="' . $thumbnail[1] . '" />';
+                $post_meta .= '<meta itemprop="height" content="' . $thumbnail[2] . '" />';
+                $post_meta .= '</div>';
             }
         }
+        // Publisher
+        $site_logo = '';
+        if( has_header_image() ) {
+            $header_image = get_header_image();
+            if( ! empty( $header_image ) ) {
+                $site_logo = $header_image;
+            }
+        }
+        $site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
+        $post_meta .= '<div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
+        $post_meta .= '<meta itemprop="name" content="' . get_bloginfo( 'name' ) . '" />';
+        $post_meta .= '<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">';
+        $post_meta .= '<meta itemprop="url" content="' . $site_logo . '" />';
+        $post_meta .= '</div>';
+        $post_meta .= '</div>';
 
         $ratings_meta = '';
         if( $post_ratings_average > 0 ) {
@@ -1279,7 +1302,6 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     return apply_filters( 'expand_ratings_template', $value );
 }
 
-
 ### Class: WP-PostRatings Widget
  class WP_Widget_PostRatings extends WP_Widget {
     // Constructor
@@ -1290,7 +1312,6 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
     // Display Widget
     function widget($args, $instance) {
-        extract($args);
         $title = apply_filters('widget_title', esc_attr($instance['title']));
         $type = esc_attr($instance['type']);
         $mode = esc_attr($instance['mode']);
@@ -1299,7 +1320,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         $chars = intval($instance['chars']);
         $cat_ids = explode(',', esc_attr($instance['cat_ids']));
         $time_range = esc_attr($instance['time_range']);
-        echo $before_widget.$before_title.$title.$after_title;
+        echo $args['before_widget'].$args['before_title'].$title.$args['after_title'];
         echo '<ul>'."\n";
         switch($type) {
             case 'most_rated':
@@ -1349,7 +1370,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
                 break;
         }
         echo '</ul>'."\n";
-        echo $after_widget;
+        echo $args['after_widget'];
     }
 
     // When Widget Control Form Is Posted

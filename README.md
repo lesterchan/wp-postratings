@@ -31,6 +31,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Remove po/mo files from the plugin
 * NEW: Use translate.wordpress.org to translate the plugin
 * NEW: Added 'wp_postratings_cookie_expiration' filter
+* NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
 * FIXED: Move *.js files to /js/ sub-folder
 * FIXED: Move *.css files to /css/ sub-folder
 * FIXED: Update translation strings to avoid using 'post' as the post type
@@ -332,9 +333,20 @@ N/A
 * The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
 <code>
 <?php  
-add_filter('wp_postratings_schema_itemtype', 'wp_postratings_schema_itemtype');  
-function wp_postratings_schema_itemtype($itemtype) {  
+add_filter( 'wp_postratings_schema_itemtype', 'wp_postratings_schema_itemtype' );  
+function wp_postratings_schema_itemtype( $itemtype ) {  
 	return 'itemscope itemtype="http://schema.org/Recipe"';  
+}  
+?>
+</code>
+
+### How To Add Your Site Logo For Google Rich Snippets
+* By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code below:
+<code>
+<?php  
+add_filter( 'wp_postratings_site_logo', 'wp_postratings_site_logo' );  
+function wp_postratings_site_logo( $url ) {  
+	return 'http://placehold.it/350/150.png';  
 }  
 ?>
 </code>
