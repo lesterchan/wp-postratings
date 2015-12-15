@@ -1253,8 +1253,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         }
         $post_meta = '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
         $post_meta .= '<meta itemprop="description" content="' . wp_kses( $post_excerpt, array() ) . '" />';
-        $post_meta .= '<meta itemprop="datePublished" content="' . get_the_time( 'c' ) . '" />';
-        $post_meta .= '<meta itemprop="dateModified" content="' . get_the_modified_time( 'c' ) . '" />';
+        $post_meta .= '<meta itemprop="datePublished" content="' . mysql2date( 'c', $post->post_date ) . '" />';
+        $post_meta .= '<meta itemprop="dateModified" content="' . mysql2date( 'c', $post->post_modified ) . '" />';
         $post_meta .= '<meta itemprop="url" content="' . $post_link . '" />';
         $post_meta .= '<meta itemprop="author" content="' . get_the_author() . '" />';
         $post_meta .= '<meta itemprop="mainEntityOfPage" content="' . get_permalink() . '" />';
