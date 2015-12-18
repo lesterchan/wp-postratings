@@ -502,23 +502,6 @@ function add_ratings_to_content($content) {
 }
 
 
-### Function: Short Code For Inserting Ratings Into Posts
-add_shortcode( 'ratings', 'ratings_shortcode' );
-function ratings_shortcode( $atts ) {
-    $attributes = shortcode_atts( array( 'id' => 0, 'results' => false ), $atts );
-    if( ! is_feed() ) {
-        $id = intval( $attributes['id'] );
-        if( $attributes['results'] ) {
-            return the_ratings_results( $id );
-        } else {
-            return the_ratings( 'span', $id, false );
-        }
-    } else {
-        return __( 'Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings' );
-    }
-}
-
-
 ### Function: Snippet Text
 if(!function_exists('snippet_text')) {
     function snippet_text($text, $length = 0) {
@@ -1303,6 +1286,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 }
 
 
+require_once('includes/shortcodes.php');
 require_once('includes/widgets.php');
 require_once('includes/activation.php');
 require_once('postratings-stats.php');
