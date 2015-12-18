@@ -34,6 +34,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
 * FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
 * FIXED: Move *.css files to /css/ sub-folder. Props @ramiy.
+* FIXED: Move the scripts to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move the widget to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
