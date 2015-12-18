@@ -38,6 +38,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Move the widget to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move admin functions and hooks to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
 * FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 
