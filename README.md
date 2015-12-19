@@ -44,6 +44,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Replace die() with wp_die() and add i18n to the strings. Props @ramiy.
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
 * FIXED: Minor translation string fix. Props @ramiy.
+* FIXED: Update rating widget. Props @ramiy.
 
 ### Version 1.83.1
 * FIXED: Remove No Results template from the_ratings_results()
