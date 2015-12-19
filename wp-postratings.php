@@ -1068,7 +1068,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         if($post_ratings_score > 0) {
             $post_ratings_score = '+'.$post_ratings_score;
         }
-        $post_ratings_alt_text = sprintf(_n('%s rating', '%s rating', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users));
+        $post_ratings_alt_text = sprintf(_n('%s rating', '%s ratings', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users));
     } else {
         $post_ratings_score = number_format_i18n($post_ratings_score);
         $post_ratings_alt_text = sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users)).__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': '.number_format_i18n($post_ratings_average, 2).' '.__('out of', 'wp-postratings').' '.number_format_i18n($ratings_max);
