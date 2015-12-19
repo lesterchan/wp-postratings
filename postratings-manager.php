@@ -25,9 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-// Check Whether User Can Manage Ratings
-if ( ! current_user_can( 'manage_ratings' ) )
+/*
+ * Permission check
+ * Check whether the user can manage ratings
+ */
+if ( ! current_user_can( 'manage_ratings' ) ) {
 	die( 'Access Denied' );
+}
 
 
 $base_name                  = plugin_basename( 'wp-postratings/postratings-manager.php' );

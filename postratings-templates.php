@@ -25,9 +25,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-### Check Whether User Can Manage Ratings
-if(!current_user_can('manage_ratings')) {
-	die('Access Denied');
+/*
+ * Permission check
+ * Check whether the user can manage ratings
+ */
+if ( ! current_user_can( 'manage_ratings' ) ) {
+	die( 'Access Denied' );
 }
 
 
