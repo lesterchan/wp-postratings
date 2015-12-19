@@ -1,27 +1,28 @@
 <?php
-/*
-+----------------------------------------------------------------+
-|																							|
-|	WordPress Plugin: WP-PostRatings								|
-|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
-|																							|
-|	File Written By:																	|
-|	- Lester "GaMerZ" Chan															|
-|	- http://lesterchan.net															|
-|																							|
-|	File Information:																	|
-|	- Manage Post Ratings Logs													|
-|	- wp-content/plugins/wp-postratings/postratings-manager.php		|
-|																							|
-+----------------------------------------------------------------+
-*/
+/**
+ * WP-PostRatings Logs.
+ *
+ * @package WordPress
+ * @subpackage WP-PostRatings Plugin
+ */
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
 
-// Check Whether User Can Manage Ratings
-if ( ! current_user_can( 'manage_ratings' ) )
-	die( 'Access Denied' );
+/**
+ * Security check
+ * Prevent direct access to the file.
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+
+/**
+ * Permission check
+ * Check whether the user can manage ratings
+ */
+if ( ! current_user_can( 'manage_ratings' ) ) {
+	wp_die( __( 'Access Denied', 'wp-postratings' ) );
+}
 
 
 $base_name                  = plugin_basename( 'wp-postratings/postratings-manager.php' );

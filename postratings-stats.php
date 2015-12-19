@@ -1,23 +1,20 @@
 <?php
-/*
-+----------------------------------------------------------------+
-|																							|
-|	WordPress Plugin: WP-PostRatings								|
-|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
-|																							|
-|	File Written By:																	|
-|	- Lester "GaMerZ" Chan															|
-|	- http://lesterchan.net															|
-|																							|
-|	File Information:																	|
-|	- Containts Post Rating Stats	 												|
-|	- wp-content/plugins/wp-postratings/postratings-stats.php			|
-|																							|
-+----------------------------------------------------------------+
-*/
+/**
+ * WP-PostRatings Stats.
+ *
+ * @package WordPress
+ * @subpackage WP-PostRatings Plugin
+ */
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+
+/**
+ * Security check
+ * Prevent direct access to the file.
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 ### Function: Display Most Rated Page/Post
 if(!function_exists('get_most_rated')) {

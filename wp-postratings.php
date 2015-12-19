@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WP-PostRatings
-Plugin URI: http://lesterchan.net/portfolio/programming/php/
+Plugin URI:  http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.84
-Author: Lester 'GaMerZ' Chan
-Author URI: http://lesterchan.net
+Version:     1.84
+Author:      Lester 'GaMerZ' Chan
+Author URI:  http://lesterchan.net
 Text Domain: wp-postratings
 */
 
@@ -28,8 +28,15 @@ Text Domain: wp-postratings
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+
+/**
+ * Security check
+ * Prevent direct access to the file.
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 ### Version
 define( 'WP_POSTRATINGS_VERSION', 1.84 );
@@ -1061,7 +1068,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         if($post_ratings_score > 0) {
             $post_ratings_score = '+'.$post_ratings_score;
         }
-        $post_ratings_alt_text = sprintf(_n('%s rating', '%s rating', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users));
+        $post_ratings_alt_text = sprintf(_n('%s rating', '%s ratings', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users));
     } else {
         $post_ratings_score = number_format_i18n($post_ratings_score);
         $post_ratings_alt_text = sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users)).__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': '.number_format_i18n($post_ratings_average, 2).' '.__('out of', 'wp-postratings').' '.number_format_i18n($ratings_max);

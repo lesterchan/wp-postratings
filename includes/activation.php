@@ -1,6 +1,19 @@
 <?php
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * WP-PostRatings Activation Hooks.
+ *
+ * @package WordPress
+ * @subpackage WP-PostRatings Plugin
+ */
+
+
+/**
+ * Security check
+ * Prevent direct access to the file.
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 
 ### Function: Activate Plugin
