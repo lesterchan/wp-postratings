@@ -1,6 +1,11 @@
 <?php
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+/*
+ * Security check
+ * Prevent direct access to the file.
+ */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 
 ### Function: Ratings Administration Menu
