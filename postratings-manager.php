@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Check whether the user can manage ratings
  */
 if ( ! current_user_can( 'manage_ratings' ) ) {
-	die( 'Access Denied' );
+	wp_die( __( 'Access Denied', 'wp-postratings' ) );
 }
 
 
