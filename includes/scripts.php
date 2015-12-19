@@ -1,5 +1,13 @@
 <?php
-/*
+/**
+ * WP-PostRatings Scripts.
+ *
+ * @package WordPress
+ * @subpackage WP-PostRatings Plugin
+ */
+
+
+/**
  * Security check
  * Prevent direct access to the file.
  */

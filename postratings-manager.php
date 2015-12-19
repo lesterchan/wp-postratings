@@ -1,22 +1,13 @@
 <?php
-/*
-+----------------------------------------------------------------+
-|																							|
-|	WordPress Plugin: WP-PostRatings								|
-|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
-|																							|
-|	File Written By:																	|
-|	- Lester "GaMerZ" Chan															|
-|	- http://lesterchan.net															|
-|																							|
-|	File Information:																	|
-|	- Manage Post Ratings Logs													|
-|	- wp-content/plugins/wp-postratings/postratings-manager.php		|
-|																							|
-+----------------------------------------------------------------+
-*/
+/**
+ * WP-PostRatings Logs.
+ *
+ * @package WordPress
+ * @subpackage WP-PostRatings Plugin
+ */
 
-/*
+
+/**
  * Security check
  * Prevent direct access to the file.
  */
@@ -25,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-/*
+/**
  * Permission check
  * Check whether the user can manage ratings
  */
