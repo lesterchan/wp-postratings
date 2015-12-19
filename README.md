@@ -28,27 +28,32 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84
-* NEW: Remove po/mo files from the plugin
-* NEW: Use translate.wordpress.org to translate the plugin
-* NEW: Added 'wp_postratings_cookie_expiration' filter
+* NEW: Remove po/mo files from the plugin. Props @ramiy.
+* NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
+* NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
 * NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
-* FIXED: Move *.js files to /js/ sub-folder
-* FIXED: Move *.css files to /css/ sub-folder
-* FIXED: Update translation strings to avoid using 'post' as the post type
-* FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags
+* FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
+* FIXED: Move *.css files to /css/ sub-folder. Props @ramiy.
+* FIXED: Move the scripts to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move the widget to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move admin functions and hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
+* FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 
 ### Version 1.83.1
 * FIXED: Remove No Results template from the_ratings_results()
 
 ### Version 1.83
-* NEW: Added 'wp_postratings_display_comment_author_ratings' filter
+* NEW: Added 'wp_postratings_display_comment_author_ratings' filter. Props @ramiy.
 * FIXED: Removing Loading ... because SERP will index the text if the ratings is at the top of the article
-* FIXED: Move wp_postratings_image_extension filter to init()
+* FIXED: Move 'wp_postratings_image_extension' filter to init()
 * FIXED: Show headline, datePublished and image despite there is no ratings
 * FIXED: Show post without ratings as well when sorting is done in URL. Props @talljosh.
 
 ### Version 1.82
-* NEW: Added 'wp_postratings_image_extension' filter
+* NEW: Added 'wp_postratings_image_extension' filter. Props @ramiy.
 * FIXED: Added headline, datePublished, image to Article Schema type
 * FIXED: Deprecated PHP4 constructor in WordPress 4.3
 * FIXED: Remove schema code when Rich Snippets is off
