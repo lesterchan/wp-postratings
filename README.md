@@ -32,6 +32,8 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
 * NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
 * NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
+* NEW: Add phpDocs and update file headers. Props @ramiy.
+* FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 * FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
 * FIXED: Move *.css files to /css/ sub-folder. Props @ramiy.
 * FIXED: Move the scripts to a separate file in /includes/ sub-folder. Props @ramiy.
@@ -39,8 +41,9 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move admin functions and hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Replace die() with wp_die() and add i18n to the strings. Props @ramiy.
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
-* FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
+* FIXED: Minor translation string fix. Props @ramiy.
 
 ### Version 1.83.1
 * FIXED: Remove No Results template from the_ratings_results()
