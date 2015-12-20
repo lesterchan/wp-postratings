@@ -28,6 +28,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84
+* NEW: Add in 'wp_postratings_ratings_image_alt' filter to remove alt
 * NEW: Remove po/mo files from the plugin. Props @ramiy.
 * NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
 * NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
@@ -356,6 +357,16 @@ function wp_postratings_schema_itemtype( $itemtype ) {
 add_filter( 'wp_postratings_site_logo', 'wp_postratings_site_logo' );  
 function wp_postratings_site_logo( $url ) {  
 	return 'http://placehold.it/350/150.png';  
+}  
+?>
+</code>
+
+### How To Remove Ratings Image alt and title Text?
+<code>
+<?php  
+add_filter( 'wp_postratings_ratings_image_alt', 'wp_postratings_ratings_image_alt' );  
+function wp_postratings_ratings_image_alt( $alt_title_text ) {  
+	return '';  
 }  
 ?>
 </code>
