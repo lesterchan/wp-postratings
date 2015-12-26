@@ -42,6 +42,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move admin functions and hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move the i18n load to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Replace die() with wp_die() and add i18n to the strings. Props @ramiy.
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
 * FIXED: Minor translation string fix. Props @ramiy.
