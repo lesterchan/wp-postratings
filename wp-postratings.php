@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 /**
- * Load version
+ * Plugin version
  * Set wp-postratings plugin version.
  */
 define( 'WP_POSTRATINGS_VERSION', 1.84 );
