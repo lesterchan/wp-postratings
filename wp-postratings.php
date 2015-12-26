@@ -37,11 +37,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-### Version
-define( 'WP_POSTRATINGS_VERSION', 1.84 );
 
 /**
- * Requires in alphabetical order
+ * Load version
+ * Set wp-postratings plugin version.
+ */
+define( 'WP_POSTRATINGS_VERSION', 1.84 );
+
+
+/**
+ * Load plugin files
+ * Require the plugin files in an alphabetical order.
  */
 require_once( 'includes/postratings-activation.php' );
 require_once( 'includes/postratings-admin.php' );
@@ -50,6 +56,7 @@ require_once( 'includes/postratings-scripts.php' );
 require_once( 'includes/postratings-shortcodes.php' );
 require_once( 'includes/postratings-stats.php' );
 require_once( 'includes/postratings-widgets.php' );
+
 
 ### Define Image Extension
 add_action( 'init', 'postratings_init' );
