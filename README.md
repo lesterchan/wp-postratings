@@ -28,11 +28,11 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84
-* NEW: Add in 'wp_postratings_ratings_image_alt' filter to remove alt
+* NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
+* NEW: Added 'wp_postratings_ratings_image_alt' filter
+* NEW: Added more meta itemprops to pass Structured Data Testing Tool test
 * NEW: Remove po/mo files from the plugin. Props @ramiy.
 * NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
-* NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
-* NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
 * NEW: Add phpDocs and update file headers. Props @ramiy.
 * FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 * FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
