@@ -37,18 +37,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-### Version
-define( 'WP_POSTRATINGS_VERSION', 1.84 );
 
 /**
- * Requires in alphabetical order
+ * Plugin version
+ * Set wp-postratings plugin version.
+ */
+define( 'WP_POSTRATINGS_VERSION', 1.84 );
+
+
+/**
+ * Load plugin files
+ * Require the plugin files in an alphabetical order.
  */
 require_once( 'includes/postratings-activation.php' );
 require_once( 'includes/postratings-admin.php' );
+require_once( 'includes/postratings-i18n.php' );
 require_once( 'includes/postratings-scripts.php' );
 require_once( 'includes/postratings-shortcodes.php' );
 require_once( 'includes/postratings-stats.php' );
 require_once( 'includes/postratings-widgets.php' );
+
 
 ### Define Image Extension
 add_action( 'init', 'postratings_init' );
@@ -56,12 +64,6 @@ function postratings_init() {
     if( ! defined( 'RATINGS_IMG_EXT' ) ) {
         define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
     }
-}
-
-### Create Text Domain For Translations
-add_action( 'plugins_loaded', 'postratings_textdomain' );
-function postratings_textdomain() {
-    load_plugin_textdomain( 'wp-postratings' );
 }
 
 

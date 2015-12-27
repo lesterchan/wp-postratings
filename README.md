@@ -28,11 +28,11 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84
-* NEW: Add in 'wp_postratings_ratings_image_alt' filter to remove alt
+* NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
+* NEW: Added 'wp_postratings_ratings_image_alt' filter
+* NEW: Added more meta itemprops to pass Structured Data Testing Tool test
 * NEW: Remove po/mo files from the plugin. Props @ramiy.
 * NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
-* NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
-* NEW: Add in more meta itemprops to pass Structured Data Testing Tool test
 * NEW: Add phpDocs and update file headers. Props @ramiy.
 * FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 * FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
@@ -42,6 +42,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Move the shortcode to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move activation hooks to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Move admin functions and hooks to a separate file in /includes/ sub-folder. Props @ramiy.
+* FIXED: Move the i18n load to a separate file in /includes/ sub-folder. Props @ramiy.
 * FIXED: Replace die() with wp_die() and add i18n to the strings. Props @ramiy.
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
 * FIXED: Minor translation string fix. Props @ramiy.
