@@ -66,6 +66,14 @@ function postratings_init() {
     }
 }
 
+// Check brackets in images directory name and replace them with underscore.
+// For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
+$ratings_image = get_option( 'postratings_image' );
+if ($ratings_image == 'stars_flat(png)' || $ratings_image == 'stars(png)' ) {
+    $replace_strings = array("(" => "_", ")" => "");
+    $ratings_image_new = strtr($ratings_image, $replace_strings);
+    update_option( 'postratings_image', $ratings_image_new );
+}
 
 ### Rating Logs Table Name
 global $wpdb;
