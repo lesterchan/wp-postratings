@@ -31,6 +31,12 @@ $postratings_sort_url       = '';
 $postratings_sortby_text    = '';
 $postratings_sortorder_text = '';
 $ratings_image              = get_option( 'postratings_image' );
+// Check brackets in images directory name and replace them with underscore.
+// For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
+if (strpos($ratings_image,'(') !== false) {
+    $ratings_image = str_replace('(', '_', $ratings_image);
+    $ratings_image = str_replace(')', '', $ratings_image);
+}
 $ratings_max                = intval( get_option( 'postratings_max' ) );
 
 // Handle $_GET values

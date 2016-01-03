@@ -305,6 +305,12 @@ function comment_author_ratings($comment_author_specific = '', $display = true) 
     if(get_comment_type() == 'comment') {
         $post_ratings_images = '';
         $ratings_image = get_option('postratings_image');
+        // Check brackets in images directory name and replace them with underscore.
+        // For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
+        if (strpos($ratings_image,'(') !== false) {
+            $ratings_image = str_replace('(', '_', $ratings_image);
+            $ratings_image = str_replace(')', '', $ratings_image);
+        }
         $ratings_max = intval(get_option('postratings_max'));
         $ratings_custom = intval(get_option('postratings_customrating'));
         if(empty($comment_author_specific)) {
@@ -348,6 +354,12 @@ function comment_author_ratings_filter($comment_text) {
             if( ! empty( $comment ) && get_comment_type() === 'comment' ) {
                 $post_ratings_images = '';
                 $ratings_image = get_option('postratings_image');
+                // Check brackets in images directory name and replace them with underscore.
+                // For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
+                if (strpos($ratings_image,'(') !== false) {
+                    $ratings_image = str_replace('(', '_', $ratings_image);
+                    $ratings_image = str_replace(')', '', $ratings_image);
+                }
                 $ratings_max = intval(get_option('postratings_max'));
                 $ratings_custom = intval(get_option('postratings_customrating'));
                 $comment_author = get_comment_author();
@@ -1035,6 +1047,12 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
     // Get global variables
     $ratings_image = get_option('postratings_image');
+    // Check brackets in images directory name and replace them with underscore.
+    // For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
+    if (strpos($ratings_image,'(') !== false) {
+        $ratings_image = str_replace('(', '_', $ratings_image);
+        $ratings_image = str_replace(')', '', $ratings_image);
+    }
     $ratings_max = intval(get_option('postratings_max'));
     $ratings_custom = intval(get_option('postratings_customrating'));
     $ratings_options = get_option('postratings_options');
