@@ -46,13 +46,6 @@ function ratings_scripts() {
     $postratings_custom = intval(get_option('postratings_customrating'));
     $postratings_ajax_style = get_option('postratings_ajax_style');
     $postratings_javascript = '';
-    $ratings_image = get_option( 'postratings_image' );
-    // Check brackets in images directory name and replace them with underscore.
-    // For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
-    if (strpos($ratings_image,'(') !== false) {
-        $ratings_image = str_replace('(', '_', $ratings_image);
-        $ratings_image = str_replace(')', '', $ratings_image);
-    }
     if($postratings_custom) {
         for($i = 1; $i <= $postratings_max; $i++) {
             $postratings_javascript .= 'var ratings_'.$i.'_mouseover_image=new Image();ratings_'.$i.'_mouseover_image.src=ratingsL10n.plugin_url+"/images/"+ratingsL10n.image+"/rating_'.$i.'_over."+ratingsL10n.image_ext;';
@@ -65,7 +58,7 @@ function ratings_scripts() {
         'plugin_url' => plugins_url('wp-postratings'),
         'ajax_url' => admin_url('admin-ajax.php'),
         'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
-        'image' => $ratings_image,
+        'image' => get_option('postratings_image'),
         'image_ext' => RATINGS_IMG_EXT,
         'max' => $postratings_max,
         'show_loading' => intval($postratings_ajax_style['loading']),

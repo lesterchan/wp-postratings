@@ -112,13 +112,6 @@ $postratings_path = WP_PLUGIN_DIR.'/wp-postratings/images';
 $postratings_ratingstext = get_option('postratings_ratingstext');
 $postratings_ratingsvalue = get_option('postratings_ratingsvalue');
 $postratings_image = get_option('postratings_image');
-// Check brackets in images directory name and replace them with underscore.
-// For more info check this PR: https://github.com/lesterchan/wp-postratings/pull/67
-if (strpos($ratings_image,'(') !== false) {
-    $ratings_image = str_replace('(', '_', $ratings_image);
-    $ratings_image = str_replace(')', '', $ratings_image);
-}
-
 ?>
 <script type="text/javascript">
 /* <![CDATA[*/
