@@ -6,7 +6,7 @@ Requires at least: 2.8
 Tested up to: 4.4  
 Stable tag: 1.84
 
-Adds an AJAX rating system for your WordPress blog's post/page.
+Adds an AJAX rating system for your WordPress site's content.
 
 ## Description
 
