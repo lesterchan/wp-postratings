@@ -1141,7 +1141,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
     // Google Rich Snippet
     $ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
-    if( $ratings_options['richsnippet'] && ( is_single() || is_page() ) && $is_main_loop ) {
+    if( $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
         $itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
 
         if( empty( $post_excerpt ) ) {
