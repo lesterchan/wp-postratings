@@ -2,7 +2,7 @@
 /*
 Plugin Name: WP-PostRatings
 Plugin URI:  http://lesterchan.net/portfolio/programming/php/
-Description: Adds an AJAX rating system for your WordPress blog's post/page.
+Description: Adds an AJAX rating system for your WordPress site's content.
 Version:     1.84
 Author:      Lester 'GaMerZ' Chan
 Author URI:  http://lesterchan.net
@@ -431,7 +431,7 @@ function ratings_images_folder($folder_name) {
 }
 
 
-### Function: Add PostRatings To Post/Page Automatically
+### Function: Add PostRatings To Content Automatically
 //add_action('the_content', 'add_ratings_to_content');
 function add_ratings_to_content($content) {
     if (!is_feed()) {
