@@ -48,6 +48,9 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Minor translation string fix. Props @ramiy.
 * FIXED: Update rating widget. Props @ramiy.
 
+### Version 1.83.2
+* FIXED: Unauthenticated blind SQL injection in ratings_most_orderby(). Props @Ben Bidner from Automattic.
+
 ### Version 1.83.1
 * FIXED: Remove No Results template from the_ratings_results()
 

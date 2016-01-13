@@ -698,9 +698,9 @@ function ratings_most_join($content) {
     $content .= " LEFT JOIN $wpdb->postmeta ON $wpdb->postmeta.post_id = $wpdb->posts.ID AND $wpdb->postmeta.meta_key = 'ratings_users'";
     return $content;
 }
-function ratings_most_orderby($content) {
-    $orderby = trim(addslashes(get_query_var('r_orderby')));
-    if(empty($orderby) && ($orderby != 'asc' || $orderby != 'desc')) {
+function ratings_most_orderby( $content ) {
+    $orderby = trim( addslashes( get_query_var( 'r_orderby' ) )) ;
+    if( empty( $orderby ) || ( $orderby !== 'asc' && $orderby !== 'desc' ) ) {
         $orderby = 'desc';
     }
     $content = " ratings_votes $orderby";
@@ -727,9 +727,9 @@ function ratings_highest_join($content) {
     $content .= " LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id AND t2.meta_key = 'ratings_users'";
     return $content;
 }
-function ratings_highest_orderby($content) {
-    $orderby = trim(addslashes(get_query_var('r_orderby')));
-    if(empty($orderby) || ($orderby != 'asc' && $orderby != 'desc')) {
+function ratings_highest_orderby( $content ) {
+    $orderby = trim( addslashes( get_query_var( 'r_orderby' ) ) );
+    if( empty( $orderby ) || ( $orderby !== 'asc' && $orderby !== 'desc' ) ) {
         $orderby = 'desc';
     }
     $content = " ratings_average $orderby, ratings_users $orderby";
