@@ -40,10 +40,9 @@ if ( is_multisite() ) {
 					plugin_uninstalled();
 				}
 			}
+			restore_current_blog();
 		}
 	}
-
-	restore_current_blog();
 } else {
 	if( sizeof( $option_names ) > 0 ) {
 		foreach( $option_names as $option_name ) {
