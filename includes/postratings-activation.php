@@ -19,25 +19,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 ### Function: Activate Plugin
 register_activation_hook( __FILE__, 'ratings_activation' );
 
-function ratings_activation( $network_wide )
-{
-    if ( is_multisite() && $network_wide )
-    {
+function ratings_activation( $network_wide ) {
+    if ( is_multisite() && $network_wide ) {
         $ms_sites = wp_get_sites();
 
-        if( 0 < sizeof( $ms_sites ) )
-        {
-            foreach ( $ms_sites as $ms_site )
-            {
+        if( 0 < sizeof( $ms_sites ) ) {
+            foreach ( $ms_sites as $ms_site ) {
                 switch_to_blog( $ms_site['blog_id'] );
                 ratings_activate();
+                restore_current_blog();
             }
         }
-
-        restore_current_blog();
-    }
-    else
-    {
+    } else {
         ratings_activate();
     }
 }
