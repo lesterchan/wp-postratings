@@ -424,7 +424,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 			<tr>
 				<th><?php _e('Filter Options:', 'wp-postratings'); ?></th>
 				<td>
-					<?php _e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo $postratings_filterid; ?>" size="5" maxlength="5" />
+					<?php _e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo $postratings_filterid; ?>" size="7" maxlength="10" />
 					&nbsp;&nbsp;&nbsp;
 					<select name="user" size="1">
 						<option value=""></option>
