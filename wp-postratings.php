@@ -528,8 +528,7 @@ function process_ratings() {
                     return;
                 }
             }
-            header('Content-Type: text/html; charset='.get_option('blog_charset').'');
-            postratings_textdomain();
+            header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
             $rated = check_rated($post_id);
             // Check Whether Post Has Been Rated By User
             if(!$rated) {
