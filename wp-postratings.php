@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-    Copyright 2015 Lester Chan  (email : lesterchan@gmail.com)
+    Copyright 2016 Lester Chan  (email : lesterchan@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,13 +37,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-
 /**
  * Plugin version
  * Set wp-postratings plugin version.
  */
 define( 'WP_POSTRATINGS_VERSION', 1.84 );
 
+/**
+ * Rating logs table name
+ */
+global $wpdb;
+$wpdb->ratings = $wpdb->prefix.'ratings';
 
 /**
  * Load plugin files
@@ -57,6 +61,10 @@ require_once( 'includes/postratings-shortcodes.php' );
 require_once( 'includes/postratings-stats.php' );
 require_once( 'includes/postratings-widgets.php' );
 
+/**
+ * Register plugin activation hook
+ */
+register_activation_hook( __FILE__, 'ratings_activation' );
 
 ### Define Image Extension
 add_action( 'init', 'postratings_init' );
@@ -65,12 +73,6 @@ function postratings_init() {
         define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
     }
 }
-
-
-### Rating Logs Table Name
-global $wpdb;
-$wpdb->ratings = $wpdb->prefix.'ratings';
-
 
 ### Function: Display The Rating For The Post
 function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {

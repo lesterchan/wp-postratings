@@ -15,10 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-
-### Function: Activate Plugin
-register_activation_hook( __FILE__, 'ratings_activation' );
-
 function ratings_activation( $network_wide ) {
     if ( is_multisite() && $network_wide ) {
         $ms_sites = wp_get_sites();
