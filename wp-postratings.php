@@ -71,22 +71,22 @@ add_action( 'admin_init', 'download_csv' );
 function download_csv() {
 	if(isset($_POST['submit'])) 
 	{
-	
+		global $wpdb;
 		$selected_report = $_POST['report'];
 	
 		if($selected_report == "reports"){
 			
-			$sql = mysql_query("SELECT rating_id,rating_postid,rating_posttitle,rating_rating,FROM_UNIXTIME(rating_timestamp,'%h:%i:%s %D %M %Y') AS 'Date And Time',rating_username,rating_userid FROM wp_ratings") or die(mysql_error());
+			$sql = mysql_query("SELECT rating_id,rating_postid,rating_posttitle,rating_rating,FROM_UNIXTIME(rating_timestamp,'%h:%i:%s %D %M %Y') AS 'Date And Time',rating_username,rating_userid FROM {$wpdb->ratings}") or die(mysql_error());
 	
 		} 
 		else if($selected_report == "iphost"){
 		
-			$sql = mysql_query("SELECT rating_id,rating_postid,rating_posttitle,rating_rating,FROM_UNIXTIME(rating_timestamp,'%h:%i:%s %D %M %Y') AS 'Date And Time',rating_ip,rating_host,rating_username,rating_userid FROM wp_ratings") or die(mysql_error());
+			$sql = mysql_query("SELECT rating_id,rating_postid,rating_posttitle,rating_rating,FROM_UNIXTIME(rating_timestamp,'%h:%i:%s %D %M %Y') AS 'Date And Time',rating_ip,rating_host,rating_username,rating_userid FROM {$wpdb->ratings}") or die(mysql_error());
 			
 			}
 		else if($selected_report == "greport") {
 		
-			$sql = mysql_query("SELECT rating_postid,rating_posttitle,COUNT(rating_rating) AS Count,AVG(rating_rating) as Average FROM wp_ratings WHERE 1=1	GROUP BY rating_postid,rating_posttitle") or die(mysql_error());
+			$sql = mysql_query("SELECT rating_postid,rating_posttitle,COUNT(rating_rating) AS Count,AVG(rating_rating) as Average FROM {$wpdb->ratings} WHERE 1=1	GROUP BY rating_postid,rating_posttitle") or die(mysql_error());
 			
 		}
 		generate_csv($sql);
@@ -98,46 +98,22 @@ function generate_csv($sql){
 		header('Content-Type: text/csv; charset=utf-8');
 		header('Content-Disposition: attachment; filename=data.csv'); 
 		
-		$num_rows = mysql_num_rows($sql);
 	
-		if($num_rows >= 1)
-			{
 				$row = mysql_fetch_assoc($sql);
 				$fp = fopen('php://output','w');
-				$sep = "";
-				$comma= "";
-	
-				foreach($row as $name => $value)
-				{	
-					$sep .= $comma . '' .STR_REPLACE('','""',$name);
-					$comma = ",";
+				
+				if($row)
+				{ 
+					fputcsv($fp, array_keys($row)); 
+					mysql_data_seek($sql,0); 
 				}
-			
-				$sep .= "\n";
-				fputs($fp,$sep);
-	
-				mysql_data_seek($sql,0);
+				
 				while($row = mysql_fetch_assoc($sql))
 				{
-					$sep = "";
-					$comma= "";
-	
-					foreach($row as $name => $value)
-					{
-						$sep .= $comma . '' .STR_REPLACE('','""',$value);
-						$comma = ",";
-					}
-		
-				$sep .= "\n";
-				fputs($fp,$sep);
-				}
+					fputcsv($fp, $row);
+				}	
 				fclose($fp);
-			}
-		else
-		{
-			echo 'NO RECORDS IN DATABASE';
-		}
-}
+}	
 
 ### Rating Logs Table Name
 global $wpdb;
