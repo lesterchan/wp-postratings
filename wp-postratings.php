@@ -467,13 +467,13 @@ if(!function_exists('snippet_text')) {
 
 ### Function: Process Post Excerpt, For Some Reasons, The Default get_post_excerpt() Does Not Work As Expected
 function ratings_post_excerpt($post_id, $post_excerpt, $post_content) {
-    if(post_password_required($post_id)) {
-        return __('There is no excerpt because this is a protected post.', 'wp-postratings');
+    if( post_password_required( $post_id ) ) {
+        return __( 'There is no excerpt because this is a protected post.', 'wp-postratings' );
     }
     if(empty($post_excerpt)) {
-        return snippet_text(strip_tags($post_content), 200);
+        return snippet_text( strip_tags( strip_shortcodes( $post_content ) ), 200 );
     } else {
-        return $post_excerpt;
+        return strip_shortcodes( $post_excerpt );
     }
 }
 
