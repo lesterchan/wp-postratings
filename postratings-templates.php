@@ -230,6 +230,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<p style="margin: 2px 0">- %POST_EXCERPT%</p>
 					<p style="margin: 2px 0">- %POST_CONTENT%</p>
 					<p style="margin: 2px 0">- %POST_URL%</p>
+					<p style="margin: 2px 0">- %POST_THUMBNAIL%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('highestrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('highestrated', true);" class="button" />
 				</td>
@@ -246,6 +247,7 @@ if ( isset( $_POST['Submit'] ) ) {
 					<p style="margin: 2px 0">- %POST_EXCERPT%</p>
 					<p style="margin: 2px 0">- %POST_CONTENT%</p>
 					<p style="margin: 2px 0">- %POST_URL%</p>
+					<p style="margin: 2px 0">- %POST_THUMBNAIL%</p>
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Normal Rating)', 'wp-postratings'); ?>" onclick="ratings_default_templates('mostrated', true);" class="button" /><br />
 					<input type="button" name="RestoreDefault" value="<?php _e('Restore Default Template (Up/Down Rating)', 'wp-postratings'); ?>" onclick="ratings_updown_templates('mostrated', true);" class="button" />
 				</td>

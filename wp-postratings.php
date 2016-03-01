@@ -1139,6 +1139,12 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         }
         $value = str_replace("%POST_CONTENT%", get_the_content(), $value);
     }
+    if (strpos($template, '%POST_THUMBNAIL%') !== false) {
+        if (get_the_ID() != $post_id) {
+            $post = &get_post($post_id);
+        }
+        $value = str_replace( '%POST_THUMBNAIL%', get_the_post_thumbnail( $post, 'thumbnail', true ), $value );
+    }
 
     // Google Rich Snippet
     $ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
