@@ -379,10 +379,7 @@ function wp_postratings_ratings_image_alt( $alt_title_text ) {
 ### How To Display Comment Author Ratings?
 * By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code below:
 <code>
-function custom_display_comment_author_ratings() {
-    return true;
-}
-add_filter( 'wp_postratings_display_comment_author_ratings', 'custom_display_comment_author_ratings' );
+add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 </code>
 
 ### How To use PNG images instead of GIF images?
