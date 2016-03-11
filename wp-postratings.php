@@ -1174,10 +1174,20 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         }
         // Publisher
         $site_logo = '';
-        if( has_header_image() ) {
-            $header_image = get_header_image();
-            if( ! empty( $header_image ) ) {
-                $site_logo = $header_image;
+        if ( function_exists( 'the_custom_logo' ) ) {
+            $custom_logo_id = get_theme_mod( 'custom_logo' );
+            if ( $custom_logo_id ) {
+                $size = get_theme_support( 'custom-logo' );
+                $custom_logo = wp_get_attachment_image_src( $custom_logo_id, $size[0]['size'] );
+                $site_logo = $custom_logo[0];
+            }
+        }
+        if( empty( $site_logo ) ) {
+            if( has_header_image() ) {
+                $header_image = get_header_image();
+                if( ! empty( $header_image ) ) {
+                    $site_logo = $header_image;
+                }
             }
         }
         $site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
