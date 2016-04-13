@@ -1,28 +1,27 @@
 <?php
-/**
- * WP-PostRatings Logs.
- *
- * @package WordPress
- * @subpackage WP-PostRatings Plugin
- */
+/*
++----------------------------------------------------------------+
+|																							|
+|	WordPress Plugin: WP-PostRatings								|
+|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
+|																							|
+|	File Written By:																	|
+|	- Lester "GaMerZ" Chan															|
+|	- http://lesterchan.net															|
+|																							|
+|	File Information:																	|
+|	- Manage Post Ratings Logs													|
+|	- wp-content/plugins/wp-postratings/postratings-manager.php		|
+|																							|
++----------------------------------------------------------------+
+*/
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-/**
- * Security check
- * Prevent direct access to the file.
- */
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-
-/**
- * Permission check
- * Check whether the user can manage ratings
- */
-if ( ! current_user_can( 'manage_ratings' ) ) {
-	wp_die( __( 'Access Denied', 'wp-postratings' ) );
-}
+// Check Whether User Can Manage Ratings
+if ( ! current_user_can( 'manage_ratings' ) )
+	die( 'Access Denied' );
 
 
 $base_name                  = plugin_basename( 'wp-postratings/postratings-manager.php' );
@@ -77,17 +76,17 @@ if ( ! empty( $_POST['do'] ) ) {
 			if($post_ids == 'all') {
 				$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings");
 				if($delete_logs) {
-					$text = '<p style="color: green;">'.__('All Rating Logs Have Been Deleted.', 'wp-postratings').'</p>';
+					$text = '<p style="color: green;">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</p>';
 				} else {
-					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Rating Logs.', 'wp-postratings').'</p>';
+					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</p>';
 				}
 
 			} else {
 				$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 				if($delete_logs) {
-					$text = '<p style="color: green;">'.sprintf(__('All Rating Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
+					$text = '<p style="color: green;">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
 				} else {
-					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Rating Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
+					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
 				}
 			}
 			break;
@@ -115,9 +114,9 @@ if ( ! empty( $_POST['do'] ) ) {
 			if($post_ids == 'all') {
 				$delete_logs = $wpdb->query("DELETE FROM $wpdb->ratings");
 				if($delete_logs) {
-					$text = '<p style="color: green;">'.__('All Rating Logs Have Been Deleted.', 'wp-postratings').'</p>';
+					$text = '<p style="color: green;">'.__('All Post Ratings Logs Have Been Deleted.', 'wp-postratings').'</p>';
 				} else {
-					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Rating Logs.', 'wp-postratings').'</p>';
+					$text = '<p style="color: red;">'.__('An Error Has Occured While Deleting All Post Ratings Logs.', 'wp-postratings').'</p>';
 				}
 
 				// @todo Deleting meta records like will not clear the post's object cache
@@ -129,9 +128,9 @@ if ( ! empty( $_POST['do'] ) ) {
 			} else {
 				$delete_logs = $wpdb->query( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN (" . $post_ids . ')' );
 				if($delete_logs) {
-					$text = '<p style="color: green;">'.sprintf(__('All Rating Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
+					$text = '<p style="color: green;">'.sprintf(__('All Post Ratings Logs For Post ID(s) %s Have Been Deleted.', 'wp-postratings'), $post_ids).'</p>';
 				} else {
-					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Rating Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
+					$text = '<p style="color: red;">'.sprintf(__('An Error Has Occured While Deleting All Post Ratings Logs For Post ID(s) %s.', 'wp-postratings'), $post_ids).'</p>';
 				}
 
 				foreach ( $post_ids_list as $the_post_id ) {
@@ -259,11 +258,11 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <!-- Manage Post Ratings -->
 <div class="wrap">
-	<h1><?php _e('Manage Ratings', 'wp-postratings'); ?></h1>
-	<h2><?php _e('Rating Logs', 'wp-postratings'); ?></h2>
+	<h2><?php _e('Manage Ratings', 'wp-postratings'); ?></h2>
+	<h3><?php _e('Post Ratings Logs', 'wp-postratings'); ?></h3>
 	<p><?php printf(
 		/* translators: 1: Number of ratings on page 2: Max on page 3: Total rating */
-		__('Displaying %1$s to %2$s of %3$s rating log entries.', 'wp-postratings'),
+		__('Displaying %1$s to %2$s of %3$s Post Ratings log entries.', 'wp-postratings'),
 		'<strong>' . number_format_i18n( $display_on_page ) . '</strong>',
 		'<strong>' . number_format_i18n( $max_on_page ) . '</strong>',
 		'<strong>' . number_format_i18n( $total_ratings ) . '</strong>'
@@ -299,10 +298,10 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					$style = '';
 				}
 				$postratings_id = intval($postratings_log->rating_id);
-				$postratings_username = stripslashes($postratings_log->rating_username);
+				$postratings_username = esc_html($postratings_log->rating_username);
 				$postratings_rating = intval($postratings_log->rating_rating);
 				$postratings_postid = intval($postratings_log->rating_postid);
-				$postratings_posttitle = stripslashes($postratings_log->rating_posttitle);
+				$postratings_posttitle = esc_html($postratings_log->rating_posttitle);
 				$postratings_date = mysql2date(sprintf(__('%s @ %s', 'wp-postratings'), get_option('date_format'), get_option('time_format')), gmdate('Y-m-d H:i:s', $postratings_log->rating_timestamp));
 				$postratings_ip = $postratings_log->rating_ip;
 				$postratings_host = $postratings_log->rating_host;
@@ -324,17 +323,17 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					if($ratings_custom) {
 						for($j=1; $j <= $ratings_max; $j++) {
 							if($j <= $postratings_rating) {
-								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_'.$j.'_on.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
+								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_'.$j.'_on.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
 							} else {
-								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_'.$j.'_off.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
+								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_'.$j.'_off.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
 							}
 						}
 					} else {
 						for($j=1; $j <= $ratings_max; $j++) {
 							if($j <= $postratings_rating) {
-								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_on.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
+								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_on.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
 							} else {
-								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_off.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This %s Star', 'User Rate This %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
+								echo '<img src="'.plugins_url('wp-postratings/images/'.$ratings_image.'/rating_off.'.RATINGS_IMG_EXT).'" alt="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" title="'.sprintf(_n('User Rate This Post %s Star', 'User Rate This Post %s Stars', $postratings_rating, 'wp-postratings'), $postratings_rating).__(' Out Of ', 'wp-postratings').$ratings_max.'" class="post-ratings-image" />';
 							}
 						}
 					}
@@ -353,7 +352,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				$i++;
 			}
 		} else {
-			echo '<tr><td colspan="7" align="center"><strong>'.__('No Rating Logs Found', 'wp-postratings').'</strong></td></tr>';
+			echo '<tr><td colspan="7" align="center"><strong>'.__('No Post Ratings Logs Found', 'wp-postratings').'</strong></td></tr>';
 		}
 	?>
 		</tbody>
@@ -424,7 +423,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 			<tr>
 				<th><?php _e('Filter Options:', 'wp-postratings'); ?></th>
 				<td>
-					<?php _e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo $postratings_filterid; ?>" size="7" maxlength="10" />
+					<?php _e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo $postratings_filterid; ?>" size="5" maxlength="5" />
 					&nbsp;&nbsp;&nbsp;
 					<select name="user" size="1">
 						<option value=""></option>
@@ -432,7 +431,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 							$filter_users = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT rating_username, rating_userid FROM {$wpdb->ratings} WHERE rating_username != %s ORDER BY rating_userid ASC, rating_username ASC", __(' Guest', 'wp-postratings' ) ) );
 							if($filter_users) {
 								foreach($filter_users as $filter_user) {
-									$rating_username = stripslashes($filter_user->rating_username);
+									$rating_username = esc_html($filter_user->rating_username);
 									$rating_userid = intval($filter_user->rating_userid);
 									if($rating_userid > 0) {
 										$prefix = __('Registered User: ', 'wp-postratings');
@@ -473,7 +472,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				<td>
 					<select name="by" size="1">
 						<option value="id"<?php if($postratings_sortby == 'rating_id') { echo ' selected="selected"'; }?>><?php _e('ID', 'wp-postratings'); ?></option>
-						<option value="username"<?php if($postratings_sortby == 'rating_username') { echo ' selected="selected"'; }?>><?php _e('Username', 'wp-postratings'); ?></option>
+						<option value="username"<?php if($postratings_sortby == 'rating_username') { echo ' selected="selected"'; }?>><?php _e('UserName', 'wp-postratings'); ?></option>
 						<option value="rating"<?php if($postratings_sortby == 'rating_rating') { echo ' selected="selected"'; }?>><?php _e('Rating', 'wp-postratings'); ?></option>
 						<option value="postid"<?php if($postratings_sortby == 'rating_postid') { echo ' selected="selected"'; }?>><?php _e('Post ID', 'wp-postratings'); ?></option>
 						<option value="posttitle"<?php if($postratings_sortby == 'rating_posttitle') { echo ' selected="selected"'; }?>><?php _e('Post Title', 'wp-postratings'); ?></option>
@@ -510,7 +509,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 
 <!-- Post Ratings Stats -->
 <div class="wrap">
-	<h2><?php _e('Rating Stats', 'wp-postratings'); ?></h2>
+	<h3><?php _e('Post Ratings Logs Stats', 'wp-postratings'); ?></h3>
 	<br style="clear" />
 	<table class="widefat">
 		<tr>
@@ -531,7 +530,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 
 <!-- Delete Post Ratings Logs -->
 <div class="wrap">
-	<h2><?php _e('Delete Ratings Data/Logs', 'wp-postratings'); ?></h2>
+	<h3><?php _e('Delete Post Ratings Data/Logs', 'wp-postratings'); ?></h3>
 	<br style="clear" />
 	<div align="center">
 		<form method="post" action="<?php echo esc_url( $base_page ); ?>">
@@ -564,7 +563,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 		</table>
 		</form>
 	</div>
-	<h2><?php _e('Note:', 'wp-postratings'); ?></h2>
+	<h3><?php _e('Note:', 'wp-postratings'); ?></h3>
 	<ul>
 		<li><?php _e('\'Logs Only\' means the logs generated when a user rates a post.', 'wp-postratings'); ?></li>
 		<li><?php _e('\'Data Only\' means the rating data for the post.', 'wp-postratings'); ?></li>
