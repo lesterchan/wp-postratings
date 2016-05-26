@@ -45,7 +45,10 @@ function ratings_activate() {
             "rating_host VARCHAR(200) NOT NULL,".
             "rating_username VARCHAR(50) NOT NULL,".
             "rating_userid int(10) NOT NULL default '0',".
-            "PRIMARY KEY (rating_id));";
+            "PRIMARY KEY (rating_id),".
+            "KEY rating_postid (rating_postid),".
+            "KEY rating_userid (rating_userid),".
+            "KEY rating_postid_ip (rating_postid, rating_ip));";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $create_sql );
@@ -75,6 +78,24 @@ function ratings_activate() {
     // Database Upgrade For WP-PostRatings 1.50
     delete_option('widget_ratings_highest_rated');
     delete_option('widget_ratings_most_rated');
+
+    // Index
+    $index = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings;" );
+    $key_name = array();
+    if( sizeof( $index ) > 0 ) {
+        foreach( $index as $i ) {
+            $key_name[]= $i->Key_name;
+        }
+    }
+    if ( ! in_array( 'rating_postid', $key_name ) ) {
+        $wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_postid (rating_postid);" );
+    }
+    if ( ! in_array( 'rating_userid', $key_name ) ) {
+        $wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_userid (rating_userid);" );
+    }
+    if ( ! in_array( 'rating_postid_ip', $key_name ) ) {
+        $wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_postid_ip (rating_postid, rating_ip);" );
+    }
 
     // Set 'manage_ratings' Capabilities To Administrator
     $role = get_role( 'administrator' );
