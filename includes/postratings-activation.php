@@ -46,7 +46,6 @@ function ratings_activate() {
             "rating_username VARCHAR(50) NOT NULL,".
             "rating_userid int(10) NOT NULL default '0',".
             "PRIMARY KEY (rating_id),".
-            "KEY rating_postid (rating_postid),".
             "KEY rating_userid (rating_userid),".
             "KEY rating_postid_ip (rating_postid, rating_ip));";
 
@@ -86,9 +85,6 @@ function ratings_activate() {
         foreach( $index as $i ) {
             $key_name[]= $i->Key_name;
         }
-    }
-    if ( ! in_array( 'rating_postid', $key_name ) ) {
-        $wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_postid (rating_postid);" );
     }
     if ( ! in_array( 'rating_userid', $key_name ) ) {
         $wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_userid (rating_userid);" );
