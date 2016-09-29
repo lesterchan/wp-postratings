@@ -33,12 +33,12 @@ $base_page = 'admin.php?page='.$base_name;
 ### If Form Is Submitted
 if ( isset( $_POST['Submit'] ) ) {
 	check_admin_referer('wp-postratings_templates');
-	$postratings_template_vote = trim($_POST['postratings_template_vote']);
-	$postratings_template_text = trim($_POST['postratings_template_text']);
-	$postratings_template_permission = trim($_POST['postratings_template_permission']);
-	$postratings_template_none = trim($_POST['postratings_template_none']);
-	$postratings_template_highestrated = trim($_POST['postratings_template_highestrated']);
-	$postratings_template_mostrated = trim($_POST['postratings_template_mostrated']);
+	$postratings_template_vote = wp_kses_post(trim($_POST['postratings_template_vote']));
+	$postratings_template_text = wp_kses_post(trim($_POST['postratings_template_text']));
+	$postratings_template_permission = wp_kses_post(trim($_POST['postratings_template_permission']));
+	$postratings_template_none = wp_kses_post(trim($_POST['postratings_template_none']));
+	$postratings_template_highestrated = wp_kses_post(trim($_POST['postratings_template_highestrated']));
+	$postratings_template_mostrated = wp_kses_post(trim($_POST['postratings_template_mostrated']));
 	$update_ratings_queries = array();
 	$update_ratings_text = array();
 	$update_ratings_queries[] = update_option('postratings_template_vote', $postratings_template_vote);

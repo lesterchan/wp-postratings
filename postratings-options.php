@@ -34,20 +34,20 @@ $base_page = 'admin.php?page='.$base_name;
 if ( isset( $_POST['Submit'] ) ) {
     check_admin_referer('wp-postratings_options');
     $postratings_customrating = intval($_POST['postratings_customrating']);
-    $postratings_template_vote = trim($_POST['postratings_template_vote']);
-    $postratings_template_text = trim($_POST['postratings_template_text']);
-    $postratings_template_permission = trim($_POST['postratings_template_permission']);
-    $postratings_template_none = trim($_POST['postratings_template_none']);
-    $postratings_template_highestrated = trim($_POST['postratings_template_highestrated']);
-    $postratings_template_mostrated = trim($_POST['postratings_template_mostrated']);
-    $postratings_image = strip_tags(trim($_POST['postratings_image']));
+    $postratings_template_vote = wp_kses_post(trim($_POST['postratings_template_vote']));
+    $postratings_template_text = wp_kses_post(trim($_POST['postratings_template_text']));
+    $postratings_template_permission = wp_kses_post(trim($_POST['postratings_template_permission']));
+    $postratings_template_none = wp_kses_post(trim($_POST['postratings_template_none']));
+    $postratings_template_highestrated = wp_kses_post(trim($_POST['postratings_template_highestrated']));
+    $postratings_template_mostrated = wp_kses_post(trim($_POST['postratings_template_mostrated']));
+    $postratings_image = sanitize_file_name(strip_tags(trim($_POST['postratings_image'])));
     $postratings_max = intval($_POST['postratings_max']);
     $postratings_richsnippet = intval($_POST['postratings_richsnippet']);
     $postratings_ratingstext_array = $_POST['postratings_ratingstext'];
     $postratings_ratingstext = array();
     if( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
         foreach( $postratings_ratingstext_array as $ratingstext ) {
-            $postratings_ratingstext[] = trim( $ratingstext );
+            $postratings_ratingstext[] = wp_kses_post(trim( $ratingstext ));
         }
     }
     $postratings_ratingsvalue_array = $_POST['postratings_ratingsvalue'];
