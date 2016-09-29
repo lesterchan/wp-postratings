@@ -223,9 +223,9 @@ if ( ! empty( $postratings_filterrating ) )
 	$postratings_where .= $wpdb->prepare( " AND rating_rating = %d", $postratings_filterrating );
 
 // Get Post Ratings Logs Data
-$total_ratings = $wpdb->get_var("SELECT COUNT(rating_id) FROM $wpdb->ratings WHERE 1=1 $postratings_where");
-$total_users = $wpdb->get_var("SELECT SUM(meta_value) FROM $wpdb->postmeta WHERE meta_key = 'ratings_users'");
-$total_score = $wpdb->get_var("SELECT SUM((meta_value+0.00)) FROM $wpdb->postmeta WHERE meta_key = 'ratings_score'");
+$total_ratings = intval($wpdb->get_var("SELECT COUNT(rating_id) FROM $wpdb->ratings WHERE 1=1 $postratings_where"));
+$total_users = intval($wpdb->get_var("SELECT SUM(meta_value) FROM $wpdb->postmeta WHERE meta_key = 'ratings_users'"));
+$total_score = intval($wpdb->get_var("SELECT SUM((meta_value+0.00)) FROM $wpdb->postmeta WHERE meta_key = 'ratings_score'"));
 $ratings_custom = intval(get_option('postratings_customrating'));
 if($total_users == 0) {
 	$total_average = 0;
