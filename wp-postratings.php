@@ -98,7 +98,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
     $postratings_ajax_style = get_option('postratings_ajax_style');
     if(intval($postratings_ajax_style['loading']) == 1) {
         $loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading">
-            <img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . __( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
+            <img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
     } else {
         $loading = '';
     }
@@ -470,7 +470,7 @@ if(!function_exists('snippet_text')) {
 ### Function: Process Post Excerpt, For Some Reasons, The Default get_post_excerpt() Does Not Work As Expected
 function ratings_post_excerpt($post_id, $post_excerpt, $post_content) {
     if( post_password_required( $post_id ) ) {
-        return __( 'There is no excerpt because this is a protected post.', 'wp-postratings' );
+        return esc_html__( 'There is no excerpt because this is a protected post.', 'wp-postratings' );
     }
     if(empty($post_excerpt)) {
         return snippet_text( strip_tags( strip_shortcodes( $post_content ) ), 200 );
@@ -519,7 +519,7 @@ function process_ratings() {
         // Verify Referer
         if(!check_ajax_referer('postratings_'.$post_id.'-nonce', 'postratings_'.$post_id.'_nonce', false))
         {
-            _e('Failed To Verify Referrer', 'wp-postratings');
+            esc_html_e('Failed To Verify Referrer', 'wp-postratings');
             exit();
         }
 
@@ -582,11 +582,11 @@ function process_ratings() {
                     echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
                     exit();
                 } else {
-                    printf(__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
+                    printf(esc_html__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
                     exit();
                 } // End if($post)
             } else {
-                printf(__('You Had Already Rated This Post. Post ID #%s.', 'wp-postratings'), $post_id);
+                printf(esc_html__('You Had Already Rated This Post. Post ID #%s.', 'wp-postratings'), $post_id);
                 exit();
             }// End if(!$rated)
         } // End if($rate && $post_id && check_allowtorate())
@@ -634,9 +634,9 @@ function manage_ratings()
         <table class="form-table">
             <thead>
                 <tr>
-                    <th><?php _e('Rating Image', 'wp-postratings'); ?></th>
-                    <th><?php _e('Rating Text', 'wp-postratings'); ?></th>
-                    <th><?php _e('Rating Value', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Image', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Text', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Value', 'wp-postratings'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -803,9 +803,9 @@ function postratings_wp_stats() {
 function postratings_page_admin_general_stats($content) {
     $stats_display = get_option('stats_display');
     if($stats_display['ratings'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
     }
     return $content;
 }
