@@ -38,7 +38,7 @@ class WP_Widget_PostRatings extends WP_Widget {
         $limit = intval($instance['limit']);
         $min_votes = intval($instance['min_votes']);
         $chars = intval($instance['chars']);
-        $cat_ids = explode(',', esc_attr($instance['cat_ids']));
+        $cat_ids = array_map( 'intval', explode(',', esc_attr($instance['cat_ids'])) );
         $time_range = esc_attr($instance['time_range']);
         echo $args['before_widget'].$args['before_title'].$title.$args['after_title'];
         echo '<ul>'."\n";
