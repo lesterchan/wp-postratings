@@ -611,7 +611,7 @@ function manage_ratings()
 
         // Form Processing
         $postratings_customrating = intval($_GET['custom']);
-        $postratings_image = trim($_GET['image']);
+        $postratings_image = sanitize_file_name(trim($_GET['image']));
         $postratings_max = intval($_GET['max']);
 
         // If It Is A Up/Down Rating
@@ -887,6 +887,8 @@ function postratings_page_most_stats($content) {
 ### Function: Gets HTML of rating images
 function get_ratings_images($ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half) {
     $ratings_images = '';
+    $image_alt = esc_attr( $image_alt );
+    $ratings_image = sanitize_file_name( $ratings_image );
     $image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
@@ -934,6 +936,7 @@ function get_ratings_images($ratings_custom, $ratings_max, $post_rating, $rating
 ### Function: Gets HTML of rating images for voting
 function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half, $ratings_texts) {
     $ratings_images = '';
+    $ratings_image = sanitize_file_name( $ratings_image );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
     } elseif(file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
@@ -996,6 +999,8 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
 ### Function: Gets HTML of rating images for comment author
 function get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt) {
     $ratings_images = '';
+    $image_alt = esc_attr( $image_alt );
+    $ratings_image = sanitize_file_name( $ratings_image );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
     } elseif(file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
