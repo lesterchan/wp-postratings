@@ -299,13 +299,13 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					$style = '';
 				}
 				$postratings_id = intval($postratings_log->rating_id);
-				$postratings_username = stripslashes($postratings_log->rating_username);
+				$postratings_username = esc_html( stripslashes($postratings_log->rating_username) );
 				$postratings_rating = intval($postratings_log->rating_rating);
 				$postratings_postid = intval($postratings_log->rating_postid);
-				$postratings_posttitle = stripslashes($postratings_log->rating_posttitle);
-				$postratings_date = mysql2date(sprintf(__('%s @ %s', 'wp-postratings'), get_option('date_format'), get_option('time_format')), gmdate('Y-m-d H:i:s', $postratings_log->rating_timestamp));
-				$postratings_ip = $postratings_log->rating_ip;
-				$postratings_host = $postratings_log->rating_host;
+				$postratings_posttitle = esc_html( stripslashes($postratings_log->rating_posttitle) );
+				$postratings_date = esc_html(mysql2date(sprintf(__('%s @ %s', 'wp-postratings'), get_option('date_format'), get_option('time_format')), gmdate('Y-m-d H:i:s', $postratings_log->rating_timestamp)));
+				$postratings_ip = esc_html( $postratings_log->rating_ip );
+				$postratings_host = esc_html( $postratings_log->rating_host );
 				echo "<tr $style>\n";
 				echo '<td>'.$postratings_id.'</td>'."\n";
 				echo "<td>$postratings_username</td>\n";
@@ -432,7 +432,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 							$filter_users = $wpdb->get_results( $wpdb->prepare( "SELECT DISTINCT rating_username, rating_userid FROM {$wpdb->ratings} WHERE rating_username != %s ORDER BY rating_userid ASC, rating_username ASC", __(' Guest', 'wp-postratings' ) ) );
 							if($filter_users) {
 								foreach($filter_users as $filter_user) {
-									$rating_username = stripslashes($filter_user->rating_username);
+									$rating_username = esc_html(stripslashes($filter_user->rating_username));
 									$rating_userid = intval($filter_user->rating_userid);
 									if($rating_userid > 0) {
 										$prefix = esc_html__('Registered User: ', 'wp-postratings');
