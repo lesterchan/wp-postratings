@@ -58,7 +58,7 @@ if(!function_exists('get_most_rated')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -117,7 +117,7 @@ if(!function_exists('get_most_rated_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -170,7 +170,7 @@ if(!function_exists('get_most_rated_range')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -230,7 +230,7 @@ if(!function_exists('get_most_rated_range_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -283,7 +283,7 @@ if(!function_exists('get_highest_rated')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -343,7 +343,7 @@ if(!function_exists('get_highest_rated_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -396,7 +396,7 @@ if(!function_exists('get_highest_rated_range')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -456,7 +456,7 @@ if(!function_exists('get_highest_rated_range_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -509,7 +509,7 @@ if(!function_exists('get_lowest_rated')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -569,7 +569,7 @@ if(!function_exists('get_lowest_rated_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -622,7 +622,7 @@ if(!function_exists('get_lowest_rated_range')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -667,7 +667,7 @@ if(!function_exists('get_highest_score')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -719,7 +719,7 @@ if(!function_exists('get_highest_score_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -765,7 +765,7 @@ if(!function_exists('get_highest_score_range')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -818,7 +818,7 @@ if(!function_exists('get_highest_score_range_category')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -877,7 +877,7 @@ if(!function_exists('get_highest_rated_tag')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
@@ -936,7 +936,7 @@ if(!function_exists('get_lowest_rated_tag')) {
 				$output .= expand_ratings_template($temp, $post, null, $chars, false)."\n";
 			}
 		} else {
-			$output = '<li>'.__('N/A', 'wp-postratings').'</li>'."\n";
+			$output = '<li>'.esc_html__('N/A', 'wp-postratings').'</li>'."\n";
 		}
 		if($display) {
 			echo $output;
