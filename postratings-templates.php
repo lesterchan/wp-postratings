@@ -50,7 +50,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$update_ratings_text[] = esc_html__('Ratings Template Vote', 'wp-postratings');
 	$update_ratings_text[] = esc_html__('Ratings Template Voted', 'wp-postratings');
 	$update_ratings_text[] = esc_html__('Ratings Template No Permission', 'wp-postratings');
-	$update_ratings_text[] = __('Ratings Template For No Ratings', 'wp-postratings');
+	$update_ratings_text[] = esc_html__('Ratings Template For No Ratings', 'wp-postratings');
 	$update_ratings_text[] = esc_html__('Ratings Template For Highest Rated', 'wp-postratings');
 	$update_ratings_text[] = esc_html__('Ratings Template For Most Rated', 'wp-postratings');
 	$i = 0;
