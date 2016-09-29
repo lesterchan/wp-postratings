@@ -27,7 +27,7 @@ function ratings_shortcode( $atts ) {
             return the_ratings( 'span', $id, false );
         }
     } else {
-        return __( 'Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings' );
+        return esc_html__( 'Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings' );
     }
 }
 add_shortcode( 'ratings', 'ratings_shortcode' );
