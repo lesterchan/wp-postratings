@@ -1043,9 +1043,9 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     $ratings_options = get_option('postratings_options');
 
     if(is_object($post_data)) {
-        $post_id = $post_data->ID;
+        $post_id = inval($post_data->ID);
     } else {
-        $post_id = $post_data;
+        $post_id = intval($post_data);
     }
 
     // Most likely from coming from Widget
