@@ -92,6 +92,8 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
         }
     }
 
+    $ratings_id = (int) $ratings_id;
+
     // Loading Style
     $postratings_ajax_style = get_option('postratings_ajax_style');
     if(intval($postratings_ajax_style['loading']) == 1) {
