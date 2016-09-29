@@ -348,14 +348,14 @@ $postratings_image = get_option('postratings_image');
                             }
                             echo '</td>'."\n";
                             echo '<td>'."\n";
-                            echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.stripslashes($postratings_ratingstext[$i-1]).'" size="20" maxlength="50" />'."\n";
+                            echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.esc_attr(stripslashes($postratings_ratingstext[$i-1])).'" size="20" maxlength="50" />'."\n";
                             echo '</td>'."\n";
                             echo '<td>'."\n";
                             echo '<input type="text" id="postratings_ratingsvalue_'.$i.'" name="postratings_ratingsvalue[]" value="';
                             if($postratings_ratingsvalue[$i-1] > 0 && $postratings_customrating) {
                                 echo '+';
                             }
-                            echo $postratings_ratingsvalue[$i-1].'" size="3" maxlength="5" />'."\n";
+                            echo intval($postratings_ratingsvalue[$i-1]).'" size="3" maxlength="5" />'."\n";
                             echo '</td>'."\n";
                             echo '</tr>'."\n";
                         }
