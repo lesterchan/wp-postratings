@@ -30,7 +30,7 @@ $base_page                  = admin_url( 'admin.php?page=' . urlencode( $base_na
 $postratings_sort_url       = '';
 $postratings_sortby_text    = '';
 $postratings_sortorder_text = '';
-$ratings_image              = get_option( 'postratings_image' );
+$ratings_image              = sanitize_file_name( get_option( 'postratings_image' ) );
 $ratings_max                = intval( get_option( 'postratings_max' ) );
 
 // Handle $_GET values
