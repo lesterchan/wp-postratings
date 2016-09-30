@@ -2,8 +2,8 @@
 Contributors: GamerZ  
 Donate link: http://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
-Requires at least: 2.8  
-Tested up to: 4.5  
+Requires at least: 4.0
+Tested up to: 4.6
 Stable tag: 1.84
 
 Adds an AJAX rating system for your WordPress site's content.
@@ -48,6 +48,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * FIXED: Update translation strings to avoid using 'post' as the post type. Props @ramiy.
 * FIXED: Minor translation string fix. Props @ramiy.
 * FIXED: Update rating widget. Props @ramiy.
+* FIXED: Security hardening. Props @stephenharris.
 
 ### Version 1.83.2
 * FIXED: Unauthenticated blind SQL injection in ratings_most_orderby(). Props @Ben Bidner from Automattic.
