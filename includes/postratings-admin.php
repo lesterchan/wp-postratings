@@ -94,7 +94,7 @@ class WPPostRatingsAdmin {
 	 */
 	function postrating_admin_column_title( $defaults ) {
 
-		$defaults['ratings'] = __( 'Ratings', 'wp-postratings' );
+		$defaults['ratings'] = esc_html__( 'Ratings', 'wp-postratings' );
 		return $defaults;
 
 	}

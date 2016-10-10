@@ -92,11 +92,13 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
         }
     }
 
+    $ratings_id = (int) $ratings_id;
+
     // Loading Style
     $postratings_ajax_style = get_option('postratings_ajax_style');
     if(intval($postratings_ajax_style['loading']) == 1) {
         $loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading">
-            <img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . __( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
+            <img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
     } else {
         $loading = '';
     }
@@ -468,7 +470,7 @@ if(!function_exists('snippet_text')) {
 ### Function: Process Post Excerpt, For Some Reasons, The Default get_post_excerpt() Does Not Work As Expected
 function ratings_post_excerpt($post_id, $post_excerpt, $post_content) {
     if( post_password_required( $post_id ) ) {
-        return __( 'There is no excerpt because this is a protected post.', 'wp-postratings' );
+        return esc_html__( 'There is no excerpt because this is a protected post.', 'wp-postratings' );
     }
     if(empty($post_excerpt)) {
         return snippet_text( strip_tags( strip_shortcodes( $post_content ) ), 200 );
@@ -517,7 +519,7 @@ function process_ratings() {
         // Verify Referer
         if(!check_ajax_referer('postratings_'.$post_id.'-nonce', 'postratings_'.$post_id.'_nonce', false))
         {
-            _e('Failed To Verify Referrer', 'wp-postratings');
+            esc_html_e('Failed To Verify Referrer', 'wp-postratings');
             exit();
         }
 
@@ -580,11 +582,11 @@ function process_ratings() {
                     echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
                     exit();
                 } else {
-                    printf(__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
+                    printf(esc_html__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
                     exit();
                 } // End if($post)
             } else {
-                printf(__('You Had Already Rated This Post. Post ID #%s.', 'wp-postratings'), $post_id);
+                printf(esc_html__('You Had Already Rated This Post. Post ID #%s.', 'wp-postratings'), $post_id);
                 exit();
             }// End if(!$rated)
         } // End if($rate && $post_id && check_allowtorate())
@@ -609,7 +611,7 @@ function manage_ratings()
 
         // Form Processing
         $postratings_customrating = intval($_GET['custom']);
-        $postratings_image = trim($_GET['image']);
+        $postratings_image = sanitize_file_name(trim($_GET['image']));
         $postratings_max = intval($_GET['max']);
 
         // If It Is A Up/Down Rating
@@ -621,9 +623,9 @@ function manage_ratings()
         } else {
             for($i = 0; $i < $postratings_max; $i++) {
                 if($i > 0) {
-                    $postratings_ratingstext[$i] = sprintf(__('%s Stars', 'wp-postratings'), number_format_i18n($i+1));
+                    $postratings_ratingstext[$i] = sprintf(esc_html__('%s Stars', 'wp-postratings'), number_format_i18n($i+1));
                 } else {
-                    $postratings_ratingstext[$i] = sprintf(__('%s Star', 'wp-postratings'), number_format_i18n($i+1));
+                    $postratings_ratingstext[$i] = sprintf(esc_html__('%s Star', 'wp-postratings'), number_format_i18n($i+1));
                 }
                 $postratings_ratingsvalue[$i] = $i+1;
             }
@@ -632,9 +634,9 @@ function manage_ratings()
         <table class="form-table">
             <thead>
                 <tr>
-                    <th><?php _e('Rating Image', 'wp-postratings'); ?></th>
-                    <th><?php _e('Rating Text', 'wp-postratings'); ?></th>
-                    <th><?php _e('Rating Value', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Image', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Text', 'wp-postratings'); ?></th>
+                    <th><?php esc_html_e('Rating Value', 'wp-postratings'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -801,9 +803,9 @@ function postratings_wp_stats() {
 function postratings_page_admin_general_stats($content) {
     $stats_display = get_option('stats_display');
     if($stats_display['ratings'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
     }
     return $content;
 }
@@ -814,24 +816,24 @@ function postratings_page_admin_most_stats($content) {
     $stats_display = get_option('stats_display');
     $stats_mostlimit = intval(get_option('stats_mostlimit'));
     if($stats_display['rated_highest_post'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     }
     if($stats_display['rated_highest_page'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     }
     if($stats_display['rated_most_post'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     }
     if($stats_display['rated_most_page'] == 1) {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     } else {
-        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</label><br />'."\n";
+        $content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
     }
     return $content;
 }
@@ -841,9 +843,9 @@ function postratings_page_admin_most_stats($content) {
 function postratings_page_general_stats($content) {
     $stats_display = get_option('stats_display');
     if($stats_display['ratings'] == 1) {
-        $content .= '<p><strong>'.__('WP-PostRatings', 'wp-postratings').'</strong></p>'."\n";
+        $content .= '<p><strong>'.esc_html__('WP-PostRatings', 'wp-postratings').'</strong></p>'."\n";
         $content .= '<ul>'."\n";
-        $content .= '<li>'.sprintf(_n('%s user casted his vote.', '%s users casted their vote.', get_ratings_users(false), 'wp-postratings'), '<strong>'.number_format_i18n(get_ratings_users(false)).'</strong>').'</li>'."\n";
+        $content .= '<li>'.esc_html(sprintf(_n('%s user casted his vote.', '%s users casted their vote.', get_ratings_users(false), 'wp-postratings'), '<strong>'.number_format_i18n(get_ratings_users(false)).'</strong>')).'</li>'."\n";
         $content .= '</ul>'."\n";
     }
     return $content;
@@ -885,6 +887,8 @@ function postratings_page_most_stats($content) {
 ### Function: Gets HTML of rating images
 function get_ratings_images($ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half) {
     $ratings_images = '';
+    $image_alt = esc_attr( $image_alt );
+    $ratings_image = sanitize_file_name( $ratings_image );
     $image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
@@ -932,6 +936,7 @@ function get_ratings_images($ratings_custom, $ratings_max, $post_rating, $rating
 ### Function: Gets HTML of rating images for voting
 function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half, $ratings_texts) {
     $ratings_images = '';
+    $ratings_image = sanitize_file_name( $ratings_image );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
     } elseif(file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
@@ -994,6 +999,8 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
 ### Function: Gets HTML of rating images for comment author
 function get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt) {
     $ratings_images = '';
+    $image_alt = esc_attr( $image_alt );
+    $ratings_image = sanitize_file_name( $ratings_image );
     if(is_rtl() && file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
         $ratings_images .= '<img src="'.plugins_url('/wp-postratings/images/'.$ratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT).'" alt="" class="post-ratings-image" />';
     } elseif(file_exists(WP_PLUGIN_DIR.'/wp-postratings/images/'.$ratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
@@ -1041,9 +1048,9 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     $ratings_options = get_option('postratings_options');
 
     if(is_object($post_data)) {
-        $post_id = $post_data->ID;
+        $post_id = intval($post_data->ID);
     } else {
-        $post_id = $post_data;
+        $post_id = intval($post_data);
     }
 
     // Most likely from coming from Widget
@@ -1082,10 +1089,10 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         if($post_ratings_score > 0) {
             $post_ratings_score = '+'.$post_ratings_score;
         }
-        $post_ratings_alt_text = sprintf(_n('%s rating', '%s ratings', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users));
+        $post_ratings_alt_text = esc_html(sprintf(_n('%s rating', '%s ratings', $post_ratings_score, 'wp-postratings'), number_format_i18n($post_ratings_score)).__(',', 'wp-postratings').' '.sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users)));
     } else {
         $post_ratings_score = number_format_i18n($post_ratings_score);
-        $post_ratings_alt_text = sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users)).__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': '.number_format_i18n($post_ratings_average, 2).' '.__('out of', 'wp-postratings').' '.number_format_i18n($ratings_max);
+        $post_ratings_alt_text = esc_html(sprintf(_n('%s vote', '%s votes', $post_ratings_users, 'wp-postratings'), number_format_i18n($post_ratings_users)).__(',', 'wp-postratings').' '.__('average', 'wp-postratings').': '.number_format_i18n($post_ratings_average, 2).' '.__('out of', 'wp-postratings').' '.number_format_i18n($ratings_max));
     }
     // Check for half star
     $insert_half = 0;
