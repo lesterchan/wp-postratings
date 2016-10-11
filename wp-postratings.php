@@ -195,6 +195,10 @@ function check_allowtorate() {
         case 1:
             return is_user_logged_in();
             break;
+        // Users registered on blog (for multisite)
+        case 3:
+            return is_user_member_of_blog();
+            break;
         // Registered Users And Guests
         case 2:
         default:

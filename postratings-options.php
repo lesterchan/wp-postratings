@@ -393,6 +393,9 @@ $postratings_image = get_option('postratings_image');
                     <select name="postratings_allowtorate" size="1">
                         <option value="0"<?php selected('0', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Guests Only', 'wp-postratings'); ?></option>
                         <option value="1"<?php selected('1', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Logged-in Users Only', 'wp-postratings'); ?></option>
+                        <?php if ( is_multisite() ) : ?>
+                            <option value="3"<?php selected('3', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Users Registered On Blog Only', 'wp-postratings'); ?></option>
+                        <?php endif; ?>
                         <option value="2"<?php selected('2', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Logged-in Users And Guests', 'wp-postratings'); ?></option>
                     </select>
                 </td>
