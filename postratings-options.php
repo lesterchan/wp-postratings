@@ -392,8 +392,8 @@ $postratings_image = get_option('postratings_image');
                 <td>
                     <select name="postratings_allowtorate" size="1">
                         <option value="0"<?php selected('0', get_option('postratings_allowtorate')); ?>><?php _e('Guests Only', 'wp-postratings'); ?></option>
-                        <option value="1"<?php selected('1', get_option('postratings_allowtorate')); ?>><?php _e('Registered Users Only', 'wp-postratings'); ?></option>
-                        <option value="2"<?php selected('2', get_option('postratings_allowtorate')); ?>><?php _e('Registered Users And Guests', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', get_option('postratings_allowtorate')); ?>><?php _e('Logged-in Users Only', 'wp-postratings'); ?></option>
+                        <option value="2"<?php selected('2', get_option('postratings_allowtorate')); ?>><?php _e('Logged-in Users And Guests', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>
