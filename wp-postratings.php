@@ -185,23 +185,19 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
 
 ### Function: Check Who Is Allow To Rate
 function check_allowtorate() {
-    global $user_ID;
-    $user_ID = intval($user_ID);
     $allow_to_vote = intval(get_option('postratings_allowtorate'));
     switch($allow_to_vote) {
         // Guests Only
         case 0:
-            if($user_ID > 0) {
-                return false;
-            }
-            return true;
+            return ! is_user_logged_in();
             break;
-        // Registered Users Only
+        // Logged-in users only
         case 1:
-            if($user_ID == 0) {
-                return false;
-            }
-            return true;
+            return is_user_logged_in();
+            break;
+        // Users registered on blog (for multisite)
+        case 3:
+            return is_user_member_of_blog();
             break;
         // Registered Users And Guests
         case 2:

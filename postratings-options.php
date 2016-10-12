@@ -210,7 +210,7 @@ $postratings_image = get_option('postratings_image');
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
 <div class="wrap">
-    <h1><?php _e('Post Ratings Options', 'wp-postratings'); ?></h1>
+    <h1><?php esc_html_e('Post Ratings Options', 'wp-postratings'); ?></h1>
     <form method="post" action="<?php echo admin_url('admin.php?page='.plugin_basename(__FILE__)); ?>">
         <?php wp_nonce_field('wp-postratings_options'); ?>
         <input type="hidden" id="postratings_customrating" name="postratings_customrating" value="<?php echo $postratings_customrating; ?>" />
@@ -220,10 +220,10 @@ $postratings_image = get_option('postratings_image');
         <input type="hidden" id="postratings_template_none" name="postratings_template_none" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_none'))); ?>" />
         <input type="hidden" id="postratings_template_highestrated" name="postratings_template_highestrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_highestrated'))); ?>" />
         <input type="hidden" id="postratings_template_mostrated" name="postratings_template_mostrated" value="<?php echo esc_attr(stripslashes(get_option('postratings_template_mostrated'))); ?>" />
-        <h2><?php _e('Ratings Settings', 'wp-postratings'); ?></h2>
+        <h2><?php esc_html_e('Ratings Settings', 'wp-postratings'); ?></h2>
         <table class="form-table">
              <tr>
-                <th scope="row" valign="top"><?php _e('Ratings Image:', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Ratings Image:', 'wp-postratings'); ?></th>
                 <td>
                     <?php
                         $postratings_images_array = array();
@@ -293,29 +293,29 @@ $postratings_image = get_option('postratings_image');
                 </td>
             </tr>
             <tr>
-                <th scope="row" valign="top"><?php _e('Max Ratings:', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Max Ratings:', 'wp-postratings'); ?></th>
                 <td><input type="text" id="postratings_max" name="postratings_max" value="<?php echo $postratings_max; ?>" size="3" <?php if($postratings_customrating) { echo 'readonly="readonly"'; } ?> /></td>
             </tr>
             <tr>
-                <th scope="row" valign="top"><?php _e('Enable Google Rich Snippets?', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Enable Google Rich Snippets?', 'wp-postratings'); ?></th>
                 <td>
-                    <input type="radio" id="postratings_richsnippet_on" name="postratings_richsnippet" value="1" <?php if($postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php _e('Yes', 'wp-postratings'); ?>
+                    <input type="radio" id="postratings_richsnippet_on" name="postratings_richsnippet" value="1" <?php if($postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('Yes', 'wp-postratings'); ?>
                     &nbsp;&nbsp;
-                    <input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php _e('No', 'wp-postratings'); ?>
+                    <input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
                 </td>
             </tr>
             <tr>
-                <td colspan="2" align="center"><input type="button" name="update" value="<?php _e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
+                <td colspan="2" align="center"><input type="button" name="update" value="<?php esc_attr_e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
             </tr>
         </table>
-        <h2><?php _e('Individual Rating Text/Value', 'wp-postratings'); ?></h2>
+        <h2><?php esc_html_e('Individual Rating Text/Value', 'wp-postratings'); ?></h2>
         <div id="rating_text_value">
             <table class="form-table">
                 <thead>
                     <tr>
-                        <th><?php _e('Rating Image', 'wp-postratings'); ?></th>
-                        <th><?php _e('Rating Text', 'wp-postratings'); ?></th>
-                        <th><?php _e('Rating Value', 'wp-postratings'); ?></th>
+                        <th><?php esc_html_e('Rating Image', 'wp-postratings'); ?></th>
+                        <th><?php esc_html_e('Rating Text', 'wp-postratings'); ?></th>
+                        <th><?php esc_html_e('Rating Value', 'wp-postratings'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -364,57 +364,60 @@ $postratings_image = get_option('postratings_image');
             </table>
         </div>
         <?php $postratings_ajax_style = get_option('postratings_ajax_style'); ?>
-        <h2><?php _e('Ratings AJAX Style', 'wp-postratings'); ?></h2>
+        <h2><?php esc_html_e('Ratings AJAX Style', 'wp-postratings'); ?></h2>
         <table class="form-table">
              <tr>
-                <th scope="row" valign="top"><?php _e('Show Loading Image With Text', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Show Loading Image With Text', 'wp-postratings'); ?></th>
                 <td>
                     <select name="postratings_ajax_style_loading" size="1">
-                        <option value="0"<?php selected('0', $postratings_ajax_style['loading']); ?>><?php _e('No', 'wp-postratings'); ?></option>
-                        <option value="1"<?php selected('1', $postratings_ajax_style['loading']); ?>><?php _e('Yes', 'wp-postratings'); ?></option>
+                        <option value="0"<?php selected('0', $postratings_ajax_style['loading']); ?>><?php esc_html_e('No', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', $postratings_ajax_style['loading']); ?>><?php esc_html_e('Yes', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>
             <tr>
-                <th scope="row" valign="top"><?php _e('Show Fading In And Fading Out Of Ratings', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Show Fading In And Fading Out Of Ratings', 'wp-postratings'); ?></th>
                 <td>
                     <select name="postratings_ajax_style_fading" size="1">
-                        <option value="0"<?php selected('0', $postratings_ajax_style['fading']); ?>><?php _e('No', 'wp-postratings'); ?></option>
-                        <option value="1"<?php selected('1', $postratings_ajax_style['fading']); ?>><?php _e('Yes', 'wp-postratings'); ?></option>
+                        <option value="0"<?php selected('0', $postratings_ajax_style['fading']); ?>><?php esc_html_e('No', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', $postratings_ajax_style['fading']); ?>><?php esc_html_e('Yes', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>
         </table>
-        <h2><?php _e('Allow To Rate', 'wp-postratings'); ?></h2>
+        <h2><?php esc_html_e('Allow To Rate', 'wp-postratings'); ?></h2>
         <table class="form-table">
              <tr>
-                <th scope="row" valign="top"><?php _e('Who Is Allowed To Rate?', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Who Is Allowed To Rate?', 'wp-postratings'); ?></th>
                 <td>
                     <select name="postratings_allowtorate" size="1">
-                        <option value="0"<?php selected('0', get_option('postratings_allowtorate')); ?>><?php _e('Guests Only', 'wp-postratings'); ?></option>
-                        <option value="1"<?php selected('1', get_option('postratings_allowtorate')); ?>><?php _e('Registered Users Only', 'wp-postratings'); ?></option>
-                        <option value="2"<?php selected('2', get_option('postratings_allowtorate')); ?>><?php _e('Registered Users And Guests', 'wp-postratings'); ?></option>
+                        <option value="0"<?php selected('0', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Guests Only', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Logged-in Users Only', 'wp-postratings'); ?></option>
+                        <?php if ( is_multisite() ) : ?>
+                            <option value="3"<?php selected('3', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Users Registered On Blog Only', 'wp-postratings'); ?></option>
+                        <?php endif; ?>
+                        <option value="2"<?php selected('2', get_option('postratings_allowtorate')); ?>><?php esc_html_e('Logged-in Users And Guests', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>
         </table>
-        <h2><?php _e('Logging Method', 'wp-postratings'); ?></h2>
+        <h2><?php esc_html_e('Logging Method', 'wp-postratings'); ?></h2>
         <table class="form-table">
              <tr>
-                <th scope="row" valign="top"><?php _e('Ratings Logging Method:', 'wp-postratings'); ?></th>
+                <th scope="row" valign="top"><?php esc_html_e('Ratings Logging Method:', 'wp-postratings'); ?></th>
                 <td>
                     <select name="postratings_logging_method" size="1">
-                        <option value="0"<?php selected('0', get_option('postratings_logging_method')); ?>><?php _e('Do Not Log', 'wp-postratings'); ?></option>
-                        <option value="1"<?php selected('1', get_option('postratings_logging_method')); ?>><?php _e('Logged By Cookie', 'wp-postratings'); ?></option>
-                        <option value="2"<?php selected('2', get_option('postratings_logging_method')); ?>><?php _e('Logged By IP', 'wp-postratings'); ?></option>
-                        <option value="3"<?php selected('3', get_option('postratings_logging_method')); ?>><?php _e('Logged By Cookie And IP', 'wp-postratings'); ?></option>
-                        <option value="4"<?php selected('4', get_option('postratings_logging_method')); ?>><?php _e('Logged By Username', 'wp-postratings'); ?></option>
+                        <option value="0"<?php selected('0', get_option('postratings_logging_method')); ?>><?php esc_html_e('Do Not Log', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Cookie', 'wp-postratings'); ?></option>
+                        <option value="2"<?php selected('2', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By IP', 'wp-postratings'); ?></option>
+                        <option value="3"<?php selected('3', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Cookie And IP', 'wp-postratings'); ?></option>
+                        <option value="4"<?php selected('4', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Username', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>
         </table>
         <p class="submit">
-            <input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'wp-postratings'); ?>" />
+            <input type="submit" name="Submit" class="button-primary" value="<?php esc_html_e('Save Changes', 'wp-postratings'); ?>" />
         </p>
     </form>
 </div>
