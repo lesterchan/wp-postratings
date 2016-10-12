@@ -35,6 +35,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Remove po/mo files from the plugin. Props @ramiy.
 * NEW: Use translate.wordpress.org to translate the plugin. Props @ramiy.
 * NEW: Add phpDocs and update file headers. Props @ramiy.
+* NEW: Adds the ability to restrict voting rights to members of the blog. Props @stephenharris.
 * FIXED: Use the new admin headings hierarchy with H1, H2, H3 tags. Props @ramiy.
 * FIXED: Move *.js files to /js/ sub-folder. Props @ramiy.
 * FIXED: Move *.css files to /css/ sub-folder. Props @ramiy.
