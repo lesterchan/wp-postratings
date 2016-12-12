@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.0  
 Tested up to: 4.7  
-Stable tag: 1.84  
+Stable tag: 1.84.1  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -27,6 +27,9 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.84.1
+* FIXED: unnamed-file.numbers due to sanitize_file_name().
+
 ### Version 1.84
 * NEW: Added '%POST_THUMBNAIL%' Template variable.
 * NEW: Added 'wp_postratings_cookie_expiration' filter. Props @ramiy.
