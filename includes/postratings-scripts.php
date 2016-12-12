@@ -42,23 +42,25 @@ function ratings_scripts() {
             wp_enqueue_style( 'wp-postratings-rtl', plugins_url( 'wp-postratings/css/postratings-css-rtl.css' ), false, WP_POSTRATINGS_VERSION, 'all' );
         }
     }
-    $postratings_max = intval(get_option('postratings_max'));
-    $postratings_custom = intval(get_option('postratings_customrating'));
-    $postratings_ajax_style = get_option('postratings_ajax_style');
+    $postratings_max = intval( get_option( 'postratings_max' ) );
+    $postratings_custom = intval( get_option( 'postratings_customrating' ) );
+    $postratings_ajax_style = get_option( 'postratings_ajax_style' );
+    $postratings_image = get_option( 'postratings_image' );
+    $postratings_plugins_url = plugins_url( 'wp-postratings' );
     $postratings_javascript = '';
     if($postratings_custom) {
         for($i = 1; $i <= $postratings_max; $i++) {
-            $postratings_javascript .= 'var ratings_'.$i.'_mouseover_image=new Image();ratings_'.$i.'_mouseover_image.src=ratingsL10n.plugin_url+"/images/"+ratingsL10n.image+"/rating_'.$i.'_over."+ratingsL10n.image_ext;';
+            $postratings_javascript .= 'var ratings_' . $i . '_mouseover_image=new Image();ratings_' . $i . '_mouseover_image.src="' . $postratings_plugins_url . '/images/' . $postratings_image . '/rating_' . $i . '_over.' . RATINGS_IMG_EXT . '";';
         }
     } else {
-        $postratings_javascript = 'var ratings_mouseover_image=new Image();ratings_mouseover_image.src=ratingsL10n.plugin_url+"/images/"+ratingsL10n.image+"/rating_over."+ratingsL10n.image_ext;';
+        $postratings_javascript = 'var ratings_mouseover_image=new Image();ratings_mouseover_image.src="' . $postratings_plugins_url . '/images/' . $postratings_image . '/rating_over.' . RATINGS_IMG_EXT . '";';
     }
     wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/js/postratings-js.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
     wp_localize_script('wp-postratings', 'ratingsL10n', array(
-        'plugin_url' => plugins_url('wp-postratings'),
+        'plugin_url' => $postratings_plugins_url,
         'ajax_url' => admin_url('admin-ajax.php'),
         'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
-        'image' => get_option('postratings_image'),
+        'image' => $postratings_image,
         'image_ext' => RATINGS_IMG_EXT,
         'max' => $postratings_max,
         'show_loading' => intval($postratings_ajax_style['loading']),
