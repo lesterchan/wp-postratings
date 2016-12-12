@@ -40,7 +40,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $postratings_template_none = wp_kses_post(trim($_POST['postratings_template_none']));
     $postratings_template_highestrated = wp_kses_post(trim($_POST['postratings_template_highestrated']));
     $postratings_template_mostrated = wp_kses_post(trim($_POST['postratings_template_mostrated']));
-    $postratings_image = sanitize_file_name(strip_tags(trim($_POST['postratings_image'])));
+    $postratings_image = sanitize_text_field( trim( $_POST['postratings_image'] ) );
     $postratings_max = intval($_POST['postratings_max']);
     $postratings_richsnippet = intval($_POST['postratings_richsnippet']);
     $postratings_ratingstext_array = $_POST['postratings_ratingstext'];
