@@ -538,7 +538,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 		<?php wp_nonce_field('wp-postratings_logs'); ?>
 		<table class="widefat">
 			<tr>
-				<td valign="top"><b><?php esc_html_e('Delete Type: ', 'wp-postratings'); ?></b></td>
+				<td valign="top"><strong><?php esc_html_e('Delete Type: ', 'wp-postratings'); ?></strong></td>
 				<td valign="top">
 					<select size="1" name="delete_datalog">
 						<option value="1"><?php esc_html_e('Logs Only', 'wp-postratings'); ?></option>
@@ -548,12 +548,12 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				</td>
 			</tr>
 			<tr>
-				<td valign="top"><b><?php esc_html_e('Post ID(s):', 'wp-postratings'); ?></b></td>
+				<td valign="top"><strong><?php esc_html_e('Post ID(s):', 'wp-postratings'); ?></strong></td>
 				<td valign="top">
 					<input type="text" name="delete_postid" size="20" dir="ltr" />
 					<p><?php esc_html_e('Seperate each Post ID with a comma.', 'wp-postratings'); ?></p>
-					<p><?php esc_html_e('To delete ratings data/logs from Post ID 2, 3 and 4. Just type in: <b>2,3,4</b>', 'wp-postratings'); ?></p>
-					<p><?php esc_html_e('To delete ratings data/logs for all posts. Just type in: <b>all</b>', 'wp-postratings'); ?></p>
+					<p><?php esc_html_e('To delete ratings data/logs from Post ID 2, 3 and 4. Just type in: 2,3,4', 'wp-postratings'); ?></p>
+					<p><?php esc_html_e('To delete ratings data/logs for all posts. Just type in: all', 'wp-postratings'); ?></p>
 				</td>
 			</tr>
 			<tr>
