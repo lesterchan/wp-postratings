@@ -20,7 +20,7 @@ function ratings_activation( $network_wide ) {
 
 		if( 0 < count( $ms_sites ) ) {
 			foreach ( $ms_sites as $ms_site ) {
-				$blog_id = isset( $ms_site['blog_id'] ) ? $ms_site['blog_id'] : $ms_site->blog_id;
+				$blog_id = class_exists( 'WP_Site' ) ? $ms_site->blog_id : $ms_site['blog_id'];
 				switch_to_blog( $blog_id );
 				ratings_activate();
 				restore_current_blog();
