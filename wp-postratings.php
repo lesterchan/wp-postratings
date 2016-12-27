@@ -1150,6 +1150,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     }
 
     // Google Rich Snippet
+	$google_structured_data = '';
     $ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
     if( $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
         $itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
@@ -1210,9 +1211,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
             $ratings_meta .= '</div>';
         }
 
-
-        $value = empty( $itemtype ) ? $value . $ratings_meta : $value . $post_meta . $ratings_meta;
+        $google_structured_data =  apply_filters( 'wp_postratings_google_structured_data', ( empty( $itemtype ) ? $ratings_meta : ( $post_meta . $ratings_meta ) ) );
     }
 
-    return apply_filters( 'expand_ratings_template', $value );
+    return apply_filters( 'expand_ratings_template', ( $value . $google_structured_data ) );
 }

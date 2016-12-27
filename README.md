@@ -28,7 +28,9 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.84.1
+* NEW: New wp_postratings_google_structured_data filter to filter Google Structured Data.
 * FIXED: unnamed-file.numbers due to sanitize_file_name().
+* FIXED: Generate the full path to image to prevent Googlebot from 404.
 
 ### Version 1.84
 * NEW: Added '%POST_THUMBNAIL%' Template variable.
