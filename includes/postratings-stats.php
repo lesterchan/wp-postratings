@@ -101,7 +101,7 @@ if(!function_exists('get_most_rated_category')) {
 
 		if ( false === ( $most_rated = wp_cache_get( $cache_key = 'get_most_rated_category_' . md5($sql), $cache_group = 'wp-postratings' ) ) ) {
 			$most_rated = $wpdb->get_results( $sql, ARRAY_A );
-			wp_cache_add( $cache_key, $most_rated, $cahce_group, HOUR_IN_SECONDS );
+			wp_cache_add( $cache_key, $most_rated, $cache_group, HOUR_IN_SECONDS );
 		}
 
 		// Prime the post caches if need be.
