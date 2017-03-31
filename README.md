@@ -196,12 +196,12 @@ add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 ### How To use PNG images instead of GIF images?
 * The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
 
-```
+```php
 function custom_rating_image_extension() {
     return 'png';
 }
 add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
-```php
+```
 
 ### How To change the cookie expiration time?
 * The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
