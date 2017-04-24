@@ -152,7 +152,7 @@ N/A
 ## Frequently Asked Questions
 
 ### How To Change Schema Type?
-* The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
+The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
 
 ```php
 <?php  
@@ -164,7 +164,7 @@ function wp_postratings_schema_itemtype( $itemtype ) {
 ```
 
 ### How To Add Your Site Logo For Google Rich Snippets
-* By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code below:
+By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code below:
 
 ```php
 <?php  
@@ -187,14 +187,14 @@ function wp_postratings_ratings_image_alt( $alt_title_text ) {
 ```
 
 ### How To Display Comment Author Ratings?
-* By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code below:
+By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code below:
 
 ```php
 add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 ```
 
 ### How To use PNG images instead of GIF images?
-* The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
+The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
 
 ```php
 function custom_rating_image_extension() {
@@ -204,7 +204,7 @@ add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
 ```
 
 ### How To change the cookie expiration time?
-* The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
+The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
 
 ```php
 function custom_rating_cookie_expiration() {
@@ -225,7 +225,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 ### How To Use Ratings Stats Outside WP Loop?
 
 ### To Display Lowest Rated Post
-* Use:
 
 ```php
 <?php if (function_exists('get_lowest_rated')): ?>
@@ -234,7 +233,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_lowest_rated('both', 0, 10)
 * The value 'both' will display both the lowest rated posts and pages.
 * If you want to display the lowest rated posts only, replace 'both' with 'post'.
@@ -243,8 +242,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 lowest rated posts/pages.
 
 ### To Display Lowest Rated Post By Tag
-* Use:
-
 ```php
 <?php if (function_exists('get_lowest_rated_tag')): ?>
 	<ul>
@@ -252,7 +249,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_lowest_rated_tag(TAG_ID, 'both', 0, 10)
 * Replace TAG_ID will your tag ID. If you want it to span several categories, replace TAG_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the lowest rated posts and pages.
@@ -262,8 +259,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 lowest rated posts/pages.
 
 ### To Display Lowest Rated Post In A Category
-* Use:
-
 ```php
 <?php if (function_exists('get_lowest_rated_category')): ?>
 	<ul>
@@ -271,7 +266,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_lowest_rated_category(CATEGORY_ID, 'both', 0, 10)
 * Replace CATEGORY_ID will your category ID. If you want it to span several categories, replace CATEGORY_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the lowest rated posts and pages.
@@ -281,7 +276,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 lowest rated posts/pages.
 
 ### To Display Highest Rated Post
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_rated')): ?>
@@ -290,7 +284,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_rated('both', 0, 10)
 * The value 'both' will display both the highest rated posts and pages.
 * If you want to display the highest rated posts only, replace 'both' with 'post'.
@@ -299,7 +293,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 highest rated posts/pages.
 
 ### To Display Highest Rated Post By Tag
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_rated_tag')): ?>
@@ -308,7 +301,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_rated_tag(TAG_ID, 'both', 0, 10)
 * Replace TAG_ID will your tag ID. If you want it to span several categories, replace TAG_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the highest rated posts and pages.
@@ -318,7 +311,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 highest rated posts/pages.
 
 ### To Display Highest Rated Post In A Category
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_rated_category')): ?>
@@ -327,7 +319,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_rated_category(CATEGORY_ID, 'both', 0, 10)
 * Replace CATEGORY_ID will your category ID. If you want it to span several categories, replace CATEGORY_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the highest rated posts and pages.
@@ -337,7 +329,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 highest rated posts/pages.
 
 ### To Display Highest Rated Post Within A Given Period
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_rated_range')): ?>
@@ -346,7 +337,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_rated_range('1 day', 'both', 10)
 * The value '1 day' will be the range that you want. You can use '2 days', '1 month', etc.
 * The value 'both' will display both the most rated posts and pages.
@@ -355,7 +346,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Display Most Rated Post
-* Use:
 
 ```php
 <?php if (function_exists('get_most_rated')): ?>
@@ -364,7 +354,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_most_rated('both', 0, 10)
 * The value 'both' will display both the most rated posts and pages.
 * If you want to display the most rated posts only, replace 'both' with 'post'.
@@ -373,7 +363,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Display Most Rated Post In A Category
-* Use:
 
 ```php
 <?php if (function_exists('get_most_rated_category')): ?>
@@ -382,7 +371,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_most_rated_category(CATEGORY_ID, 'both', 0, 10)
 * Replace CATEGORY_ID will your category ID. If you want it to span several categories, replace CATEGORY_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the most rated posts and pages.
@@ -392,7 +381,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Display Most Rated Post Within A Given Period
-* Use:
 
 ```php
 <?php if (function_exists('get_most_rated_range')): ?>
@@ -401,7 +389,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_most_rated_range('1 day', 'both', 10)
 * The value '1 day' will be the range that you want. You can use '2 days', '1 month', etc.
 * The value 'both' will display both the most rated posts and pages.
@@ -410,7 +398,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Display Highest Score Post
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_score')): ?>
@@ -419,7 +406,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_score('both', 0, 10)
 * The value 'both' will display both the most rated posts and pages.
 * If you want to display the most rated posts only, replace 'both' with 'post'.
@@ -428,7 +415,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Display Highest Score Post In A Category
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_score_category')): ?>
@@ -437,7 +423,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_score_category(CATEGORY_ID, 'both', 0, 10)
 * Replace CATEGORY_ID will your category ID. If you want it to span several categories, replace CATEGORY_ID with array(1, 2) where 1 and 2 are your categories ID.
 * The value 'both' will display both the most rated posts and pages.
@@ -448,7 +434,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 
 
 ### To Display Highest Score Post Within A Given Period
-* Use:
 
 ```php
 <?php if (function_exists('get_highest_score_range')): ?>
@@ -457,7 +442,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 	</ul>
 <?php endif; ?>
 ```
-
+ 
 * Default: get_highest_score_range('1 day', 'both', 10)
 * The value '1 day' will be the range that you want. You can use '2 days', '1 month', etc.
 * The value 'both' will display both the most rated posts and pages.
@@ -466,11 +451,11 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Sort Highest/Lowest Rated Posts
-* You can use: ``<?php query_posts( array( 'meta_key' => 'ratings_average', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>``
+* You can use: `<?php query_posts( array( 'meta_key' => 'ratings_average', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>`
 * Or pass in the variables to the URL: `http://yoursite.com/?r_sortby=highest_rated&amp;r_orderby=desc`
 * You can replace desc with asc if you want the lowest rated posts.
 
 ### To Sort Most/Least Rated Posts
-* You can use: ``<?php query_posts( array( 'meta_key' => 'ratings_users', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>``
+* You can use: `<?php query_posts( array( 'meta_key' => 'ratings_users', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>`
 * Or pass in the variables to the URL: `http://yoursite.com/?r_sortby=most_rated&amp;r_orderby=desc`
 * You can replace desc with asc if you want the least rated posts.
