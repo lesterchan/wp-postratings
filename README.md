@@ -152,7 +152,6 @@ N/A
 ## Frequently Asked Questions
 
 ### How To Change Schema Type?
-The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code below:
 
 ```php
 <?php  
@@ -163,8 +162,9 @@ function wp_postratings_schema_itemtype( $itemtype ) {
 ?>
 ```
 
+The default schema type is 'Article', if you want to change it to 'Recipe', you need to make use of the `wp_postratings_schema_itemtype` filter as shown in the sample code above.
+
 ### How To Add Your Site Logo For Google Rich Snippets
-By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code below:
 
 ```php
 <?php  
@@ -174,6 +174,8 @@ function wp_postratings_site_logo( $url ) {
 }  
 ?>
 ```
+
+By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code above.
 
 ### How To Remove Ratings Image alt and title Text?
 
@@ -187,14 +189,14 @@ function wp_postratings_ratings_image_alt( $alt_title_text ) {
 ```
 
 ### How To Display Comment Author Ratings?
-By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code below:
 
 ```php
 add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 ```
 
+By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code above.
+
 ### How To use PNG images instead of GIF images?
-The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code below:
 
 ```php
 function custom_rating_image_extension() {
@@ -203,8 +205,9 @@ function custom_rating_image_extension() {
 add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
 ```
 
+The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code above.
+
 ### How To change the cookie expiration time?
-The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code below:
 
 ```php
 function custom_rating_cookie_expiration() {
@@ -212,6 +215,8 @@ function custom_rating_cookie_expiration() {
 }
 add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration', 10, 0 );
 ```
+
+The default cookie expiration if 'time() + 30000000', if you want to change the lenght of the experation, you need to make use of the `wp_postratings_cookie_expiration` filter as shown in the sample code above.
 
 ### How Does WP-PostRatings Load CSS?
 * WP-PostRatings will load `postratings-css.css` from your theme's CSS directory if it exists.
@@ -240,6 +245,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 lowest rated posts/pages.
 
 ### To Display Lowest Rated Post By Tag
+
 ```php
 <?php if (function_exists('get_lowest_rated_tag')): ?>
 	<ul>
@@ -257,6 +263,7 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 * The value 10 will display only the top 10 lowest rated posts/pages.
 
 ### To Display Lowest Rated Post In A Category
+
 ```php
 <?php if (function_exists('get_lowest_rated_category')): ?>
 	<ul>
