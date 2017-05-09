@@ -222,8 +222,6 @@ add_filter( 'wp_postratings_cookie_expiration', 'custom_rating_cookie_expiration
 1. Go to `WP-Admin -> Appearance -> Widgets`
 2. The widget name is Ratings.
 
-### How To Use Ratings Stats Outside WP Loop?
-
 ### To Display Lowest Rated Post
 
 ```php
