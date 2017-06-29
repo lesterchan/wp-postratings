@@ -19,6 +19,7 @@
 // Variables
 var $j = jQuery.noConflict();
 var is_being_rated = false;
+var postratings_captcha = null;
 ratingsL10n.custom = parseInt(ratingsL10n.custom);
 ratingsL10n.max = parseInt(ratingsL10n.max);
 ratingsL10n.show_loading = parseInt(ratingsL10n.show_loading);
@@ -114,6 +115,8 @@ function rate_post_success(post_id, data) {
 // Process Post Ratings
 function rate_post(post_id, post_rating) {
 	var post_ratings_el = $j('#post-ratings-' + post_id);
+	var captcha_response;
+
 	if (! ratingsL10n.ajax_url) {
 		var value_holder = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
 		var curval = $j(value_holder).val();
@@ -124,6 +127,23 @@ function rate_post(post_id, post_rating) {
 			$j(value_holder).val(post_rating);
 		}
 		return;
+	}
+
+	if(ratingsL10n.captcha_sitekey && ratingsL10n.captcha_sitekey.length) {
+		if (postratings_captcha === null) {
+			postratings_captcha = grecaptcha.render("g-recaptcha-response", {"sitekey":ratingsL10n.captcha_sitekey});
+			return;
+		} else {
+			captcha_response = grecaptcha.getResponse(postratings_captcha);
+			if (! grecaptcha.getResponse(postratings_captcha)) {
+				// grecaptcha.reset(postratings_captcha);
+				return;
+			}
+			else {
+				// ok, let's submit
+				$j('#g-recaptcha-response').remove();
+			}
+		}
 	}
 
 	if(!is_being_rated) {
@@ -142,10 +162,11 @@ function rate_post(post_id, post_rating) {
 				$j('#post-ratings-' + post_id + '-loading').show();
 			}
 		}
+
 		$j.post({xhrFields: {withCredentials: true},
 			 dataType: 'html',
 			 url: ratingsL10n.ajax_url,
-			 data: 'action=postratings&pid=' + post_id + '&rate=' + post_rating + '&postratings_' + post_id + '_nonce=' + post_ratings_nonce,
+			 data: 'action=postratings&pid=' + post_id + '&rate=' + post_rating + '&postratings_' + post_id + '_nonce=' + post_ratings_nonce + '&g-recaptcha-response=' + captcha_response,
 			 cache: false})
 			.done(function(data) { rate_post_success(post_id, data); });
 	}

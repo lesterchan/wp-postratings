@@ -56,6 +56,7 @@ $wpdb->ratings = $wpdb->prefix.'ratings';
 require_once( 'includes/postratings-activation.php' );
 require_once( 'includes/postratings-admin.php' );
 require_once( 'includes/postratings-i18n.php' );
+require_once( 'includes/postratings-captcha.php' );
 require_once( 'includes/postratings-scripts.php' );
 require_once( 'includes/postratings-shortcodes.php' );
 require_once( 'includes/postratings-stats.php' );
@@ -134,6 +135,9 @@ function get_the_ratings($start_tag = 'div', $custom_id = 0, $ajax) {
       $html_string = '';
       if (! $ajax) {
         $html_string .= '<input type="hidden" name="wp_postrating_form_value_' . $ratings_id . '" />' . "\n";
+      }
+      if ( recaptcha_is_enabled() && recaptcha_is_op() ) {
+          $html_string  .= '<div id="g-recaptcha-response"></div>';
       }
       return $html_string .  "<$start_tag $attributes data-nonce=\"".wp_create_nonce('postratings_'.$ratings_id.'-nonce')."\">".the_ratings_vote($ratings_id).'</'.$start_tag.'>'.$loading;
     }
@@ -575,6 +579,12 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     if (! $post || wp_is_post_revision($post)) {
         if (! is_null($last_error))
             $last_error = sprintf(esc_html__('Invalid post #%d.', 'wp-postratings'), $post_id);
+        return FALSE;
+    }
+
+    if (recaptcha_is_enabled() && recaptcha_is_op() && ! is_human()) {
+        if (! is_null($last_error))
+            $last_error = sprintf(esc_html__('invalid captcha.', 'wp-postratings'));
         return FALSE;
     }
 
