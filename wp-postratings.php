@@ -61,6 +61,7 @@ require_once( 'includes/postratings-shortcodes.php' );
 require_once( 'includes/postratings-stats.php' );
 require_once( 'includes/postratings-widgets.php' );
 require_once( 'includes/postratings-comment.php' );
+require_once( 'includes/postratings-bayesian-score.php' );
 
 /**
  * Register plugin activation hook
