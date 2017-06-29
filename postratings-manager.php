@@ -306,6 +306,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				$postratings_date = esc_html(mysql2date(sprintf(__('%s @ %s', 'wp-postratings'), get_option('date_format'), get_option('time_format')), gmdate('Y-m-d H:i:s', $postratings_log->rating_timestamp)));
 				$postratings_ip = esc_html( $postratings_log->rating_ip );
 				$postratings_host = esc_html( $postratings_log->rating_host );
+				$postratings_post_url = get_permalink( $postratings_postid ); //URL to Post
 				echo "<tr $style>\n";
 				echo '<td>'.$postratings_id.'</td>'."\n";
 				echo "<td>$postratings_username</td>\n";
@@ -346,7 +347,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				}
 				echo '</td>'."\n";
 				echo '<td>'.number_format_i18n($postratings_postid).'</td>'."\n";
-				echo "<td>$postratings_posttitle</td>\n";
+				echo '<td><a href="'.$postratings_post_url.'" target="_new">'.$postratings_posttitle.'</a></td>'."\n";
 				echo "<td>$postratings_date</td>\n";
 				echo "<td>$postratings_ip / $postratings_host</td>\n";
 				echo '</tr>';
