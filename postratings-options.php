@@ -43,6 +43,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $postratings_image = sanitize_text_field( trim( $_POST['postratings_image'] ) );
     $postratings_max = intval($_POST['postratings_max']);
     $postratings_richsnippet = intval($_POST['postratings_richsnippet']);
+    $postratings_recaptcha = is_plugin_active('contact-form-7/wp-contact-form-7.php') && recaptcha_is_op() ? boolval($_POST['postratings_recaptcha']) : false;
     $postratings_ratingstext_array = $_POST['postratings_ratingstext'];
     $postratings_ratingstext = array();
     if( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
@@ -64,7 +65,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $postratings_allowtorate = intval($_POST['postratings_allowtorate']);
     $update_ratings_queries = array();
     $update_ratings_text = array();
-    $postratings_options = array('richsnippet' => $postratings_richsnippet);
+    $postratings_options = array('richsnippet' => $postratings_richsnippet, 'recaptcha' => $postratings_recaptcha);
     $update_ratings_queries[] = update_option('postratings_customrating', $postratings_customrating);
     $update_ratings_queries[] = update_option('postratings_template_vote', $postratings_template_vote);
     $update_ratings_queries[] = update_option('postratings_template_text', $postratings_template_text);
@@ -306,6 +307,32 @@ $postratings_image = get_option('postratings_image');
                     <input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
                 </td>
             </tr>
+
+            <tr>
+                <th scope="row" valign="top"><?php esc_html_e('Enable Recaptcha Support', 'wp-postratings'); ?></th>
+                <td>
+                  <?php
+                  $recaptcha_possible = is_plugin_active('contact-form-7/wp-contact-form-7.php');
+                  $recaptcha_configured = !empty(recaptcha_is_op());
+		  $postratings_options += array('recaptcha' => false); // default value if it has never been saved before
+?>
+		  <?php if($recaptcha_possible && $recaptcha_configured): ?>
+                    <input type="radio" id="postratings_recaptcha_on" name="postratings_recaptcha" value="1" <?php if($postratings_options['recaptcha'] && $recaptcha_possible && $recaptcha_configured) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('Yes', 'wp-postratings'); ?>
+                    &nbsp;&nbsp;
+		  <?php endif; ?>
+
+                  <input type="radio" id="postratings_recaptcha_off" name="postratings_recaptcha" value="0" <?php if(!$postratings_options['recaptcha'] || ! $recaptcha_possible || ! $recaptcha_configured) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
+                  <?php
+                  if($recaptcha_possible && ! $recaptcha_configured) {
+			  echo "<p> Configure Google's Recaptcha sitekeys inside <a href=\"" . esc_url(add_query_arg(['page'=>'wpcf7-integration','service'=>'recaptcha','action'=>'setup'], menu_page_url('wpcf7', false))) . "\">contact-form-7</a> in order to enable wp-postratings recaptcha </p>";
+                  }
+		  else if(! $recaptcha_possible) {
+			  echo "<p> Install Contact Form 7 in order to use Google's Recaptcha with wp-postratings </p>";
+		  }
+		  ?>
+                </td>
+            </tr>
+
             <tr>
                 <td colspan="2" align="center"><input type="button" name="update" value="<?php esc_attr_e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
             </tr>

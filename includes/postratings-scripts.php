@@ -74,5 +74,6 @@ function ratings_script_config($ajax = TRUE) {
         'show_loading' => intval($postratings_ajax_style['loading']),
         'show_fading' => intval($postratings_ajax_style['fading']),
         'custom' => boolval( get_option( 'postratings_customrating', false ) ),
+        'captcha_sitekey' => recaptcha_is_enabled() ? recaptcha_is_op() : false,
     ));
 }
