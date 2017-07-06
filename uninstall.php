@@ -12,6 +12,7 @@ $option_names = array(
 	, 'postratings_template_text'
 	, 'postratings_template_none'
 	, 'postratings_logging_method'
+	, 'postratings_onlyifcomment'
 	, 'postratings_allowtorate'
 	, 'postratings_ratingstext'
 	, 'postratings_template_highestrated'

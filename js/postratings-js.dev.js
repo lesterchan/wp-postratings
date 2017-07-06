@@ -39,6 +39,14 @@ if(ratingsL10n.custom) {
 
 // When User Mouse Over Ratings
 function current_rating(post_id, post_rating) {
+	if (! ratingsL10n.ajax_url) {
+		var element = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
+		// mouseout, but a value was click/selected in order to be later POSTed: do nothing
+		if (parseInt($j(element).val())) {
+			return;
+		}
+	}
+
 	if(!is_being_rated) {
 		if(ratingsL10n.custom && ratingsL10n.max == 2) {
 			document.getElementById('rating_' + post_id + '_' + post_rating).src = ratings_mouseover_image[i].src;
@@ -55,10 +63,20 @@ function current_rating(post_id, post_rating) {
 
 // When User Mouse Out Ratings
 function ratings_off(post_id, rating_score, insert_half, half_rtl) {
+	var element;
+
+	if (! ratingsL10n.ajax_url) {
+		element = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
+		// mouseout, but a value was click/selected in order to be later POSTed: do nothing
+		if (parseInt($j(element).val())) {
+			return;
+		}
+	}
+
 	if(!is_being_rated) {
 		var baseimg = ratingsL10n.plugin_url + '/images/' + ratingsL10n.image + '/rating' ;
 		for(var i = 1; i <= ratingsL10n.max; i++) {
-			var element = document.getElementById('rating_' + post_id + '_' + i);
+			element = document.getElementById('rating_' + post_id + '_' + i);
 			if(i <= rating_score) {
 				element.src = baseimg + (ratingsL10n.custom ? '_' + i : '') + '_on.' + ratingsL10n.image_ext;
 			} else if(i == insert_half) {
@@ -96,6 +114,18 @@ function rate_post_success(post_id, data) {
 // Process Post Ratings
 function rate_post(post_id, post_rating) {
 	var post_ratings_el = $j('#post-ratings-' + post_id);
+	if (! ratingsL10n.ajax_url) {
+		var value_holder = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
+		var curval = $j(value_holder).val();
+		$j(value_holder).val(null);
+		$j('#rating_' + post_id + '_' + curval).trigger('mouseout');
+		if (curval != post_rating) {
+			$j('#rating_' + post_id + '_' + post_rating).trigger('mouseover');
+			$j(value_holder).val(post_rating);
+		}
+		return;
+	}
+
 	if(!is_being_rated) {
 		var post_ratings_nonce = $j(post_ratings_el).data('nonce');
 		if(typeof post_ratings_nonce == 'undefined' || post_ratings_nonce == null)
