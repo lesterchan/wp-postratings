@@ -968,7 +968,10 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
         'id' => "rating_" . $post_id . "_" . $i,
         'alt' => $image_alt,
         'title' => $image_alt,
-        'onmouseover' => esc_js( sprintf( "current_rating(%d, %d, \"%s\");", $post_id, $i, $ratings_text) ),
+        'data-id' => $post_id,
+        'data-votes' => $i,
+        'data-ratings-text' => $ratings_text,
+        'onmouseover' => esc_js( sprintf( "current_rating(%d, %d);", $post_id, $i) ),
         'onclick' => sprintf( "rate_post(%d, %d);", $post_id, $i),
         'onkeypress' => sprintf( "rate_post(%d, %d);", $post_id, $i),
         'style' => "cursor:pointer; border:0px;"
