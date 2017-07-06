@@ -61,12 +61,12 @@ function ratings_scripts_admin($hook_suffix) {
 }
 
 // this need to be triggered manually
-function ratings_script_config() {
+function ratings_script_config($ajax = TRUE) {
     $postratings_ajax_style = get_option( 'postratings_ajax_style' );
 
     wp_localize_script('wp-postratings', 'ratingsL10n', array(
         'plugin_url' => plugins_url( 'wp-postratings' ),
-        'ajax_url' => admin_url('admin-ajax.php'),
+        'ajax_url' => $ajax ? admin_url('admin-ajax.php') : FALSE,
         'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
         'image' => get_option( 'postratings_image' ),
         'image_ext' => RATINGS_IMG_EXT,

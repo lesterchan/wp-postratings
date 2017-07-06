@@ -75,13 +75,13 @@ function postratings_init() {
 }
 
 ### Function: Display The Rating For The Post
-function the_ratings($start_tag = 'div', $custom_id = 0, $display = true /* obsolete */) {
-  if ($display) echo get_the_ratings($start_tag, $custom_id);
-  else return get_the_ratings($start_tag, $custom_id);
+function the_ratings($start_tag = 'div', $custom_id = 0, $display = true /* obsolete */, $ajax = true) {
+  if ($display) echo get_the_ratings($start_tag, $custom_id, $ajax);
+  else return get_the_ratings($start_tag, $custom_id, $ajax);
 }
 
 ### Function: Get The Rating For The Post
-function get_the_ratings($start_tag = 'div', $custom_id = 0) {
+function get_the_ratings($start_tag = 'div', $custom_id = 0, $ajax) {
     global $id;
     // Allow Custom ID
     if(intval($custom_id) > 0) {
@@ -129,10 +129,11 @@ function get_the_ratings($start_tag = 'div', $custom_id = 0) {
       return "<$start_tag $attributes>".the_ratings_results($ratings_id, 0, 0, 0, 1).'</'.$start_tag.'>'.$loading;
     // If User Has Not Voted
     } else {
-      ratings_script_config();
+      ratings_script_config($ajax);
       $html_string = '';
-      $html_string += '<input type="hidden" name="wp_postrating_value" />' . "\n";
-
+      if (! $ajax) {
+        $html_string .= '<input type="hidden" name="wp_postrating_form_value_' . $ratings_id . '" />' . "\n";
+      }
       return $html_string .  "<$start_tag $attributes data-nonce=\"".wp_create_nonce('postratings_'.$ratings_id.'-nonce')."\">".the_ratings_vote($ratings_id).'</'.$start_tag.'>'.$loading;
     }
 }
@@ -1247,4 +1248,45 @@ EOF;
     }
 
     return apply_filters( 'expand_ratings_template', ( $value . $google_structured_data ) );
+}
+
+add_filter( 'wp_insert_comment', 'process_ratings_from_comment' );
+function process_ratings_from_comment($comment_id) {
+		$post_id = intval($_POST['comment_post_ID']);
+    $rate = intval($_POST["wp_postrating_form_value_$post_id"]);
+    if (! $post_id || ! $rate) {
+        // ignored (could be simply a second comment while missing a second vote)
+        return;
+    }
+
+    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    if (! $allow_to_vote_with_comment) {
+        return;
+    }
+
+    $rate_id = 0;
+    process_ratings($post_id, $rate, $rate_id);
+    if ($rate_id) {
+        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
+    }
+}
+
+add_filter( 'comments_array', 'show_rating_in_comment' );
+function show_rating_in_comment($comments) {
+		if( ! count( $comments ) ) return;
+    global $wpdb;
+
+    foreach( $comments as $comment ) {
+        $rate_id = get_comment_meta($comment->comment_ID, 'postratings_id', true);
+        if (intval($rate_id)) {
+            $rate = $wpdb->get_var( $wpdb->prepare( "SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_id = %d", intval($rate_id)) );
+            if ($rate) {
+                $comment->comment_content .= '<p class="vote-value">'
+                                          . esc_html(sprintf(__('Rated %d', 'wp-postratings'), $rate))
+                                          . '</p>';
+            }
+        }
+    }
+
+    return $comments;
 }
