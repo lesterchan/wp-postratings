@@ -1290,3 +1290,25 @@ function show_rating_in_comment($comments) {
 
     return $comments;
 }
+add_filter( 'manage_edit-comments_columns', 'comment_has_vote' );
+function comment_has_vote( $columns ) {
+  $columns['comment-vote'] = __( 'Vote', 'wp-postratings' );
+  return $columns;
+}
+
+
+add_filter( 'manage_comments_custom_column', 'recent_comment_has_vote', 20, 2 );
+function recent_comment_has_vote( $column_name, $comment_id ) {
+  if( 'comment-vote' != strtolower( $column_name ) ) return;
+  if ( ( $rate_id = get_comment_meta( $comment_id, 'postratings_id', true ) ) ) {
+    if (intval($rate_id)) {
+      global $wpdb;
+      $rate = $wpdb->get_var( $wpdb->prepare( "SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_id = %d", intval($rate_id)) );
+      if ($rate) {
+        printf(__('Rated at %d', 'wp-postratings'), $rate);
+      }
+    }
+  }
+
+  return $options;
+}
