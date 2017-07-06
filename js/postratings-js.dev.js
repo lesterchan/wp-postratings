@@ -38,18 +38,17 @@ if(ratingsL10n.custom) {
 }
 
 // When User Mouse Over Ratings
-function current_rating(post_id, post_rating, rating_text) {
+function current_rating(post_id, post_rating) {
 	if(!is_being_rated) {
 		if(ratingsL10n.custom && ratingsL10n.max == 2) {
 			document.getElementById('rating_' + post_id + '_' + post_rating).src = ratings_mouseover_image[i].src;
 		} else {
 			for(var i = 1; i <= post_rating; i++) {
-				console.log("#" + 'rating_' + post_id + '_' + i + ' = ' + ratings_mouseover_image.src);
 				document.getElementById('rating_' + post_id + '_' + i).src = ratingsL10n.custom ? ratings_mouseover_image[i].src : ratings_mouseover_image.src;
 			}
 		}
 		if(jQuery('#ratings_' + post_id + '_text').length) {
-			jQuery('#ratings_' + post_id + '_text').html(rating_text).show();
+			jQuery('#ratings_' + post_id + '_text').html(jQuery('#rating_' + post_id + '_' + post_rating).data('ratingsText')).show();
 		}
 	}
 }
