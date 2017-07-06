@@ -60,6 +60,7 @@ if ( isset( $_POST['Submit'] ) ) {
 
     $postratings_ajax_style = array('loading' => intval($_POST['postratings_ajax_style_loading']), 'fading' => intval($_POST['postratings_ajax_style_fading']));
     $postratings_logging_method = intval($_POST['postratings_logging_method']);
+    $postratings_onlyifcomment = intval($_POST['postratings_onlyifcomment']);
     $postratings_allowtorate = intval($_POST['postratings_allowtorate']);
     $update_ratings_queries = array();
     $update_ratings_text = array();
@@ -77,6 +78,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $update_ratings_queries[] = update_option('postratings_ratingsvalue', $postratings_ratingsvalue);
     $update_ratings_queries[] = update_option('postratings_ajax_style', $postratings_ajax_style);
     $update_ratings_queries[] = update_option('postratings_logging_method', $postratings_logging_method);
+    $update_ratings_queries[] = update_option('postratings_onlyifcomment', $postratings_onlyifcomment);
     $update_ratings_queries[] = update_option('postratings_allowtorate', $postratings_allowtorate);
     $update_ratings_queries[] = update_option('postratings_options', $postratings_options);
     $update_ratings_text[] = __('Custom Rating', 'wp-postratings');
@@ -384,6 +386,22 @@ $postratings_image = get_option('postratings_image');
                     </select>
                 </td>
             </tr>
+
+        <h2><?php esc_html_e('Post rating integration', 'wp-postratings'); ?></h2>
+        <table class="form-table">
+             <?php if (get_option('default_comment_status') == 'open'): ?>
+             <tr>
+                <th scope="row" valign="top"><?php esc_html_e('Restrict rating to comment submission?', 'wp-postratings'); ?></th>
+                <td>
+                    <select name="postratings_onlyifcomment" size="1">
+                        <option value="0"<?php selected('0', get_option('postratings_onlyifcomment')); ?>><?php esc_html_e('No', 'wp-postratings'); ?></option>
+                        <option value="1"<?php selected('1', get_option('postratings_onlyifcomment')); ?>><?php esc_html_e('Yes', 'wp-postratings'); ?></option>
+                    </select>
+                </td>
+            </tr>
+            <?php endif; ?>
+        </table>
+
         </table>
         <h2><?php esc_html_e('Allow To Rate', 'wp-postratings'); ?></h2>
         <table class="form-table">
