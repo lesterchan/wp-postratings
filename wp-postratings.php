@@ -1296,6 +1296,31 @@ function process_ratings_from_comment($comment_id) {
     // if $last_error: ToDo
 }
 
+// to be called from the "update_callback" of register_rest_field()
+function process_ratings_from_rest_API( WP_Comment $comment, $rate ) {
+    if (! $comment->comment_post_ID || ! $rate) {
+        // ToDo
+        return;
+    }
+
+    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    if (! $allow_to_vote_with_comment) {
+        return;
+    }
+
+    $rate_id = 0; $last_error = '';
+    process_ratings($comment->comment_post_ID, $rate, $rate_id, $last_error);
+    if ($rate_id) {
+        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
+        return true;
+    }
+    elseif ($last_error) {
+        var_dump($last_error);
+        return new WP_Error( 'rest_comment_vote_invalid', $last_error, array( 'status' => 403 ) );
+    }
+    return false;
+}
+
 add_filter( 'comments_array', 'show_rating_in_comment' );
 function show_rating_in_comment($comments) {
 		if( ! count( $comments ) ) return;
