@@ -1288,11 +1288,12 @@ function process_ratings_from_comment($comment_id) {
         return;
     }
 
-    $rate_id = 0;
-    process_ratings($post_id, $rate, $rate_id);
+    $rate_id = 0; $last_error = '';
+    process_ratings($post_id, $rate, $rate_id, $last_error);
     if ($rate_id) {
         add_comment_meta( $comment_id, 'postratings_id', $rate_id );
     }
+    // if $last_error: ToDo
 }
 
 add_filter( 'comments_array', 'show_rating_in_comment' );
