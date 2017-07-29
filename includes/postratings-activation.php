@@ -34,6 +34,8 @@ function ratings_activation( $network_wide ) {
 function ratings_activate() {
 	global $wpdb;
 
+	$charset_collate = $wpdb->get_charset_collate();
+
 	// Create Post Ratings Table
 	$create_sql = "CREATE TABLE $wpdb->ratings (".
 		"rating_id INT(11) NOT NULL auto_increment,".
@@ -47,7 +49,8 @@ function ratings_activate() {
 		"rating_userid int(10) NOT NULL default '0',".
 		"PRIMARY KEY (rating_id),".
 		"KEY rating_userid (rating_userid),".
-		"KEY rating_postid_ip (rating_postid, rating_ip));";
+		"KEY rating_postid_ip (rating_postid, rating_ip)) ".
+		"$charset_collate;";
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $create_sql );
