@@ -29,6 +29,8 @@ define('NUM_VOTES_IMPACT_95', 1.960);
 // https://stackoverflow.com/a/40958702
 // http://www.evanmiller.org/ranking-items-with-star-ratings.html
 function bayesian_score($ns, $confidence) {
+  if (empty(array_filter($ns))) return NULL;
+
   $ns = array_reverse($ns);
   $N = array_sum($ns);
   $K = count($ns);
