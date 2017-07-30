@@ -64,8 +64,6 @@ function recent_comment_has_vote( $column_name, $comment_id ) {
       }
     }
   }
-
-  return $options;
 }
 
 
