@@ -44,6 +44,22 @@ function ratings_scripts() {
     }
 
     wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/js/postratings-js.dev.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
+
+    // these are static JS parameters
+    $postratings_ajax_style = get_option( 'postratings_ajax_style' );
+    wp_localize_script('wp-postratings', 'ratingsL10n', array(
+        'plugin_url' => plugins_url( 'wp-postratings' ),
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
+        'image' => get_option( 'postratings_image' ),
+        'image_ext' => RATINGS_IMG_EXT,
+        'max' => intval( get_option( 'postratings_max' ) ),
+        'show_loading' => intval($postratings_ajax_style['loading']),
+        'show_fading' => intval($postratings_ajax_style['fading']),
+        'custom' => boolval( get_option( 'postratings_customrating', false ) ),
+        'captcha_sitekey' => recaptcha_is_enabled() ? recaptcha_is_op() : false,
+        'rtl' => intval( is_rtl() )
+    ));
 }
 
 
@@ -58,22 +74,4 @@ function ratings_scripts_admin($hook_suffix) {
             'admin_ajax_url' => admin_url('admin-ajax.php')
         ));
     }
-}
-
-// this need to be triggered manually
-function ratings_script_config($ajax = TRUE) {
-    $postratings_ajax_style = get_option( 'postratings_ajax_style' );
-
-    wp_localize_script('wp-postratings', 'ratingsL10n', array(
-        'plugin_url' => plugins_url( 'wp-postratings' ),
-        'ajax_url' => $ajax ? admin_url('admin-ajax.php') : FALSE,
-        'text_wait' => __('Please rate only 1 item at a time.', 'wp-postratings'),
-        'image' => get_option( 'postratings_image' ),
-        'image_ext' => RATINGS_IMG_EXT,
-        'max' => intval( get_option( 'postratings_max' ) ),
-        'show_loading' => intval($postratings_ajax_style['loading']),
-        'show_fading' => intval($postratings_ajax_style['fading']),
-        'custom' => boolval( get_option( 'postratings_customrating', false ) ),
-        'captcha_sitekey' => recaptcha_is_enabled() ? recaptcha_is_op() : false,
-    ));
 }
