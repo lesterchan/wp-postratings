@@ -1031,12 +1031,12 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
 
       if($ratings_custom) {
         $rating_attr += array(
-          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : $i == $insert_half ? $use_custom_half_rtl ? 'half-rtl' : 'half' : 'off', $i),
+          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : ( $i == $insert_half ? ($use_custom_half_rtl ? 'half-rtl' : 'half') : 'off'), $i);
           'onmouseout' => sprintf("ratings_off(%d, %d, %d, %d);", $post_id, $post_rating, $insert_half, $use_custom_half_rtl),
         );
       } else {
         $rating_attr += array(
-          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : $i == $insert_half ? $use_half_rtl ? 'half-rtl' : 'half' : 'off', NULL),
+          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : ( $i == $insert_half ? ($use_half_rtl ? 'half-rtl' : 'half') : 'off') , NULL);
           'onmouseout' => sprintf("ratings_off(%d, %d, %d, %d);", $post_id, $post_rating, $insert_half, $use_half_rtl),
         );
       }
