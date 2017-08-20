@@ -20,6 +20,7 @@
 var post_id = 0;
 var post_rating = 0;
 var is_being_rated = false;
+var postratings_presubmit_filter = [];
 ratingsL10n.custom = parseInt(ratingsL10n.custom);
 ratingsL10n.max = parseInt(ratingsL10n.max);
 ratingsL10n.show_loading = parseInt(ratingsL10n.show_loading);
@@ -102,8 +103,17 @@ function rate_post_success(data) {
 
 // Process Post Ratings
 function rate_post() {
-	post_ratings_el = jQuery('#post-ratings-' + post_id);
+	var post_ratings_el = jQuery('#post-ratings-' + post_id);
+	var hook_res, filter;
+
 	if(!is_being_rated) {
+
+		if(Array.isArray(postratings_presubmit_filter)) {
+			for(filter of postratings_presubmit_filter) {
+				if(typeof filter === "function" && ! filter(post_id, post_ratings_el, post_rating, captcha_response)) return;
+			}
+		}
+
 		post_ratings_nonce = jQuery(post_ratings_el).data('nonce');
 		if(typeof post_ratings_nonce == 'undefined' || post_ratings_nonce == null)
 			post_ratings_nonce = jQuery(post_ratings_el).attr('data-nonce');
@@ -125,3 +135,11 @@ function rate_post() {
 		alert(ratingsL10n.text_wait);
 	}
 }
+
+/*
+How to use a pre-submit hook to allow/forbid vote submission
+function postratings_only_if_comment(post_id, post_ratings_el, post_rating, captcha_response) {
+	return false;
+}
+postratings_presubmit_filter.push(postratings_only_if_comment);
+*/
