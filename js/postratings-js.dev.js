@@ -1,101 +1,143 @@
 /*
-+----------------------------------------------------------------+
-|																							|
-|	WordPress Plugin: WP-PostRatings								|
-|	Copyright (c) 2012 Lester "GaMerZ" Chan									|
-|																							|
-|	File Written By:																	|
-|	- Lester "GaMerZ" Chan															|
-|	- http://lesterchan.net															|
-|																							|
-|	File Information:																	|
-|	- Post Ratings Javascript File													|
-|	- wp-content/plugins/wp-postratings/postratings-js.php				|
-|																							|
-+----------------------------------------------------------------+
-*/
+ +----------------------------------------------------------------+
+ |                                                                |
+ | WordPress Plugin: WP-PostRatings                               |
+ | Copyright (c) 2012 Lester "GaMerZ" Chan                        |
+ | Copyright (c) 2017 Raphaël Droz <raphael.droz@gmail.com>       |
+ |                                                                |
+ | File Information:                                              |
+ | - Post Ratings Javascript File                                 |
+ | - wp-content/plugins/wp-postratings/postratings-js.php         |
+ |                                                                |
+ +----------------------------------------------------------------+
+ */
 
 
 // Variables
 var $j = jQuery.noConflict();
 var is_being_rated = false;
 var postratings_captcha = null;
-ratingsL10n.custom = parseInt(ratingsL10n.custom);
-ratingsL10n.max = parseInt(ratingsL10n.max);
-ratingsL10n.show_loading = parseInt(ratingsL10n.show_loading);
-ratingsL10n.show_fading = parseInt(ratingsL10n.show_fading);
-
-
 var ratings_mouseover_image;
-if(ratingsL10n.custom) {
-	ratings_mouseover_image = [];
-        for(var i = 1; i <= ratingsL10n.max; i++) {
-		ratings_mouseover_image[i] = new Image();
-		ratings_mouseover_image[i].src = ratingsL10n.plugin_url + "/images/" + ratingsL10n.image + "/rating_" + i + "_over." + ratingsL10n.image_ext ;
-        }
-} else {
-	ratings_mouseover_image = new Image();
-	ratings_mouseover_image.src = ratingsL10n.plugin_url + "/images/" + ratingsL10n.image + "/rating_over."  + ratingsL10n.image_ext ;
-}
 
-// When User Mouse Over Ratings
-function current_rating(post_id, post_rating) {
-	if (! ratingsL10n.ajax_url) {
-		var element = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
-		// mouseout, but a value was click/selected in order to be later POSTed: do nothing
-		if (parseInt($j(element).val())) {
-			return;
-		}
-	}
+jQuery(function($) {
+	ratingsL10n.custom = parseInt(ratingsL10n.custom);
+	ratingsL10n.max = parseInt(ratingsL10n.max);
+	ratingsL10n.show_loading = parseInt(ratingsL10n.show_loading);
+	ratingsL10n.show_fading = parseInt(ratingsL10n.show_fading);
+	ratingsL10n.baseimg = ratingsL10n.plugin_url + '/images/' + ratingsL10n.image + '/rating' ;
+	ratingsL10n.rtl = parseInt(ratingsL10n.rtl);
 
-	if(!is_being_rated) {
-		if(ratingsL10n.custom && ratingsL10n.max == 2) {
-			document.getElementById('rating_' + post_id + '_' + post_rating).src = ratings_mouseover_image[i].src;
-		} else {
-			for(var i = 1; i <= post_rating; i++) {
-				document.getElementById('rating_' + post_id + '_' + i).src = ratingsL10n.custom ? ratings_mouseover_image[i].src : ratings_mouseover_image.src;
-			}
-		}
-		if(jQuery('#ratings_' + post_id + '_text').length) {
-			jQuery('#ratings_' + post_id + '_text').html(jQuery('#rating_' + post_id + '_' + post_rating).data('ratingsText')).show();
-		}
-	}
-}
-
-// When User Mouse Out Ratings
-function ratings_off(post_id, rating_score, insert_half, half_rtl) {
-	var element;
-
-	if (! ratingsL10n.ajax_url) {
-		element = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
-		// mouseout, but a value was click/selected in order to be later POSTed: do nothing
-		if (parseInt($j(element).val())) {
-			return;
-		}
-	}
-
-	if(!is_being_rated) {
-		var baseimg = ratingsL10n.plugin_url + '/images/' + ratingsL10n.image + '/rating' ;
+	if(ratingsL10n.custom) {
+		ratings_mouseover_image = [];
 		for(var i = 1; i <= ratingsL10n.max; i++) {
-			element = document.getElementById('rating_' + post_id + '_' + i);
-			if(i <= rating_score) {
-				element.src = baseimg + (ratingsL10n.custom ? '_' + i : '') + '_on.' + ratingsL10n.image_ext;
-			} else if(i == insert_half) {
-				element.src = baseimg + (ratingsL10n.custom ? '_' + i : '') + '_half' + (half_rtl ? '-rtl' : '') + '.' + ratingsL10n.image_ext;
-			} else {
-				element.src = baseimg + (ratingsL10n.custom ? '_' + i : '') + '_off.' + ratingsL10n.image_ext;
-			}
+			ratings_mouseover_image[i] = new Image();
+			ratings_mouseover_image[i].src = ratingsL10n.baseimg + "_" + i + "_over." + ratingsL10n.image_ext ;
 		}
-		if(jQuery('#ratings_' + post_id + '_text').length) {
-			jQuery('#ratings_' + post_id + '_text').hide().empty();
-		}
+	} else {
+		ratings_mouseover_image = new Image();
+		ratings_mouseover_image.src = ratingsL10n.baseimg + "_over."  + ratingsL10n.image_ext ;
+	}
+
+	$('img[data-votes]')
+		.on('mouseover mouseout', current_rating)
+		.on('click keypress',     rate_post);
+
+});
+
+// intermediary functions: wrap RTL complexity (invert on/off)
+function getRtlI(i) { return (!ratingsL10n.rtl) ? i : (ratingsL10n.max - i + 1); }
+function getOver(i) { return ratingsL10n.custom ? ratings_mouseover_image[ getRtlI(i) ].src : ratings_mouseover_image.src; }
+function getOn(i)   { return ratingsL10n.baseimg + (ratingsL10n.custom ? '_' + getRtlI(i) : '') + '_' + getRtlDir('on') + '.' + ratingsL10n.image_ext; }
+function getOff(i)  { return ratingsL10n.baseimg + (ratingsL10n.custom ? '_' + getRtlI(i) : '') + '_' + getRtlDir('off') + '.' + ratingsL10n.image_ext; }
+function getHalf(i) { return ratingsL10n.baseimg + (ratingsL10n.custom ? '_' + getRtlI(i) : '') + '_' + getRtlDir('half') + '.' + ratingsL10n.image_ext; }
+
+function getRtlDir(name) {
+	if (!ratingsL10n.rtl) return name;
+	switch(name) {
+	case "on": return "off";
+	case "off": return "on";
+	case "half": return "half-rtl";
+	default: return "";
 	}
 }
 
-// Set is_being_rated Status
-function set_is_being_rated(rated_status) {
-	is_being_rated = rated_status;
+/* DOM function: let help knowing whether we are in Ajax mode or not
+ * Ajax mode: submit async on click
+ * Non-ajax mode: click stores in an hidden field (value can be changed with further click) and
+   and it's not wp-postraings responsibility to post the value */
+function is_using_ajax($element, post_id) {
+	return $element.parent().siblings('input[name="wp_postrating_form_value_' + post_id + '"]').length == 0;
 }
+
+function non_ajax_hidden_parent($element, post_id) {
+	var parent = $element.parent().siblings('input[name="wp_postrating_form_value_' + post_id + '"]');
+	if (parent.length == 1) return parent;
+	return false;
+}
+
+// mouseover/out handler
+function current_rating(event) {
+	var post_ratings_el = $j(event.target);
+	var post_id = $j(event.target).data('id');
+	var current_rating = $j(event.target).data('currentRating');
+	var rating_score = $j(event.target).data('votes');
+	var insert_half = $j(event.target).data('half');
+
+	if (is_being_rated) return;
+
+	var curval = NaN; // possible stored value: disabled
+	if (! is_using_ajax(post_ratings_el, post_id)) {
+		var $parent = non_ajax_hidden_parent(post_ratings_el, post_id);
+		curval = parseInt($parent.val());
+		console.log("foooo", $parent, curval);
+	}
+
+	/* This could be:
+	 1) first set all OFF
+	 2) then set to ON those that need
+	 3) halve it if necessary
+	 4) then highlight if it's a non-mouseover selection (non-ajax mode)
+	    (currently stored value)... but prioritize mouseover => Math.min(mouseover,selected value)
+	 5) then highlight up to the score of the current star (if mouseover)
+
+	 Make all these passes filling up the array of images URL */
+
+	var next_images = [];
+	function setOn(i)   { next_images[i] = getOn(i); }
+	function setOff(i)  { next_images[i] = getOff(i); } 
+	function setHalf(i) { next_images[i] = getHalf(i); }
+	function setOver(i) { next_images[i] = getOver(i); }
+
+	var i;
+	// 1) off them all
+	for(i = 1; i <= ratingsL10n.max; i++) setOff(i);
+	// 2) on up to current score (always applies except for unvoted items)
+	for(i = 1; i <= current_rating; i++) setOn(i);
+	// 3) set the half-star (if it applies)
+	if (event.type == "mouseover" && insert_half > rating_score) setHalf(insert_half);
+	// 4) on up to currently voted score (if non-ajax, non-default mode)
+	if (! isNaN(curval)) {
+		// ToDo: find another color
+		if (event.type == "mouseover") for(i = 1; i <= Math.min(curval, rating_score); i++) setOver(i);
+		else for(i = 1; i <= curval; i++) setOver(i);
+	}
+	// 5) mouseover
+	if (event.type == "mouseover") for(i = 1; i <= rating_score; i++) setOver(i);
+
+	// Now apply all these images.
+	// NB: reversing the array, may be an even simpler way to do RTL
+	for(i = 1; i <= ratingsL10n.max; i++) $j('#rating_' + post_id + '_' + i).attr('src', next_images[i]);
+
+	updateText($j('#ratings_' + post_id + '_text'), post_ratings_el, event.type == "mouseout");
+}
+
+function updateText($text_el, $element, mouseout) {
+	if ($text_el.length) {
+		if (mouseout) $text_el.hide().empty();
+		else $text_el.html($element.data('ratingsText')).show();
+	}
+}
+
 
 // Process Post Ratings Success
 function rate_post_success(post_id, data) {
@@ -104,21 +146,20 @@ function rate_post_success(post_id, data) {
 		$j('#post-ratings-' + post_id + '-loading').hide();
 	}
 	if(ratingsL10n.show_fading) {
-		$j('#post-ratings-' + post_id).fadeTo('def', 1, function () {
-			set_is_being_rated(false);
-		});
-	} else {
-		set_is_being_rated(false);
+		$j('#post-ratings-' + post_id).fadeTo('def', 1);
 	}
 }
 
 // Process Post Ratings
-function rate_post(post_id, post_rating) {
-	var post_ratings_el = $j('#post-ratings-' + post_id);
+function rate_post(event) {
+	var post_ratings_el = $j(event.target);
+	var post_id = $j(event.target).data('id');
+	var post_rating = $j(event.target).data('votes');
+
 	var captcha_response;
 
-	if (! ratingsL10n.ajax_url) {
-		var value_holder = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
+	if (! is_using_ajax(post_ratings_el, post_id)) {
+		var value_holder = non_ajax_hidden_parent(post_ratings_el, post_id);
 		var curval = $j(value_holder).val();
 		$j(value_holder).val(null);
 		$j('#rating_' + post_id + '_' + curval).trigger('mouseout');
@@ -146,11 +187,11 @@ function rate_post(post_id, post_rating) {
 		}
 	}
 
-	if(!is_being_rated) {
+	if(! is_being_rated) {
 		var post_ratings_nonce = $j(post_ratings_el).data('nonce');
 		if(typeof post_ratings_nonce == 'undefined' || post_ratings_nonce == null)
 			post_ratings_nonce = $j(post_ratings_el).attr('data-nonce');
-		set_is_being_rated(true);
+		is_being_rated = true;
 		if(ratingsL10n.show_fading) {
 			$j(post_ratings_el).fadeTo('def', 0, function () {
 				if(ratingsL10n.show_loading) {
@@ -168,7 +209,8 @@ function rate_post(post_id, post_rating) {
 			 url: ratingsL10n.ajax_url,
 			 data: 'action=postratings&pid=' + post_id + '&rate=' + post_rating + '&postratings_' + post_id + '_nonce=' + post_ratings_nonce + '&g-recaptcha-response=' + captcha_response,
 			 cache: false})
-			.done(function(data) { rate_post_success(post_id, data); });
+			.done(function(data) { rate_post_success(post_id, data); })
+			.always(function() { is_being_rated = false; });
 	}
 
 	else {

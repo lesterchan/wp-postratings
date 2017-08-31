@@ -132,15 +132,25 @@ function get_the_ratings($start_tag = 'div', $custom_id = 0, $ajax) {
       return "<$start_tag $attributes>".the_ratings_results($ratings_id, 0, 0, 0, 1).'</'.$start_tag.'>'.$loading;
     // If User Has Not Voted
     } else {
-      ratings_script_config($ajax);
       $html_string = '';
+
+      /* ATM, the presence of this input#[name="wp_postrating_form_value_' + ratings_id] is the only way
+         we check whether the value must be submit immediatly through Ajax or not.
+         In the later case, serves as a value holder of the selected value.
+         See non_ajax_hidden_parent() and is_using_ajax() inside postratings-js.dev.js */
       if (! $ajax) {
         $html_string .= '<input type="hidden" name="wp_postrating_form_value_' . $ratings_id . '" />' . "\n";
       }
       if ( recaptcha_is_enabled() && recaptcha_is_op() ) {
           $html_string  .= '<div id="g-recaptcha-response"></div>';
       }
-      return $html_string .  "<$start_tag $attributes data-nonce=\"".wp_create_nonce('postratings_'.$ratings_id.'-nonce')."\">".the_ratings_vote($ratings_id).'</'.$start_tag.'>'.$loading;
+      return $html_string
+        . "<$start_tag $attributes data-nonce=\""
+        . wp_create_nonce('postratings_'.$ratings_id.'-nonce').'"'
+        // . ($ajax ? ' data-ajax="1"' ; '') // here if we want to avoid looking to parent's sibling (from <img> PoV, cf JS)
+        . ">"
+        . the_ratings_vote($ratings_id, array('ajax' => $ajax))
+        . '</'.$start_tag.'>'.$loading;
     }
 }
 
@@ -167,7 +177,18 @@ function the_ratings_results( $post_id, $new_user = 0, $new_score = 0, $new_aver
 
 
 ### Function: Display Ratings Vote
-function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average = 0) {
+/**
+   * @parameter options: an array of templating/rendering option. Known options are:
+   * - new_user: default 0
+   * - new_score: default 0
+   * - new_average: default 0
+   * - ajax: default: true, whether or not vote should be submited directly (albeigh async) via Ajax or not
+   *   (futur use, not implemented yet)
+   */
+function the_ratings_vote($post_id, $options) {
+  $options += array('new_user' => 0, 'new_score' => 0, 'new_average' => 0, 'ajax' => true);
+  extract($options); // import elements as variable in function scope
+
   if($new_user == 0 && $new_score == 0 && $new_average == 0) {
     $post_ratings_data = null;
   } else {
@@ -1023,22 +1044,15 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
         'data-id' => $post_id,
         'data-votes' => $i,
         'data-ratings-text' => $ratings_text,
-        'onmouseover' => esc_js( sprintf( "current_rating(%d, %d);", $post_id, $i) ),
-        'onclick' => sprintf( "rate_post(%d, %d);", $post_id, $i),
-        'onkeypress' => sprintf( "rate_post(%d, %d);", $post_id, $i),
+        'data-current-rating' => $post_rating,
+        'data-half' => $insert_half,
         'style' => "cursor:pointer; border:0px;"
       );
 
       if($ratings_custom) {
-        $rating_attr += array(
-          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : $i == $insert_half ? $use_custom_half_rtl ? 'half-rtl' : 'half' : 'off', $i),
-          'onmouseout' => sprintf("ratings_off(%d, %d, %d, %d);", $post_id, $post_rating, $insert_half, $use_custom_half_rtl),
-        );
+        $rating_attr['src'] = get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : ( $i == $insert_half ? ( $use_custom_half_rtl ? 'half-rtl' : 'half' ) : 'off' ), $i);
       } else {
-        $rating_attr += array(
-          'src' => get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : $i == $insert_half ? $use_half_rtl ? 'half-rtl' : 'half' : 'off', NULL),
-          'onmouseout' => sprintf("ratings_off(%d, %d, %d, %d);", $post_id, $post_rating, $insert_half, $use_half_rtl),
-        );
+        $rating_attr['src'] = get_rating_image_url($ratings_image, $i <= $post_rating ? 'on' : ( $i == $insert_half ? ( $use_half_rtl ? 'half-rtl' : 'half' ) : 'off' ), NULL);
       }
 
       $ratings_images[] = '<img ' . implode(' ', array_map(function($k, $v) { return sprintf('%s="%s"',$k,$v); }, array_keys($rating_attr), $rating_attr)) . ' />';
