@@ -37,20 +37,22 @@ function ratings_activate() {
 	$charset_collate = $wpdb->get_charset_collate();
 
 	// Create Post Ratings Table
-	$create_sql = "CREATE TABLE $wpdb->ratings (".
-		"rating_id INT(11) NOT NULL auto_increment,".
-		"rating_postid INT(11) NOT NULL ,".
-		"rating_posttitle TEXT NOT NULL,".
-		"rating_rating INT(2) NOT NULL ,".
-		"rating_timestamp VARCHAR(15) NOT NULL ,".
-		"rating_ip VARCHAR(40) NOT NULL ,".
-		"rating_host VARCHAR(200) NOT NULL,".
-		"rating_username VARCHAR(50) NOT NULL,".
-		"rating_userid int(10) NOT NULL default '0',".
-		"PRIMARY KEY (rating_id),".
-		"KEY rating_userid (rating_userid),".
-		"KEY rating_postid_ip (rating_postid, rating_ip)) ".
-		"$charset_collate;";
+	$create_sql = <<<EOF
+CREATE TABLE {$wpdb->ratings} (
+		rating_id INT(11) NOT NULL auto_increment,
+		rating_postid INT(11) NOT NULL,
+		rating_posttitle TEXT NOT NULL,
+		rating_rating INT(2) NOT NULL,
+		rating_timestamp VARCHAR(15) NOT NULL,
+		rating_ip VARCHAR(40) NOT NULL,
+		rating_host VARCHAR(200) NOT NULL,
+		rating_username VARCHAR(50) NOT NULL,
+		rating_userid int(10) NOT NULL default '0',
+		PRIMARY KEY (rating_id),
+		KEY rating_userid (rating_userid),
+		KEY rating_postid_ip (rating_postid, rating_ip))
+		{$charset_collate};
+EOF;
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $create_sql );
