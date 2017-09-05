@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', 1.84 );
+define( 'WP_POSTRATINGS_VERSION', 1.85 );
 
 /**
  * Rating logs table name
