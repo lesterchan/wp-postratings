@@ -37,6 +37,9 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.85
+* NEW: Added 'postratings_admincolumn' option which toggles the display of ratings in the admin posts interface.
+
 ### Version 1.84.1
 * NEW: New wp_postratings_google_structured_data filter to filter Google Structured Data.
 * FIXED: unnamed-file.numbers due to sanitize_file_name().

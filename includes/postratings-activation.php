@@ -80,6 +80,8 @@ function ratings_activate() {
 	// Database Upgrade For WP-PostRatings 1.50
 	delete_option('widget_ratings_highest_rated');
 	delete_option('widget_ratings_most_rated');
+    // Database Upgrade For WP-PostRatings 1.85
+    add_option('postratings_admincolumn', '1' );
 
 	// Index
 	$index = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings;" );
