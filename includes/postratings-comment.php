@@ -6,8 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_filter( 'wp_insert_comment', 'process_ratings_from_comment' );
 function process_ratings_from_comment($comment_id) {
-		$post_id = intval($_POST['comment_post_ID']);
-    $rate = intval($_POST["wp_postrating_form_value_$post_id"]);
+    if ( !isset($_POST['comment_post_ID']) || !isset($_POST['wp_postrating_form_value_' . $post_id]) ) {
+        return;
+    }
+
+    $post_id = intval($_POST['comment_post_ID']);
+    $rate = intval($_POST['wp_postrating_form_value_' . $post_id]);
     if (! $post_id || ! $rate) {
         // ignored (could be simply a second comment while missing a second vote)
         return;
