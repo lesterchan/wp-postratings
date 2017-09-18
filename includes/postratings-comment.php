@@ -10,14 +10,14 @@ function process_ratings_from_comment($comment_id) {
         return;
     }
 
-    $post_id = intval($_POST['comment_post_ID']);
-    $rate = intval($_POST['wp_postrating_form_value_' . $post_id]);
+    $post_id = (int)$_POST['comment_post_ID'];
+    $rate = (int)$_POST['wp_postrating_form_value_' . $post_id];
     if (! $post_id || ! $rate) {
         // ignored (could be simply a second comment while missing a second vote)
         return;
     }
 
-    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    $allow_to_vote_with_comment = (int)get_option('postratings_onlyifcomment');
     if (! $allow_to_vote_with_comment) {
         return;
     }
