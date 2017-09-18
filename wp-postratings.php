@@ -641,7 +641,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
 
     // Only Create Cookie If User Choose Logging Method 1 Or 3
     $postratings_logging_method = intval(get_option('postratings_logging_method'));
-    if($postratings_logging_method == 1 || $postratings_logging_method == 3) {
+    if( ( ! defined( 'REST_REQUEST' ) || !REST_REQUEST ) && ( $postratings_logging_method == 1 || $postratings_logging_method == 3 ) ) {
         $rate_cookie = setcookie("rated_" . $post_id,
                                  $ratings_value[$rate-1],
                                  apply_filters('wp_postratings_cookie_expiration', (time() + 30000000) ),
