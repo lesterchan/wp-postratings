@@ -564,7 +564,26 @@ function process_ratings_from_ajax() {
           printf($last_error);
           exit();
         }
+
+        // defines $post_ratings_users, $post_ratings_score and $post_ratings_average, $post_ratings_rating
+        extract($ret);
+        process_ratings_setcookie($post_id, $post_ratings_rating);
+        // Output AJAX Result
+        print ( the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average) );
+        exit();
     } // End if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
+}
+
+function process_ratings_setcookie($post_id, $post_ratings_rating) {
+    // Only Create Cookie If User Choose Logging Method 1 Or 3
+    $postratings_logging_method = (int)get_option('postratings_logging_method');
+    if( $postratings_logging_method == 1 || $postratings_logging_method == 3 ) {
+        return setcookie("rated_" . $post_id,
+                        $post_ratings_rating,
+                        apply_filters('wp_postratings_cookie_expiration', (time() + 30000000) ),
+                        apply_filters('wp_postratings_cookiepath', SITECOOKIEPATH));
+    }
+    return TRUE;
 }
 
 // integer $last_id: in/out, if given, fill it with the rate ID inserted inside the DB
@@ -606,7 +625,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
 
     if (recaptcha_is_enabled() && recaptcha_is_op() && ! is_human()) {
         if (! is_null($last_error))
-            $last_error = sprintf(esc_html__('invalid captcha.', 'wp-postratings'));
+            $last_error = esc_html__('invalid captcha.', 'wp-postratings');
         return FALSE;
     }
 
@@ -621,6 +640,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     if($rate < 1 || $rate > $ratings_max) {
         $rate = 0;
     }
+    $post_ratings_rating = (int)$ratings_value[$rate-1];
     $post_ratings_users = ($post_ratings_users+1);
     $post_ratings_score = ($post_ratings_score+intval($ratings_value[$rate-1]));
     $post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
@@ -639,15 +659,6 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
     $rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', intval( $user_ID ) );
 
-    // Only Create Cookie If User Choose Logging Method 1 Or 3
-    $postratings_logging_method = intval(get_option('postratings_logging_method'));
-    if( ( ! defined( 'REST_REQUEST' ) || !REST_REQUEST ) && ( $postratings_logging_method == 1 || $postratings_logging_method == 3 ) ) {
-        $rate_cookie = setcookie("rated_" . $post_id,
-                                 $ratings_value[$rate-1],
-                                 apply_filters('wp_postratings_cookie_expiration', (time() + 30000000) ),
-                                 apply_filters('wp_postratings_cookiepath', SITECOOKIEPATH));
-    }
-
     // Log Ratings No Matter What
     $rate_log = $wpdb->insert( $wpdb->prefix . "ratings",
                                array(// 'rating_id'        => 0, autoinc
@@ -664,9 +675,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $last_id = $wpdb->insert_id;
     // Allow Other Plugins To Hook When A Post Is Rated
     do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
-    // Output AJAX Result
-    return the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
-
+    return compact( "post_ratings_users", "post_ratings_score", "post_ratings_average", "post_ratings_rating");
 }
 
 
