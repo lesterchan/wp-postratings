@@ -61,6 +61,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $postratings_ajax_style = array('loading' => intval($_POST['postratings_ajax_style_loading']), 'fading' => intval($_POST['postratings_ajax_style_fading']));
     $postratings_logging_method = intval($_POST['postratings_logging_method']);
     $postratings_allowtorate = intval($_POST['postratings_allowtorate']);
+    $postratings_admincolumn = intval($_POST['postratings_admincolumn']);
     $update_ratings_queries = array();
     $update_ratings_text = array();
     $postratings_options = array('richsnippet' => $postratings_richsnippet);
@@ -78,6 +79,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $update_ratings_queries[] = update_option('postratings_ajax_style', $postratings_ajax_style);
     $update_ratings_queries[] = update_option('postratings_logging_method', $postratings_logging_method);
     $update_ratings_queries[] = update_option('postratings_allowtorate', $postratings_allowtorate);
+    $update_ratings_queries[] = update_option('postratings_admincolumn', $postratings_admincolumn);
     $update_ratings_queries[] = update_option('postratings_options', $postratings_options);
     $update_ratings_text[] = __('Custom Rating', 'wp-postratings');
     $update_ratings_text[] = __('Ratings Template Vote', 'wp-postratings');
@@ -93,6 +95,7 @@ if ( isset( $_POST['Submit'] ) ) {
     $update_ratings_text[] = __('Ratings AJAX Style', 'wp-postratings');
     $update_ratings_text[] = __('Logging Method', 'wp-postratings');
     $update_ratings_text[] = __('Allow To Vote Option', 'wp-postratings');
+    $update_ratings_text[] = __('Admin Column', 'wp-postratings');
     $update_ratings_text[] = __('Ratings Settings', 'wp-postratings');
     $i = 0;
     $text = '';
@@ -412,6 +415,18 @@ $postratings_image = get_option('postratings_image');
                         <option value="2"<?php selected('2', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By IP', 'wp-postratings'); ?></option>
                         <option value="3"<?php selected('3', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Cookie And IP', 'wp-postratings'); ?></option>
                         <option value="4"<?php selected('4', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Username', 'wp-postratings'); ?></option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <h2><?php esc_html_e('Admin Column', 'wp-postratings'); ?></h2>
+        <table class="form-table">
+            <tr>
+                <th scope="row" valign="top"><?php esc_html_e('Show Ratings as an admin column?', 'wp-postratings'); ?></th>
+                <td>
+                    <select name="postratings_admincolumn" size="1">
+                        <option value="1"<?php selected('1', get_option('postratings_admincolumn')); ?>><?php esc_html_e('Yes', 'wp-postratings'); ?></option>
+                        <option value="0"<?php selected('0', get_option('postratings_admincolumn')); ?>><?php esc_html_e('No', 'wp-postratings'); ?></option>
                     </select>
                 </td>
             </tr>

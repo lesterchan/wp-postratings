@@ -13,6 +13,7 @@ $option_names = array(
 	, 'postratings_template_none'
 	, 'postratings_logging_method'
 	, 'postratings_allowtorate'
+    , 'postratings_admincolumn'
 	, 'postratings_ratingstext'
 	, 'postratings_template_highestrated'
 	, 'postratings_ajax_style'

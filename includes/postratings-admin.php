@@ -29,20 +29,22 @@ class WPPostRatingsAdmin {
 	public function __construct() {
 
 		// Administration Menu
-		add_action( 'admin_menu', array( $this, 'ratings_menu' ) );
+        $show_admin_column = intval(get_option('postratings_admincolumn'));
+        add_action( 'admin_menu', array( $this, 'ratings_menu' ) );
 
-		// Add rating column to the admin
-		add_filter( 'manage_posts_columns', array( $this, 'postrating_admin_column_title' ) );
-		add_filter( 'manage_pages_columns', array( $this, 'postrating_admin_column_title' ) );
+        if($show_admin_column === 1){
+            // Add rating column to the admin
+            add_filter( 'manage_posts_columns', array( $this, 'postrating_admin_column_title' ) );
+            add_filter( 'manage_pages_columns', array( $this, 'postrating_admin_column_title' ) );
 
-		// Fill rating column in the admin
-		add_action( 'manage_posts_custom_column', array( $this, 'postrating_admin_column_content' ) );
-		add_action( 'manage_pages_custom_column', array( $this, 'postrating_admin_column_content' ) );
+            // Fill rating column in the admin
+            add_action( 'manage_posts_custom_column', array( $this, 'postrating_admin_column_content' ) );
+            add_action( 'manage_pages_custom_column', array( $this, 'postrating_admin_column_content' ) );
 
-		// Sort rating column in the admin
-		add_filter( 'manage_edit-post_sortable_columns', array( $this, 'postrating_admin_column_sort' ) );
-		add_filter( 'manage_edit-page_sortable_columns', array( $this, 'postrating_admin_column_sort' ) );
-
+            // Sort rating column in the admin
+            add_filter( 'manage_edit-post_sortable_columns', array( $this, 'postrating_admin_column_sort' ) );
+            add_filter( 'manage_edit-page_sortable_columns', array( $this, 'postrating_admin_column_sort' ) );
+        }
 	}
 
 	/*
