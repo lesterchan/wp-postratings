@@ -25,7 +25,7 @@ function process_ratings_from_comment($comment_id) {
     $rate_id = 0; $last_error = '';
     process_ratings($post_id, $rate, $rate_id, $last_error);
     if ($rate_id) {
-        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
+        update_comment_meta( $comment_id, 'postratings_id', $rate_id );
     }
     // if $last_error: ToDo
 }
@@ -76,23 +76,22 @@ function recent_comment_has_vote( $column_name, $comment_id ) {
 function process_ratings_from_rest_API( WP_Comment $comment, $rate ) {
     if (! $comment->comment_post_ID || ! $rate) {
         // ToDo
-        return;
+        return NULL;
     }
 
-    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    $allow_to_vote_with_comment = (int)get_option('postratings_onlyifcomment');
     if (! $allow_to_vote_with_comment) {
-        return;
+        return FALSE;
     }
 
     $rate_id = 0; $last_error = '';
     process_ratings($comment->comment_post_ID, $rate, $rate_id, $last_error);
-    if ($rate_id) {
-        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
-        return true;
+    if ( $rate_id ) {
+        $updated = update_comment_meta( $comment->comment_ID, 'postratings_id', $rate_id );
+        return $updated;
     }
-    elseif ($last_error) {
-        var_dump($last_error);
+    elseif ( $last_error ) {
         return new WP_Error( 'rest_comment_vote_invalid', $last_error, array( 'status' => 403 ) );
     }
-    return false;
+    return FALSE;
 }
