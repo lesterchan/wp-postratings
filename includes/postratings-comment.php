@@ -74,14 +74,14 @@ function recent_comment_has_vote( $column_name, $comment_id ) {
 // REST API specific
 // to be called from the "update_callback" of register_rest_field()
 function process_ratings_from_rest_API( WP_Comment $comment, $rate ) {
+    // see update_additional_fields_for_object()
     if (! $comment->comment_post_ID || ! $rate) {
-        // ToDo
-        return NULL;
+        return new WP_Error( 'rest_comment_vote_invalid', 'Voted content not found.', array( 'status' => 500 ) );
     }
 
     $allow_to_vote_with_comment = (int)get_option('postratings_onlyifcomment');
     if (! $allow_to_vote_with_comment) {
-        return FALSE;
+        return new WP_Error( 'rest_comment_vote_invalid', 'Vote bound to comment are not allowed.', array( 'status' => 400 ) );
     }
 
     $rate_id = 0; $last_error = '';
@@ -90,8 +90,9 @@ function process_ratings_from_rest_API( WP_Comment $comment, $rate ) {
         $updated = update_comment_meta( $comment->comment_ID, 'postratings_id', $rate_id );
         return $updated;
     }
-    elseif ( $last_error ) {
+
+    if ( $last_error ) {
         return new WP_Error( 'rest_comment_vote_invalid', $last_error, array( 'status' => 403 ) );
     }
-    return FALSE;
+    return new WP_Error( 'rest_comment_vote_invalid', 'Unknown error.', array( 'status' => 500 ) );
 }
