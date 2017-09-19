@@ -660,7 +660,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', intval( $user_ID ) );
 
     // Log Ratings No Matter What
-    $rate_log = $wpdb->insert( $wpdb->prefix . "ratings",
+    $rate_log = $wpdb->insert( $wpdb->prefix . 'ratings',
                                array(// 'rating_id'        => 0, autoinc
                                    'rating_postid'    => $post_id,
                                    'rating_posttitle' => $post->post_title,
@@ -675,7 +675,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $last_id = $wpdb->insert_id;
     // Allow Other Plugins To Hook When A Post Is Rated
     do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
-    return compact( "post_ratings_users", "post_ratings_score", "post_ratings_average", "post_ratings_rating");
+    return compact( 'post_ratings_users', 'post_ratings_score', 'post_ratings_average', 'post_ratings_rating');
 }
 
 
