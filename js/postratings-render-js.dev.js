@@ -28,34 +28,16 @@
 function expand_ratings_template(rating, max_rate, images_dir) {
     var img_dir = images_dir || wp_postratings.images_dir;
     var img;
-    var ratings_images = '';
     var vote_text = rating.usr > 1 ? 'votes' : 'vote';
     var alt_text = rating.usr + ' ' + vote_text + ', average: ' + rating.avg;
-    for (var i=1; i<= max_rate; i++) {
-	if (i <= Math.round(rating.avg, 1)) {
-	    img = "on";
-	} else if(i == _get_voting_half_star(rating.avg)) {
-	    img = "half";
-	} else {
-	    img = "off";
-	}
-	ratings_images += '<img src="' + img_dir + '/stars/rating_' + img + '.gif" alt="' + alt_text + '" title="' + alt_text + '" class="post-ratings-image" />';
-    }
+    var tpl = `<img src="${img_dir}/stars/rating_%s.gif" alt="${alt_text}" title="${alt_text}" class="post-ratings-image" />\n`;
+    // templating
+    var ratings_images = '', i = 1;
+    var has_half = Math.abs(rating.avg - Math.floor(rating.avg)).toFixed(3) >= 0.25;
 
+    for (i=1; i<= Math.floor(rating.avg); i++) ratings_images += tpl.replace(/%s/g,"on");
+    if (i < max_rate) ratings_images += tpl.replace(/%s/g, has_half ? 'half' : 'off');
+    for (++i; i <= max_rate; i++) ratings_images += tpl.replace(/%s/g,"off");
+    // return
     return ratings_images + ' (<strong>' + rating.usr + '</strong> ' + vote_text + ')';
-}
-
-// helper for expand_ratings_template()
-function _get_voting_half_star(avg) {
-    var post_ratings = Math.round(avg, 1);
-    var post_ratings_average = Math.abs(Math.floor(avg));
-    var average_diff = post_ratings_average - post_ratings;
-    var insert_half = 0;
-    if (average_diff >= 0.25 && average_diff <= 0.75) {
-	insert_half = Math.ceil(post_ratings_average);
-    }
-    else if (average_diff > 0.75) {
-	insert_half = Math.ceil(post_ratings);
-    }
-    return insert_half;
 }

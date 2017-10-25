@@ -65,12 +65,12 @@ function getRtlDir(name) {
  * Ajax mode: submit async on click
  * Non-ajax mode: click stores in an hidden field (value can be changed with further click) and
    and it's not wp-postraings responsibility to post the value */
-function is_using_ajax($element, post_id) {
-	return $element.parent().siblings('input[name="wp_postrating_form_value_' + post_id + '"]').length == 0;
+function is_using_ajax(post_id) {
+	return Boolean( $j('#post-ratings-' + post_id).data('ajax') );
 }
 
-function non_ajax_hidden_parent($element, post_id) {
-	var parent = $element.parent().siblings('input[name="wp_postrating_form_value_' + post_id + '"]');
+function non_ajax_hidden_parent(post_id) {
+	var parent = $j('input[name="wp_postrating_form_value_' + post_id + '"]');
 	if (parent.length == 1) return parent;
 	return false;
 }
@@ -86,10 +86,9 @@ function current_rating(event) {
 	if (is_being_rated) return;
 
 	var curval = NaN; // possible stored value: disabled
-	if (! is_using_ajax(post_ratings_el, post_id)) {
-		var $parent = non_ajax_hidden_parent(post_ratings_el, post_id);
+	if (! is_using_ajax(post_id)) {
+		var $parent = non_ajax_hidden_parent(post_id);
 		curval = parseInt($parent.val());
-		console.log("foooo", $parent, curval);
 	}
 
 	/* This could be:
@@ -107,14 +106,15 @@ function current_rating(event) {
 	function setOff(i)  { next_images[i] = getOff(i); } 
 	function setHalf(i) { next_images[i] = getHalf(i); }
 	function setOver(i) { next_images[i] = getOver(i); }
+	var max = ratingsL10n.max;
 
 	var i;
 	// 1) off them all
-	for(i = 1; i <= ratingsL10n.max; i++) setOff(i);
+	for(i = 1; i <= max; i++) setOff(i);
 	// 2) on up to current score (always applies except for unvoted items)
 	for(i = 1; i <= current_rating; i++) setOn(i);
 	// 3) set the half-star (if it applies)
-	if (event.type == "mouseover" && insert_half > rating_score) setHalf(insert_half);
+	if (insert_half > rating_score) setHalf(insert_half);
 	// 4) on up to currently voted score (if non-ajax, non-default mode)
 	if (! isNaN(curval)) {
 		// ToDo: find another color
@@ -126,7 +126,7 @@ function current_rating(event) {
 
 	// Now apply all these images.
 	// NB: reversing the array, may be an even simpler way to do RTL
-	for(i = 1; i <= ratingsL10n.max; i++) $j('#rating_' + post_id + '_' + i).attr('src', next_images[i]);
+	for(i = 1; i <= max; i++) $j('#rating_' + post_id + '_' + i).attr('src', next_images[i]);
 
 	updateText($j('#ratings_' + post_id + '_text'), post_ratings_el, event.type == "mouseout");
 }
@@ -156,10 +156,10 @@ function rate_post(event) {
 	var post_id = $j(event.target).data('id');
 	var post_rating = $j(event.target).data('votes');
 
-	var captcha_response;
+	var captcha_response = '';
 
-	if (! is_using_ajax(post_ratings_el, post_id)) {
-		var value_holder = non_ajax_hidden_parent(post_ratings_el, post_id);
+	if (! is_using_ajax(post_id)) {
+		var value_holder = non_ajax_hidden_parent(post_id);
 		var curval = $j(value_holder).val();
 		$j(value_holder).val(null);
 		$j('#rating_' + post_id + '_' + curval).trigger('mouseout');
@@ -188,9 +188,7 @@ function rate_post(event) {
 	}
 
 	if(! is_being_rated) {
-		var post_ratings_nonce = $j(post_ratings_el).data('nonce');
-		if(typeof post_ratings_nonce == 'undefined' || post_ratings_nonce == null)
-			post_ratings_nonce = $j(post_ratings_el).attr('data-nonce');
+		var post_ratings_nonce = $j(post_ratings_el).parent('.post-ratings').data('nonce');
 		is_being_rated = true;
 		if(ratingsL10n.show_fading) {
 			$j(post_ratings_el).fadeTo('def', 0, function () {

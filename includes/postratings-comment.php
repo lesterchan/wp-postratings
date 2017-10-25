@@ -6,14 +6,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_filter( 'wp_insert_comment', 'process_ratings_from_comment' );
 function process_ratings_from_comment($comment_id) {
-		$post_id = intval($_POST['comment_post_ID']);
-    $rate = intval($_POST["wp_postrating_form_value_$post_id"]);
+    if ( !isset($_POST['comment_post_ID']) || !isset($_POST['wp_postrating_form_value_' . $post_id]) ) {
+        return;
+    }
+
+    $post_id = (int)$_POST['comment_post_ID'];
+    $rate = (int)$_POST['wp_postrating_form_value_' . $post_id];
     if (! $post_id || ! $rate) {
         // ignored (could be simply a second comment while missing a second vote)
         return;
     }
 
-    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    $allow_to_vote_with_comment = (int)get_option('postratings_onlyifcomment');
     if (! $allow_to_vote_with_comment) {
         return;
     }
@@ -21,7 +25,7 @@ function process_ratings_from_comment($comment_id) {
     $rate_id = 0; $last_error = '';
     process_ratings($post_id, $rate, $rate_id, $last_error);
     if ($rate_id) {
-        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
+        update_comment_meta( $comment_id, 'postratings_id', $rate_id );
     }
     // if $last_error: ToDo
 }
@@ -70,25 +74,25 @@ function recent_comment_has_vote( $column_name, $comment_id ) {
 // REST API specific
 // to be called from the "update_callback" of register_rest_field()
 function process_ratings_from_rest_API( WP_Comment $comment, $rate ) {
+    // see update_additional_fields_for_object()
     if (! $comment->comment_post_ID || ! $rate) {
-        // ToDo
-        return;
+        return new WP_Error( 'rest_comment_vote_invalid', 'Voted content not found.', array( 'status' => 500 ) );
     }
 
-    $allow_to_vote_with_comment = intval(get_option('postratings_onlyifcomment'));
+    $allow_to_vote_with_comment = (int)get_option('postratings_onlyifcomment');
     if (! $allow_to_vote_with_comment) {
-        return;
+        return new WP_Error( 'rest_comment_vote_invalid', 'Vote bound to comment are not allowed.', array( 'status' => 400 ) );
     }
 
     $rate_id = 0; $last_error = '';
     process_ratings($comment->comment_post_ID, $rate, $rate_id, $last_error);
-    if ($rate_id) {
-        add_comment_meta( $comment_id, 'postratings_id', $rate_id );
-        return true;
+    if ( $rate_id ) {
+        $updated = update_comment_meta( $comment->comment_ID, 'postratings_id', $rate_id );
+        return $updated;
     }
-    elseif ($last_error) {
-        var_dump($last_error);
+
+    if ( $last_error ) {
         return new WP_Error( 'rest_comment_vote_invalid', $last_error, array( 'status' => 403 ) );
     }
-    return false;
+    return new WP_Error( 'rest_comment_vote_invalid', 'Unknown error.', array( 'status' => 500 ) );
 }

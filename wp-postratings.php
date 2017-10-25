@@ -104,53 +104,62 @@ function get_the_ratings($start_tag = 'div', $custom_id = 0, $ajax) {
     $ratings_id = (int) $ratings_id;
 
     // Loading Style
-    $postratings_ajax_style = get_option('postratings_ajax_style');
-    if(intval($postratings_ajax_style['loading']) == 1) {
-        $loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading">
-            <img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image" />' . esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
-    } else {
-        $loading = '';
-    }
-    // Check To See Whether User Has Voted
-    $user_voted = check_rated($ratings_id);
-    // HTML Attributes
-    $ratings_options = get_option('postratings_options');
-    $ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
-    if( is_singular() && $ratings_options['richsnippet'] ) {
-        $itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
-        $attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
-    } else {
-        $attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
+    $loading = '';
+    if(intval(get_option('postratings_ajax_style')) == 1) {
+        $loading = sprintf(<<<'EOF'
+<%1$s id="post-ratings-%2$d-loading" class="post-ratings-loading">
+  <img src="%3$s" width="16" height="16" class="post-ratings-image" />
+  %4$s
+</%1$s>
+EOF
+                           ,
+                           $start_tag,
+                           $ratings_id,
+                           plugins_url('wp-postratings/images/loading.gif'),
+                           esc_html__( 'Loading...', 'wp-postratings' )
+        );
     }
 
+    // HTML Attributes
+    $richsnippet = get_option('postratings_options', array('richsnippet' => 1));
+    $itemtype = '';
+    if( is_singular() && $richsnippet ) {
+        $itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
+    }
 
     // If User Voted Or Is Not Allowed To Rate
-    if($user_voted) {
-      return "<$start_tag $attributes>".the_ratings_results($ratings_id).'</'.$start_tag.'>'.$loading;
+    $template = '<%1$s id="post-ratings-%2$d" class="post-ratings" %3$s> %4$s </%1$s> %5$s';
+    
+    // Check To See Whether User Has Voted
+    if ( check_rated($ratings_id) ) {
+        return sprintf($template, $start_tag, $ratings_id, $itemtype, the_ratings_results($ratings_id), $loading);
     // If User Is Not Allowed To Rate
-    } else if(!check_allowtorate()) {
-      return "<$start_tag $attributes>".the_ratings_results($ratings_id, 0, 0, 0, 1).'</'.$start_tag.'>'.$loading;
+    } else if( !check_allowtorate() ) {
+        return sprintf($template, $start_tag, $ratings_id, $itemtype, the_ratings_results($ratings_id, 0, 0, 0, 1), $loading);
     // If User Has Not Voted
     } else {
-      $html_string = '';
-
       /* ATM, the presence of this input#[name="wp_postrating_form_value_' + ratings_id] is the only way
          we check whether the value must be submit immediatly through Ajax or not.
          In the later case, serves as a value holder of the selected value.
          See non_ajax_hidden_parent() and is_using_ajax() inside postratings-js.dev.js */
-      if (! $ajax) {
-        $html_string .= '<input type="hidden" name="wp_postrating_form_value_' . $ratings_id . '" />' . "\n";
-      }
-      if ( recaptcha_is_enabled() && recaptcha_is_op() ) {
-          $html_string  .= '<div id="g-recaptcha-response"></div>';
-      }
-      return $html_string
-        . "<$start_tag $attributes data-nonce=\""
-        . wp_create_nonce('postratings_'.$ratings_id.'-nonce').'"'
-        // . ($ajax ? ' data-ajax="1"' ; '') // here if we want to avoid looking to parent's sibling (from <img> PoV, cf JS)
-        . ">"
-        . the_ratings_vote($ratings_id, array('ajax' => $ajax))
-        . '</'.$start_tag.'>'.$loading;
+
+      return sprintf(<<<'EOF'
+<div id="g-recaptcha-response"></div>
+<%1$s id="post-ratings-%2$d" class="post-ratings" %3$s data-nonce="%4$s" data-ajax="%5$d">
+  <input type="hidden" name="wp_postrating_form_value_%2$d" />
+  %6$s
+</%1$s>
+%7$s
+EOF
+                     ,
+                     $start_tag,
+                     $ratings_id,
+                     $itemtype, // $3
+                     wp_create_nonce('postratings_'.$ratings_id.'-nonce'),
+                     $ajax, // $5: here if we want to avoid looking to parent's sibling (from <img> PoV, cf JS)
+                     the_ratings_vote($ratings_id, array('ajax' => $ajax)),
+                     $loading // $7
+      );
     }
 }
 
@@ -564,7 +573,26 @@ function process_ratings_from_ajax() {
           printf($last_error);
           exit();
         }
+
+        // defines $post_ratings_users, $post_ratings_score and $post_ratings_average, $post_ratings_rating
+        extract($ret);
+        process_ratings_setcookie($post_id, $post_ratings_rating);
+        // Output AJAX Result
+        print ( the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average) );
+        exit();
     } // End if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
+}
+
+function process_ratings_setcookie($post_id, $post_ratings_rating) {
+    // Only Create Cookie If User Choose Logging Method 1 Or 3
+    $postratings_logging_method = (int)get_option('postratings_logging_method');
+    if( $postratings_logging_method == 1 || $postratings_logging_method == 3 ) {
+        return setcookie("rated_" . $post_id,
+                        $post_ratings_rating,
+                        apply_filters('wp_postratings_cookie_expiration', (time() + 30000000) ),
+                        apply_filters('wp_postratings_cookiepath', SITECOOKIEPATH));
+    }
+    return TRUE;
 }
 
 // integer $last_id: in/out, if given, fill it with the rate ID inserted inside the DB
@@ -606,7 +634,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
 
     if (recaptcha_is_enabled() && recaptcha_is_op() && ! is_human()) {
         if (! is_null($last_error))
-            $last_error = sprintf(esc_html__('invalid captcha.', 'wp-postratings'));
+            $last_error = esc_html__('invalid captcha.', 'wp-postratings');
         return FALSE;
     }
 
@@ -621,6 +649,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     if($rate < 1 || $rate > $ratings_max) {
         $rate = 0;
     }
+    $post_ratings_rating = (int)$ratings_value[$rate-1];
     $post_ratings_users = ($post_ratings_users+1);
     $post_ratings_score = ($post_ratings_score+intval($ratings_value[$rate-1]));
     $post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
@@ -639,17 +668,8 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
     $rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', intval( $user_ID ) );
 
-    // Only Create Cookie If User Choose Logging Method 1 Or 3
-    $postratings_logging_method = intval(get_option('postratings_logging_method'));
-    if($postratings_logging_method == 1 || $postratings_logging_method == 3) {
-        $rate_cookie = setcookie("rated_" . $post_id,
-                                 $ratings_value[$rate-1],
-                                 apply_filters('wp_postratings_cookie_expiration', (time() + 30000000) ),
-                                 apply_filters('wp_postratings_cookiepath', SITECOOKIEPATH));
-    }
-
     // Log Ratings No Matter What
-    $rate_log = $wpdb->insert( $wpdb->prefix . "ratings",
+    $rate_log = $wpdb->insert( $wpdb->prefix . 'ratings',
                                array(// 'rating_id'        => 0, autoinc
                                    'rating_postid'    => $post_id,
                                    'rating_posttitle' => $post->post_title,
@@ -664,9 +684,7 @@ function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL)
     $last_id = $wpdb->insert_id;
     // Allow Other Plugins To Hook When A Post Is Rated
     do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
-    // Output AJAX Result
-    return the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
-
+    return compact( 'post_ratings_users', 'post_ratings_score', 'post_ratings_average', 'post_ratings_rating');
 }
 
 
@@ -1285,7 +1303,7 @@ EOF;
         $ratings_meta = '';
         if( $post_ratings_average > 0 ) {
             $ratings_meta = <<<EOF
-'<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
 <meta itemprop="bestRating" content="{$ratings_max}" />
 <meta itemprop="worstRating" content="1" />
 <meta itemprop="ratingValue" content="{$post_ratings_average}" />
