@@ -1303,7 +1303,7 @@ EOF;
         $ratings_meta = '';
         if( $post_ratings_average > 0 ) {
             $ratings_meta = <<<EOF
-'<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
 <meta itemprop="bestRating" content="{$ratings_max}" />
 <meta itemprop="worstRating" content="1" />
 <meta itemprop="ratingValue" content="{$post_ratings_average}" />
