@@ -63,6 +63,7 @@ require_once( 'includes/postratings-stats.php' );
 require_once( 'includes/postratings-widgets.php' );
 require_once( 'includes/postratings-comment.php' );
 require_once( 'includes/postratings-bayesian-score.php' );
+require_once( 'includes/validation.php' );
 
 /**
  * Register plugin activation hook
@@ -75,6 +76,7 @@ function postratings_init() {
     if( ! defined( 'RATINGS_IMG_EXT' ) ) {
         define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
     }
+    wpr_setup_validation();
 }
 
 ### Function: Display The Rating For The Post
@@ -131,10 +133,10 @@ EOF
     $template = '<%1$s id="post-ratings-%2$d" class="post-ratings" %3$s> %4$s </%1$s> %5$s';
     
     // Check To See Whether User Has Voted
-    if ( check_rated($ratings_id) ) {
+    if ( wpr_has_already_rated( $ratings_id ) ) {
         return sprintf($template, $start_tag, $ratings_id, $itemtype, the_ratings_results($ratings_id), $loading);
     // If User Is Not Allowed To Rate
-    } else if( !check_allowtorate() ) {
+    } else if( !wpr_is_allowed_to_rate() ) {
         return sprintf($template, $start_tag, $ratings_id, $itemtype, the_ratings_results($ratings_id, 0, 0, 0, 1), $loading);
     // If User Has Not Voted
     } else {
@@ -217,94 +219,6 @@ function the_ratings_vote($post_id, $options) {
         // Return Post Ratings Voting Template
         return expand_ratings_template($template_postratings_vote, $post_id, $post_ratings_data);
     }
-}
-
-
-### Function: Check Who Is Allow To Rate
-function check_allowtorate() {
-    $allow_to_vote = intval(get_option('postratings_allowtorate'));
-    switch($allow_to_vote) {
-        // Guests Only
-        case 0:
-            return ! is_user_logged_in();
-        // Logged-in users only
-        case 1:
-            return is_user_logged_in();
-        // Users registered on blog (for multisite)
-        case 3:
-            return is_user_member_of_blog();
-        // Registered Users And Guests
-        case 2:
-        default:
-            return true;
-    }
-}
-
-
-### Function: Check Whether User Have Rated For The Post
-function check_rated( $post_id ) {
-    $postratings_logging_method = intval( get_option( 'postratings_logging_method' ) );
-    $rated = false;
-    switch( $postratings_logging_method ) {
-        // Do Not Log
-        case 0:
-            $rated = false;
-            break;
-        // Logged By Cookie
-        case 1:
-            $rated = check_rated_cookie( $post_id );
-            break;
-        // Logged By IP
-        case 2:
-            $rated = check_rated_ip( $post_id );
-            break;
-        // Logged By Cookie And IP
-        case 3:
-            $rated_cookie = check_rated_cookie( $post_id );
-            if( $rated_cookie > 0 ) {
-                $rated = true;
-            } else {
-                $rated = check_rated_ip( $post_id );
-            }
-            break;
-        // Logged By Username
-        case 4:
-            $rated = check_rated_username( $post_id );
-            break;
-    }
-
-    $rated = apply_filters( 'wp_postratings_check_rated', $rated, $post_id );
-
-    return $rated;
-}
-
-
-### Function: Check Rated By Cookie
-function check_rated_cookie($post_id) {
-    return (isset($_COOKIE["rated_$post_id"]));
-}
-
-
-### Function: Check Rated By IP
-function check_rated_ip($post_id) {
-    global $wpdb;
-    // Check IP From IP Logging Database
-    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s", $post_id, get_ipaddress() ) );
-    // 0: False | > 0: True
-    return intval($get_rated);
-}
-
-
-### Function: Check Rated By Username
-function check_rated_username($post_id) {
-    global $wpdb, $user_ID;
-    if(!is_user_logged_in()) {
-        return 0;
-    }
-    // Check User ID From IP Logging Database
-    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT rating_userid FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d", $post_id, $user_ID ) );
-    // 0: False | > 0: True
-    return intval( $get_rated);
 }
 
 
@@ -596,48 +510,17 @@ function process_ratings_setcookie($post_id, $post_ratings_rating) {
 }
 
 // integer $last_id: in/out, if given, fill it with the rate ID inserted inside the DB
-function process_ratings($post_id, $rate, &$last_id = NULL, &$last_error = NULL) {
+function process_ratings( $post_id, $rate, &$last_id = NULL, &$last_error = array() ) {
     global $wpdb, $user_identity, $user_ID;
 
-    if($rate <= 0) {
-        if (! is_null($last_error))
-            $last_error = esc_html__('Invalid rate value.', 'wp-postratings');
+    $errors = array();
+    $can_rate = apply_filters( 'wp_postratings_can_rate', $errors, $post_id, $rate);
+    if (! empty($can_rate)) {
+        $last_error = $can_rate;
         return FALSE;
     }
 
-    if (! $post_id) {
-        if (! is_null($last_error))
-            $last_error = sprintf(esc_html__('Invalid Post ID #%d.', 'wp-postratings'), $post_id);
-        return FALSE;
-    }
-
-    if (! check_allowtorate()) {
-        if (! is_null($last_error))
-            $last_error = esc_html__('Voting forbidden, check policy.', 'wp-postratings');
-        return FALSE;
-    }
-
-    // Check Whether Post Has Been Rated By User
-    if (check_rated($post_id)) {
-        if (! is_null($last_error))
-            $last_error = sprintf(esc_html__('You already rated post #%d.', 'wp-postratings'), $post_id);
-        return FALSE;
-    }
-
-    // Check Whether Is There A Valid Post
     $post = get_post($post_id);
-    if (! $post || wp_is_post_revision($post)) {
-        if (! is_null($last_error))
-            $last_error = sprintf(esc_html__('Invalid post #%d.', 'wp-postratings'), $post_id);
-        return FALSE;
-    }
-
-    if (recaptcha_is_enabled() && recaptcha_is_op() && ! is_human()) {
-        if (! is_null($last_error))
-            $last_error = esc_html__('invalid captcha.', 'wp-postratings');
-        return FALSE;
-    }
-
     // If Valid Post Then We Rate It
     $ratings_max = intval(get_option('postratings_max'));
     $ratings_custom = intval(get_option('postratings_customrating'));
