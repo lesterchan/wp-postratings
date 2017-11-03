@@ -209,7 +209,7 @@ function check_allowtorate() {
 
 ### Function: Check Whether User Have Rated For The Post
 function check_rated( $post_id ) {
-    $postratings_logging_method = intval( get_option( 'postratings_logging_method' ) );
+    $postratings_logging_method = (int) get_option( 'postratings_logging_method' );
     $rated = false;
     switch( $postratings_logging_method ) {
         // Do Not Log
@@ -268,31 +268,31 @@ function check_rated_ip($post_id) {
 ### Function: Check Rated By Username
 function check_rated_username($post_id) {
     global $wpdb, $user_ID;
-    if(!is_user_logged_in()) {
+    if ( !is_user_logged_in() ) {
         return 0;
     }
     // Check User ID From IP Logging Database
     $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT rating_userid FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d", $post_id, $user_ID ) );
     // 0: False | > 0: True
-    return intval( $get_rated);
+    return (int) $get_rated;
 }
 
 
 ### Function: Get Comment Authors Ratings
-add_action('loop_start', 'get_comment_authors_ratings');
+add_action ('loop_start', 'get_comment_authors_ratings' );
 function get_comment_authors_ratings() {
     global $wpdb, $post, $comment_authors_ratings;
     $comment_authors_ratings_results = null;
-    if(!is_feed() && !is_admin()) {
+    if ( !is_feed() && !is_admin() ) {
         $comment_authors_ratings = array();
-        if($post && $post->ID) {
+        if ( $post && $post->ID ) {
             $comment_authors_ratings_results = $wpdb->get_results( $wpdb->prepare( "SELECT rating_username, rating_rating, rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d", $post->ID ) );
         }
-        if($comment_authors_ratings_results) {
-            foreach($comment_authors_ratings_results as $comment_authors_ratings_result) {
-                $comment_author = stripslashes($comment_authors_ratings_result->rating_username);
-                $comment_authors_ratings[$comment_author] = $comment_authors_ratings_result->rating_rating;
-                $comment_authors_ratings[$comment_authors_ratings_result->rating_ip] = $comment_authors_ratings_result->rating_rating;
+        if ( $comment_authors_ratings_results ) {
+            foreach ( $comment_authors_ratings_results as $comment_authors_ratings_result ) {
+                $comment_author = stripslashes( $comment_authors_ratings_result->rating_username );
+                $comment_authors_ratings[ $comment_author ] = $comment_authors_ratings_result->rating_rating;
+                $comment_authors_ratings[ $comment_authors_ratings_result->rating_ip ] = $comment_authors_ratings_result->rating_rating;
             }
         }
     }
@@ -300,76 +300,80 @@ function get_comment_authors_ratings() {
 
 
 ### Function: Comment Author Ratings
-function comment_author_ratings($comment_author_specific = '', $display = true) {
+function comment_author_ratings( $comment_author_specific = '', $display = true ) {
     global $comment_authors_ratings;
-    if(get_comment_type() == 'comment') {
+    if ( get_comment_type() === 'comment' ) {
         $post_ratings_images = '';
-        $ratings_image = get_option('postratings_image');
-        $ratings_max = intval(get_option('postratings_max'));
-        $ratings_custom = intval(get_option('postratings_customrating'));
-        if(empty($comment_author_specific)) {
+        $ratings_image = get_option( 'postratings_image' );
+        $ratings_max = (int) get_option( 'postratings_max' );
+        $ratings_custom = (int) get_option( 'postratings_customrating' );
+        $postratings_logging_method = (int) get_option( 'postratings_logging_method' );
+        $comment_author = $comment_author_specific;
+        if ( empty( $comment_author ) ) {
             $comment_author = get_comment_author();
-        } else {
-            $comment_author = $comment_author_specific;
         }
-        $comment_author_rating = intval($comment_authors_ratings[$comment_author]);
-        if($comment_author_rating == 0) {
-            $comment_author_rating = intval($comment_authors_ratings[get_comment_author_IP()]);
+
+        $comment_author_rating = (int) $comment_authors_ratings[ $comment_author ];
+        // If we logged by username, we don't want to use IP at all.
+        if ( $postratings_logging_method !== 4 && $comment_author_rating === 0 ) {
+            $comment_author_rating = (int) $comment_authors_ratings[ get_comment_author_IP() ];
         }
-        if($comment_author_rating != 0) {
+        if ( $comment_author_rating !== 0 ) {
             // Display Rated Images
-            if($ratings_custom && $ratings_max == 2) {
-                if($comment_author_rating > 0) {
-                    $comment_author_rating = '+'.$comment_author_rating;
+            if ( $ratings_custom && $ratings_max === 2 ) {
+                if ( $comment_author_rating > 0 ) {
+                    $comment_author_rating = '+' . $comment_author_rating;
                 }
             }
-            $image_alt = sprintf(__('%s gives a rating of %s', 'wp-postratings'), $comment_author, $comment_author_rating);
-            $post_ratings_images = get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt);
+            $image_alt = sprintf( __( '%s gives a rating of %s', 'wp-postratings' ), $comment_author, $comment_author_rating );
+            $post_ratings_images = get_ratings_images_comment_author( $ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt );
         }
         if($display) {
             return $post_ratings_images;
-        } else {
-            return $post_ratings_images;
         }
+
+        return $post_ratings_images;
     }
 }
 
 
 ### Function:  Display Comment Author Ratings
-add_filter('comment_text', 'comment_author_ratings_filter');
-function comment_author_ratings_filter($comment_text) {
+add_filter( 'comment_text', 'comment_author_ratings_filter' );
+function comment_author_ratings_filter( $comment_text ) {
     global $comment, $comment_authors_ratings;
 
     $output = '';
     $display_comment_author_ratings = apply_filters( 'wp_postratings_display_comment_author_ratings', false );
 
-    if( $display_comment_author_ratings ) {
-        if(!is_feed() && !is_admin()) {
-            if( ! empty( $comment ) && get_comment_type() === 'comment' ) {
+    if ( $display_comment_author_ratings ) {
+        if ( !is_feed() && !is_admin() ) {
+            if ( ! empty( $comment ) && get_comment_type() === 'comment' ) {
                 $post_ratings_images = '';
-                $ratings_image = get_option('postratings_image');
-                $ratings_max = intval(get_option('postratings_max'));
-                $ratings_custom = intval(get_option('postratings_customrating'));
+                $ratings_image = get_option( 'postratings_image' );
+                $ratings_max = (int) get_option( 'postratings_max' );
+                $ratings_custom = (int) get_option( 'postratings_customrating' );
+                $postratings_logging_method = (int) get_option( 'postratings_logging_method' );
                 $comment_author = get_comment_author();
-                $comment_author_rating = intval($comment_authors_ratings[$comment_author]);
-                if($comment_author_rating == 0) {
-                    $comment_author_rating = intval($comment_authors_ratings[get_comment_author_IP()]);
+                $comment_author_rating = (int) $comment_authors_ratings[ $comment_author ];
+                // If we logged by username, we don't want to use IP at all.
+                if ( $postratings_logging_method !== 4 && $comment_author_rating === 0 ) {
+                    $comment_author_rating = (int) $comment_authors_ratings[ get_comment_author_IP() ];
                 }
-                if($comment_author_rating != 0) {
+                if ( $comment_author_rating !== 0 ) {
                     // Display Rated Images
-                    if($ratings_custom && $ratings_max == 2) {
-                        if($comment_author_rating > 0) {
-                            $comment_author_rating = '+'.$comment_author_rating;
+                    if ( $ratings_custom && $ratings_max === 2 ) {
+                        if ( $comment_author_rating > 0 ) {
+                            $comment_author_rating = '+' . $comment_author_rating;
                         }
                     }
-                    $image_alt = sprintf(__('%s gives a rating of %s', 'wp-postratings'), $comment_author, $comment_author_rating);
-                    $post_ratings_images = get_ratings_images_comment_author($ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt);
+                    $image_alt = sprintf( __( '%s gives a rating of %s', 'wp-postratings' ), $comment_author, $comment_author_rating );
+                    $post_ratings_images = get_ratings_images_comment_author( $ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt );
                 }
                 $output .= '<div class="post-ratings-comment-author">';
-                if($post_ratings_images != '') {
-                    $output .= get_comment_author().' ratings for this post: '.$post_ratings_images;
+                if ( $post_ratings_images !== '' ) {
+                    $output .= get_comment_author() . ' ratings for this post: ' . $post_ratings_images;
                 } else {
-                    $output .= get_comment_author().' did not rate this post.';
+                    $output .= get_comment_author() . ' did not rate this post.';
                 }
                 $output .= '</div>';
             }
