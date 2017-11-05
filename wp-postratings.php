@@ -1042,40 +1042,40 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     global $post;
 
     // Get global variables
-    $ratings_image = get_option('postratings_image');
-    $ratings_max = intval(get_option('postratings_max'));
-    $ratings_custom = intval(get_option('postratings_customrating'));
-    $ratings_options = get_option('postratings_options');
+    $ratings_image = get_option( 'postratings_image' );
+    $ratings_max = (int) get_option( 'postratings_max' );
+    $ratings_custom = (int) get_option( 'postratings_customrating' );
+    $ratings_options = get_option( 'postratings_options' );
 
-    if(is_object($post_data)) {
-        $post_id = intval($post_data->ID);
+    if ( is_object( $post_data ) ) {
+        $post_id = (int) $post_data->ID;
     } else {
-        $post_id = intval($post_data);
+        $post_id = (int) $post_data;
     }
 
     // Most likely from coming from Widget
-    if(isset($post_data->ratings_users)) {
-        $post_ratings_users = intval($post_data->ratings_users);
-        $post_ratings_score = intval($post_data->ratings_score);
-        $post_ratings_average = floatval($post_data->ratings_average);
+    if ( isset( $post_data->ratings_users ) ) {
+        $post_ratings_users = (int) $post_data->ratings_users;
+        $post_ratings_score = (int) $post_data->ratings_score;
+        $post_ratings_average = (float) $post_data->ratings_average;
     // Most Likely coming from the_ratings_vote or the_ratings_rate
-    } else if(isset($post_ratings_data->ratings_users)) {
-        $post_ratings_users = intval($post_ratings_data->ratings_users);
-        $post_ratings_score = intval($post_ratings_data->ratings_score);
-        $post_ratings_average = floatval($post_ratings_data->ratings_average);
+    } else if ( isset( $post_ratings_data->ratings_users ) ) {
+        $post_ratings_users = (int) $post_ratings_data->ratings_users;
+        $post_ratings_score = (int) $post_ratings_data->ratings_score;
+        $post_ratings_average = (float) $post_ratings_data->ratings_average;
     } else {
-        if(get_the_ID() != $post_id) {
-            $post_ratings_data = get_post_custom($post_id);
+        if ( get_the_ID() !== $post_id ) {
+            $post_ratings_data = get_post_custom( $post_id );
         } else {
             $post_ratings_data = get_post_custom();
         }
 
-        $post_ratings_users = is_array($post_ratings_data) && array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
-        $post_ratings_score = is_array($post_ratings_data) && array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
-        $post_ratings_average = is_array($post_ratings_data) && array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
+        $post_ratings_users = is_array( $post_ratings_data ) && array_key_exists( 'ratings_users', $post_ratings_data ) ? (int) $post_ratings_data['ratings_users'][0] : 0;
+        $post_ratings_score = is_array( $post_ratings_data ) && array_key_exists( 'ratings_score', $post_ratings_data ) ? (int) $post_ratings_data['ratings_score'][0] : 0;
+        $post_ratings_average = is_array( $post_ratings_data ) && array_key_exists( 'ratings_average', $post_ratings_data ) ? (float) $post_ratings_data['ratings_average'][0] : 0;
     }
 
-    if($post_ratings_score == 0 || $post_ratings_users == 0) {
+    if($post_ratings_score === 0 || $post_ratings_users === 0) {
         $post_ratings = 0;
         $post_ratings_average = 0;
         $post_ratings_percentage = 0;
@@ -1085,7 +1085,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     }
     $post_ratings_text = '<span class="post-ratings-text" id="ratings_'.$post_id.'_text"></span>';
     // Get the image's alt text
-    if($ratings_custom && $ratings_max == 2) {
+    if($ratings_custom && $ratings_max === 2) {
         if($post_ratings_score > 0) {
             $post_ratings_score = '+'.$post_ratings_score;
         }
@@ -1154,7 +1154,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     }
 
     // Google Rich Snippet
-	$google_structured_data = '';
+    $google_structured_data = '';
     $ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
     if( $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
         $itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
@@ -1169,17 +1169,19 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         $post_meta .= '<meta itemprop="url" content="' . $post_link . '" />';
         $post_meta .= '<meta itemprop="author" content="' . get_the_author() . '" />';
         $post_meta .= '<meta itemprop="mainEntityOfPage" content="' . get_permalink() . '" />';
-        // Image
+        // Post Thumbnail
         if( has_post_thumbnail() ) {
             $thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( null ) );
-            if( ! empty( $thumbnail ) ) {
-                $post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
-                $post_meta .= '<meta itemprop="url" content="' . $thumbnail[0] . '" />';
-                $post_meta .= '<meta itemprop="width" content="' . $thumbnail[1] . '" />';
-                $post_meta .= '<meta itemprop="height" content="' . $thumbnail[2] . '" />';
-                $post_meta .= '</div>';
-            }
         }
+        $thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
+        if( ! empty( $thumbnail ) ) {
+            $post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
+            $post_meta .= '<meta itemprop="url" content="' . $thumbnail[0] . '" />';
+            $post_meta .= '<meta itemprop="width" content="' . $thumbnail[1] . '" />';
+            $post_meta .= '<meta itemprop="height" content="' . $thumbnail[2] . '" />';
+            $post_meta .= '</div>';
+        }
+
         // Publisher
         $site_logo = '';
         if ( function_exists( 'the_custom_logo' ) ) {
