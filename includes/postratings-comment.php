@@ -30,25 +30,24 @@ function process_ratings_from_comment($comment_id) {
     // if $last_error: ToDo
 }
 
-add_filter( 'comments_array', 'show_rating_in_comment' );
-function show_rating_in_comment($comments) {
+add_filter( 'comments_array', 'comments_load_rate' );
+function comments_load_rate($comments) {
 		if( ! count( $comments ) ) return;
-    global $wpdb;
 
+    global $wpdb;
     foreach( $comments as $comment ) {
         $rate_id = get_comment_meta($comment->comment_ID, 'postratings_id', true);
         if (intval($rate_id)) {
             $rate = $wpdb->get_var( $wpdb->prepare( "SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_id = %d", intval($rate_id)) );
             if ($rate) {
-                $comment->comment_content .= '<p class="vote-value">'
-                                          . esc_html(sprintf(__('Rated %d', 'wp-postratings'), $rate))
-                                          . '</p>';
+                $comment->postrating_rate = $rate;
             }
         }
     }
 
     return $comments;
 }
+
 add_filter( 'manage_edit-comments_columns', 'comment_has_vote' );
 function comment_has_vote( $columns ) {
   $columns['comment-vote'] = __( 'Vote', 'wp-postratings' );
