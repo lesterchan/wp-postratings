@@ -1170,6 +1170,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         $post_meta .= '<meta itemprop="author" content="' . get_the_author() . '" />';
         $post_meta .= '<meta itemprop="mainEntityOfPage" content="' . get_permalink() . '" />';
         // Post Thumbnail
+        $thumbnail = '';
         if( has_post_thumbnail() ) {
             $thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( null ) );
         }
