@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wp-ratings\n"
 "POT-Creation-Date: 2017-12-02 11:23-0400\n"
-"PO-Revision-Date: 2017-12-02 11:30-0400\n"
+"PO-Revision-Date: 2017-12-02 14:41-0400\n"
 "Last-Translator: Jimmy Olano <olano@ks7000.net.ve>\n"
 "Language-Team: Equipo Venezuela <olano@ks7000.net.ve>\n"
 "Language: es_VE\n"
@@ -94,7 +94,7 @@ msgid ""
 "Note: There is a rating embedded within this post, please visit this post to "
 "rate it."
 msgstr ""
-"Nota: Hay una calificación incluída para esta entrada, por favor visite esta "
+"Nota: Hay una calificación incluida para esta entrada, por favor visite esta "
 "entrada para calificarla."
 
 #: postratings-stats.php:61 postratings-stats.php:120 postratings-stats.php:173
@@ -146,7 +146,7 @@ msgstr "Mejor calificado por categoría"
 
 #: postratings-widgets.php:143
 msgid "Highest Rated By Time Range"
-msgstr "Mejore calificado en un rango de tiempo"
+msgstr "Mejor calificado en un rango de tiempo"
 
 #: postratings-widgets.php:144
 msgid "Highest Rated By Time Range And Category"
@@ -239,12 +239,12 @@ msgid ""
 "that it."
 msgstr ""
 "* Puede ignorar las estadísticas en rangos de tiempo que no admitan el campo "
-"de Votos Mínimos."
+"de «Votos Mínimos»."
 
 #: postratings-widgets.php:193
 msgid ""
 "** If you are not using any category or time range statistics, you can "
 "ignore it."
 msgstr ""
-"** Si no está utilizando ninguna esatdística por rango de tiempo o "
+"** Si no está utilizando ninguna estadística por rango de tiempo o "
 "categoría, usted puede ignorarlo."
