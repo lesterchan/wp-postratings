@@ -1,0 +1,250 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: wp-ratings\n"
+"POT-Creation-Date: 2017-12-02 11:23-0400\n"
+"PO-Revision-Date: 2017-12-02 11:30-0400\n"
+"Last-Translator: Jimmy Olano <olano@ks7000.net.ve>\n"
+"Language-Team: Equipo Venezuela <olano@ks7000.net.ve>\n"
+"Language: es_VE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;esc_html__;esc_html_e\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: postratings-activation.php:61 postratings-activation.php:62
+#: postratings-activation.php:77 postratings-activation.php:79
+msgid "votes"
+msgstr "votos"
+
+#: postratings-activation.php:61 postratings-activation.php:62
+#: postratings-activation.php:77
+msgid ","
+msgstr ","
+
+#: postratings-activation.php:61 postratings-activation.php:62
+#: postratings-activation.php:77
+msgid "average"
+msgstr "promedio"
+
+#: postratings-activation.php:61 postratings-activation.php:62
+#: postratings-activation.php:71 postratings-activation.php:77
+msgid "out of"
+msgstr " de "
+
+#: postratings-activation.php:62
+msgid "rated"
+msgstr "calificado"
+
+#: postratings-activation.php:63
+msgid "No Ratings Yet"
+msgstr "Aún no calificado"
+
+#: postratings-activation.php:70
+msgid "1 Star"
+msgstr "1 estrella"
+
+#: postratings-activation.php:70
+msgid "2 Stars"
+msgstr "2 estrellas"
+
+#: postratings-activation.php:70
+msgid "3 Stars"
+msgstr "3 estrellas"
+
+#: postratings-activation.php:70
+msgid "4 Stars"
+msgstr "4 estrellas"
+
+#: postratings-activation.php:70
+msgid "5 Stars"
+msgstr "5 estrellas"
+
+#: postratings-activation.php:77
+msgid "You need to  be a registered member to rate this."
+msgstr "Usted necesita estar registrado para calificar este ítem."
+
+#: postratings-admin.php:55 postratings-admin.php:56 postratings-admin.php:97
+#: postratings-widgets.php:26 postratings-widgets.php:116
+msgid "Ratings"
+msgstr "Calificaciones"
+
+#: postratings-admin.php:66 postratings-admin.php:67
+msgid "Manage Ratings"
+msgstr "Administrar calificaciones"
+
+#: postratings-admin.php:75 postratings-admin.php:76
+msgid "Ratings Options"
+msgstr "Opciones de calificación"
+
+#: postratings-admin.php:84 postratings-admin.php:85
+msgid "Ratings Templates"
+msgstr "Plantillas de calificación"
+
+#: postratings-scripts.php:62
+msgid "Please rate only 1 item at a time."
+msgstr "Por favor califique solamente un ítem a la vez."
+
+#: postratings-shortcodes.php:31
+msgid ""
+"Note: There is a rating embedded within this post, please visit this post to "
+"rate it."
+msgstr ""
+"Nota: Hay una calificación incluída para esta entrada, por favor visite esta "
+"entrada para calificarla."
+
+#: postratings-stats.php:61 postratings-stats.php:120 postratings-stats.php:173
+#: postratings-stats.php:233 postratings-stats.php:286
+#: postratings-stats.php:346 postratings-stats.php:399
+#: postratings-stats.php:459 postratings-stats.php:512
+#: postratings-stats.php:572 postratings-stats.php:625
+#: postratings-stats.php:670 postratings-stats.php:722
+#: postratings-stats.php:768 postratings-stats.php:821
+#: postratings-stats.php:880 postratings-stats.php:939
+msgid "N/A"
+msgstr "N/A"
+
+#: postratings-widgets.php:28
+msgid "WP-PostRatings ratings statistics"
+msgstr "WP-PostRatings, estadísticas de calificaciones"
+
+#: postratings-widgets.php:130
+msgid "Title:"
+msgstr "Título:"
+
+#: postratings-widgets.php:134
+msgid "Statistics Type:"
+msgstr "Tipo de estadísticas:"
+
+#: postratings-widgets.php:136
+msgid "Most Rated"
+msgstr "Mejores calificados"
+
+#: postratings-widgets.php:137
+msgid "Most Rated By Category"
+msgstr "Mejores calificados por categoría"
+
+#: postratings-widgets.php:138
+msgid "Most Rated By Time Range"
+msgstr "Mejores calificados en un rango de tiempo"
+
+#: postratings-widgets.php:139
+msgid "Most Rated By Time Range And Category"
+msgstr "Mejores calificados en un rango de tiempo y categoría"
+
+#: postratings-widgets.php:141
+msgid "Highest Rated"
+msgstr "Mejor calificado"
+
+#: postratings-widgets.php:142
+msgid "Highest Rated By Category"
+msgstr "Mejor calificado por categoría"
+
+#: postratings-widgets.php:143
+msgid "Highest Rated By Time Range"
+msgstr "Mejore calificado en un rango de tiempo"
+
+#: postratings-widgets.php:144
+msgid "Highest Rated By Time Range And Category"
+msgstr "Mejores calificados en un rango de tiempo y categoría"
+
+#: postratings-widgets.php:146
+msgid "Lowest Rated"
+msgstr "Menores calificados"
+
+#: postratings-widgets.php:147
+msgid "Lowest Rated By Category"
+msgstr "Menores calificados por categoría"
+
+#: postratings-widgets.php:148
+msgid "Lowest Rated By Time Range"
+msgstr "Menor calificado por rango de tiempo"
+
+#: postratings-widgets.php:150
+msgid "Highest Score"
+msgstr "Mayor puntaje"
+
+#: postratings-widgets.php:151
+msgid "Highest Score By Category"
+msgstr "Mayor puntaje por categoría"
+
+#: postratings-widgets.php:152
+msgid "Highest Score By Time Range"
+msgstr "Mayor puntaje por rango de tiempo"
+
+#: postratings-widgets.php:153
+msgid "Highest Score By Time Range And Category"
+msgstr "Mayor puntaje por rango de tiempo y categoría"
+
+#: postratings-widgets.php:157
+msgid "Include Ratings From:"
+msgstr "Incluir calificaciones desde:"
+
+#: postratings-widgets.php:159
+msgid "All"
+msgstr "Todas"
+
+#: postratings-widgets.php:162
+#, php-format
+msgid "%s Only"
+msgstr "%s únicamente"
+
+#: postratings-widgets.php:168
+msgid "No. Of Records To Show:"
+msgstr "N° de registros a mostrar:"
+
+#: postratings-widgets.php:172
+msgid "Minimum Votes:"
+msgstr "Votos mínimos:"
+
+#: postratings-widgets.php:174
+msgid "The minimum number of votes, before the rating displayed."
+msgstr "El mínimo número de votos antes de que la calificación sea mostrada."
+
+#: postratings-widgets.php:177
+msgid "Maximum Title Length (Characters):"
+msgstr "Longitud máxima del título (caracteres):"
+
+#: postratings-widgets.php:179
+msgid "<strong>0</strong> to disable."
+msgstr "<strong>0</strong> para deshabilitar."
+
+#: postratings-widgets.php:182
+msgid "Category IDs:"
+msgstr "Identificadores de categorías:"
+
+#: postratings-widgets.php:184
+msgid "Seperate mutiple categories with commas."
+msgstr "Separe las categorías múltiples mediante comas."
+
+#: postratings-widgets.php:187
+msgid "Time Range:"
+msgstr "Rango de tiempo:"
+
+#: postratings-widgets.php:189
+msgid ""
+"Use values like <strong>1 day</strong>, <strong>2 weeks</strong>, <strong>1 "
+"month</strong>."
+msgstr ""
+"Utilice valores como <strong>1 día</strong>, <strong>2 semanas</strong>, "
+"<strong>1 mes</strong>."
+
+#: postratings-widgets.php:192
+msgid ""
+"* Time range statistics does not support Minimum Votes field, you can ignore "
+"that it."
+msgstr ""
+"* Puede ignorar las estadísticas en rangos de tiempo que no admitan el campo "
+"de Votos Mínimos."
+
+#: postratings-widgets.php:193
+msgid ""
+"** If you are not using any category or time range statistics, you can "
+"ignore it."
+msgstr ""
+"** Si no está utilizando ninguna esatdística por rango de tiempo o "
+"categoría, usted puede ignorarlo."
