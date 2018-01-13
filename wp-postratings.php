@@ -1173,8 +1173,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
         $thumbnail = '';
         if( has_post_thumbnail() ) {
             $thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( null ) );
+	        $thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
         }
-        $thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
         if( ! empty( $thumbnail ) ) {
             $post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
             $post_meta .= '<meta itemprop="url" content="' . $thumbnail[0] . '" />';
