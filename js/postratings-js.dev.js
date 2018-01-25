@@ -130,7 +130,7 @@ function current_rating(event) {
 
 	// Now apply all these images.
 	// NB: reversing the array, may be an even simpler way to do RTL
-	for(i = 1; i <= max; i++) $j('#rating_' + post_id + '_' + i).attr('src', next_images[i]);
+	for(i = 1; i <= max; i++) document.querySelector('img#rating_' + post_id + '_' + i).setAttribute('src', next_images[i]);
 
 	updateText($j('#ratings_' + post_id + '_text'), post_ratings_el, event.type == "mouseout");
 }
