@@ -19,7 +19,12 @@ var is_being_rated = false;
 var postratings_captcha = null;
 var ratings_mouseover_image;
 
-jQuery(function($) {
+jQuery(function() {
+        postratings_init_vars();
+        postratings_setup_evt_listeners();
+});
+
+function postratings_init_vars() {
 	ratingsL10n.custom = parseInt(ratingsL10n.custom);
 	ratingsL10n.max = parseInt(ratingsL10n.max);
 	ratingsL10n.show_loading = parseInt(ratingsL10n.show_loading);
@@ -37,12 +42,11 @@ jQuery(function($) {
 		ratings_mouseover_image = new Image();
 		ratings_mouseover_image.src = ratingsL10n.baseimg + "_over."  + ratingsL10n.image_ext ;
 	}
+};
 
-	$('img[data-votes]')
-		.on('mouseover mouseout', current_rating)
-		.on('click keypress',     rate_post);
-
-});
+function postratings_setup_evt_listeners() {
+	jQuery('img[data-votes]').on('mouseover mouseout', current_rating).on('click keypress', rate_post);
+};
 
 // intermediary functions: wrap RTL complexity (invert on/off)
 function getRtlI(i) { return (!ratingsL10n.rtl) ? i : (ratingsL10n.max - i + 1); }
