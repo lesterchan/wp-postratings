@@ -43,7 +43,7 @@ function ratings_scripts() {
         }
     }
 
-    wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/js/postratings-js.dev.js'), array('jquery'), WP_POSTRATINGS_VERSION, true);
+    wp_enqueue_script('wp-postratings', plugins_url('wp-postratings/js/postratings-js.dev.js'), array('jquery'), WP_POSTRATINGS_VERSION);
 
     // these are static JS parameters
     $postratings_ajax_style = get_option( 'postratings_ajax_style' );

@@ -3,7 +3,7 @@
  |                                                                |
  | WordPress Plugin: WP-PostRatings                               |
  | Copyright (c) 2012 Lester "GaMerZ" Chan                        |
- | Copyright (c) 2017 Raphaël Droz <raphael.droz@gmail.com>       |
+ | Copyright (c) 2017, 2018 Raphaël Droz <raphael.droz@gmail.com> |
  |                                                                |
  | File Information:                                              |
  | - Post Ratings Javascript File                                 |
