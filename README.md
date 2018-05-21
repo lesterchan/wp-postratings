@@ -2,7 +2,7 @@
 Contributors: GamerZ  
 Donate link: https://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
-Requires at least: 4.2  
+Requires at least: 4.9.6  
 Tested up to: 4.9  
 Stable tag: 1.85  
 

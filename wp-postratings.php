@@ -399,12 +399,7 @@ if ( ! function_exists( 'get_ipaddress' ) ) {
 	}
 }
 function ratings_get_ipaddress() {
-	$ip = get_ipaddress();
-	if ( ! empty( $ip ) ) {
-		return substr( $ip, 0, strrpos( $ip, '.' ) ) . '.xxx';
-	}
-
-	return $ip;
+	return wp_privacy_anonymize_ip( get_ipaddress() );
 }
 function ratings_get_hostname() {
 	$hostname = gethostbyaddr( get_ipaddress() );
