@@ -35,7 +35,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### Version 1.86
-* NEW: Anonymize IP and Hostname to make it GDPR compliance
+* NEW: Hashed IP and Anonymize Hostname to make it GDPR compliance
 
 ### Version 1.85
 * NEW: wp_postratings_post_thumbnail filter

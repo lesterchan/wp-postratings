@@ -285,7 +285,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				<th width="8%"><?php esc_html_e('Post ID', 'wp-postratings'); ?></th>
 				<th width="25%"><?php esc_html_e('Post Title', 'wp-postratings'); ?></th>
 				<th width="20%"><?php esc_html_e('Date / Time', 'wp-postratings'); ?></th>
-				<th width="25%"><?php esc_html_e('IP / Host', 'wp-postratings'); ?></th>
+				<th width="25%"><?php esc_html_e('Hashed IP / Host', 'wp-postratings'); ?></th>
 			</tr>
 		</thead>
 		<tbody>

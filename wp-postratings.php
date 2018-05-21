@@ -259,7 +259,7 @@ function check_rated_cookie( $post_id ) {
 function check_rated_ip($post_id) {
     global $wpdb;
     // Check IP From IP Logging Database
-    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s", $post_id, ratings_get_ipaddress() ) );
+    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s", $post_id, ratings_get_ipaddress() ) );
     // 0: False | > 0: True
     return (int) $get_rated;
 }
@@ -399,12 +399,12 @@ if ( ! function_exists( 'get_ipaddress' ) ) {
 	}
 }
 function ratings_get_ipaddress() {
-	return wp_privacy_anonymize_ip( get_ipaddress() );
+	return wp_hash( get_ipaddress() );
 }
 function ratings_get_hostname() {
 	$hostname = gethostbyaddr( get_ipaddress() );
 	if ( $hostname === get_ipaddress() ) {
-		return ratings_get_ipaddress();
+		return wp_privacy_anonymize_ip( get_ipaddress() );
 	}
 
 	if ( false !== $hostname ) {
