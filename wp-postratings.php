@@ -963,7 +963,7 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
             } else {
                 $use_half_rtl = 0;
             }
-            $ratings_text = esc_attr( stripslashes( $ratings_texts[$i-1] ) );
+            $ratings_text = isset ( $ratings_texts[ $i - 1 ] ) ? esc_attr( stripslashes( $ratings_texts[ $i - 1] ) ) : '';
             $ratings_text_js = esc_js( $ratings_text );
             $image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $ratings_text );
             if($i <= $post_rating) {
@@ -985,7 +985,7 @@ function get_ratings_images_vote($post_id, $ratings_custom, $ratings_max, $post_
             $use_half_rtl = 0;
         }
         for($i=1; $i <= $ratings_max; $i++) {
-            $ratings_text = esc_attr( stripslashes( $ratings_texts[$i-1] ) );
+            $ratings_text = isset( $ratings_texts[ $i - 1 ] ) ? esc_attr( stripslashes( $ratings_texts[ $i - 1 ] ) ) : '';
             $ratings_text_js = esc_js( $ratings_text );
             $image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $ratings_text );
             if($i <= $post_rating) {
