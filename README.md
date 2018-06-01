@@ -36,6 +36,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### Version 1.86
 * NEW: Hashed IP and Anonymize Hostname to make it GDPR compliance
+* NEW: If Do Not Log is set in Rating Options, do not log to DB
 
 ### Version 1.85
 * NEW: wp_postratings_post_thumbnail filter

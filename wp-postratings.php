@@ -585,11 +585,13 @@ function process_ratings() {
 
                     // Only Create Cookie If User Choose Logging Method 1 Or 3
                     $postratings_logging_method = (int) get_option( 'postratings_logging_method' );
-                    if($postratings_logging_method === 1 || $postratings_logging_method === 3) {
-                        $rate_cookie = setcookie( 'rated_' . $post_id, $ratings_value[ $rate - 1 ], apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 ), apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH ) );
+                    if ( $postratings_logging_method === 1 || $postratings_logging_method === 3 ) {
+                        setcookie( 'rated_' . $post_id, $ratings_value[ $rate - 1 ], apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 ), apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH ) );
                     }
-                    // Log Ratings No Matter What
-                    $rate_log = $wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate-1], current_time('timestamp'), ratings_get_ipaddress(), ratings_get_hostname(), $rate_user, $rate_userid ) );
+                    // Log Ratings In DB If User Choose Logging Method 2, 3 or 4
+                    if ( $postratings_logging_method > 1 ) {
+                        $wpdb->query($wpdb->prepare("INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate - 1], current_time('timestamp'), ratings_get_ipaddress(), ratings_get_hostname(), $rate_user, $rate_userid));
+                    }
                     // Allow Other Plugins To Hook When A Post Is Rated
                     do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
                     // Output AJAX Result
