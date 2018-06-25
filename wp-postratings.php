@@ -717,13 +717,18 @@ function ratings_most_join($content) {
     $content .= " LEFT JOIN $wpdb->postmeta ON $wpdb->postmeta.post_id = $wpdb->posts.ID AND $wpdb->postmeta.meta_key = 'ratings_users'";
     return $content;
 }
-function ratings_most_orderby( $content ) {
-    $orderby = trim( addslashes( get_query_var( 'r_orderby' ) )) ;
-    if( empty( $orderby ) || ( $orderby !== 'asc' && $orderby !== 'desc' ) ) {
-        $orderby = 'desc';
+function ratings_most_orderby( $orderby ) {
+    $r_orderby = trim( addslashes( get_query_var( 'r_orderby' ) )) ;
+    if( empty( $r_orderby ) || ( $r_orderby !== 'asc' && $r_orderby !== 'desc' ) ) {
+        $r_orderby = 'desc';
     }
-    $content = " ratings_votes $orderby";
-    return $content;
+
+    $rating_orderby = ' ratings_votes ' . $r_orderby;
+    if ( ! empty ( $orderby ) ) {
+        $rating_orderby .= ', ' . $orderby;
+    }
+
+    return $rating_orderby;
 }
 
 
@@ -746,17 +751,18 @@ function ratings_highest_join( $content ) {
     $content .= " LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id AND t2.meta_key = 'ratings_users'";
     return $content;
 }
-function ratings_highest_orderby( $orderby_statement ) {
-    $orderby = trim( addslashes( get_query_var( 'r_orderby' ) ) );
-    if( empty( $orderby ) || ( $orderby !== 'asc' && $orderby !== 'desc' ) ) {
-        $orderby = 'desc';
+function ratings_highest_orderby( $orderby ) {
+    $r_orderby = trim( addslashes( get_query_var( 'r_orderby' ) ) );
+    if ( empty( $r_orderby ) || ( $r_orderby !== 'asc' && $r_orderby !== 'desc' ) ) {
+        $r_orderby = 'desc';
     }
-    $rating_orders = " ratings_average $orderby, ratings_users $orderby";
-    // Allow devs to use "order" and "orderby" values with WP_Query
-    if(!empty($orderby_statement)) {
-        $rating_orders .= ', ' . $orderby_statement;
+
+    $rating_orderby = ' ratings_average ' . $r_orderby . ', ratings_users ' . $r_orderby;
+    if ( ! empty ( $orderby ) ) {
+        $rating_orderby .= ', ' . $orderby;
     }
-    return $rating_orders;
+
+    return $rating_orderby;
 }
 
 
@@ -797,14 +803,15 @@ function ratings_sorting($local_wp_query) {
 }
 
 
-add_action('pre_get_posts', 'sort_postratings');
-function sort_postratings($query) {
-    if(!is_admin())
+add_action( 'pre_get_posts', 'sort_postratings' );
+function sort_postratings( $query ) {
+    if ( ! is_admin() ) {
         return;
-    $orderby = $query->get('orderby');
-    if('ratings' == $orderby) {
-        $query->set('meta_key', 'ratings_average');
-        $query->set('orderby', 'meta_value_num');
+    }
+    $orderby = $query->get( 'orderby' );
+    if ( 'ratings' === $orderby ) {
+        $query->set( 'meta_key', 'ratings_average' );
+        $query->set( 'orderby', 'meta_value_num' );
     }
 }
 
