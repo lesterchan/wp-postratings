@@ -746,13 +746,17 @@ function ratings_highest_join( $content ) {
     $content .= " LEFT JOIN $wpdb->postmeta As t2 ON t1.post_id = t2.post_id AND t2.meta_key = 'ratings_users'";
     return $content;
 }
-function ratings_highest_orderby( $content ) {
+function ratings_highest_orderby( $orderby_statement ) {
     $orderby = trim( addslashes( get_query_var( 'r_orderby' ) ) );
     if( empty( $orderby ) || ( $orderby !== 'asc' && $orderby !== 'desc' ) ) {
         $orderby = 'desc';
     }
-    $content = " ratings_average $orderby, ratings_users $orderby";
-    return $content;
+    $rating_orders = " ratings_average $orderby, ratings_users $orderby";
+    // Allow devs to use "order" and "orderby" values with WP_Query
+    if(!empty($orderby_statement)) {
+        $rating_orders .= ', ' . $orderby_statement;
+    }
+    return $rating_orders;
 }
 
 
