@@ -81,6 +81,9 @@ function ratings_activate() {
 	delete_option('widget_ratings_highest_rated');
 	delete_option('widget_ratings_most_rated');
 
+	add_option('postratings_vote_text_singular', 'Vote' );
+	add_option('postratings_vote_text_plural', 'Votes' );
+
 	// Index
 	$index = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings;" );
 	$key_name = array();
