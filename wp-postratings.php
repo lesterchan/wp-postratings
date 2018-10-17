@@ -1073,8 +1073,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     $ratings_max = (int) get_option( 'postratings_max' );
     $ratings_custom = (int) get_option( 'postratings_customrating' );
     $ratings_options = get_option( 'postratings_options' );
-    $ratings_vote_text_singular = get_option('postratings_vote_text_singular');
-    $ratings_vote_text_plural = get_option('postratings_vote_text_plural');
+    $ratings_vote_text_singular = get_option('postratings_vote_text_singular', 'vote');
+    $ratings_vote_text_plural = get_option('postratings_vote_text_plural', 'votes');
 
     if ( is_object( $post_data ) ) {
         $post_id = (int) $post_data->ID;
