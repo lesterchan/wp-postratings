@@ -1073,6 +1073,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     $ratings_max = (int) get_option( 'postratings_max' );
     $ratings_custom = (int) get_option( 'postratings_customrating' );
     $ratings_options = get_option( 'postratings_options' );
+    $ratings_vote_text_singular = get_option('postratings_vote_text_singular', 'vote');
+    $ratings_vote_text_plural = get_option('postratings_vote_text_plural', 'votes');
 
     if ( is_object( $post_data ) ) {
         $post_id = (int) $post_data->ID;
@@ -1149,6 +1151,11 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
     $value = str_replace("%RATINGS_AVERAGE%", number_format_i18n($post_ratings_average, 2), $value);
     $value = str_replace("%RATINGS_PERCENTAGE%", number_format_i18n($post_ratings_percentage, 2), $value);
     $value = str_replace("%RATINGS_USERS%", number_format_i18n($post_ratings_users), $value);
+    if ($post_ratings_users > 1) {
+        $value = str_replace("%RATINGS_VOTE_TEXT%", $ratings_vote_text_plural, $value);
+    } else {
+        $value = str_replace("%RATINGS_VOTE_TEXT%", $ratings_vote_text_singular, $value);
+    }    
 
     // Post Template Variables
     $post_link = get_permalink($post_data);

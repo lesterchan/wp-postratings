@@ -45,6 +45,8 @@ if ( isset( $_POST['Submit'] ) ) {
     $postratings_richsnippet = intval($_POST['postratings_richsnippet']);
     $postratings_ratingstext_array = $_POST['postratings_ratingstext'];
     $postratings_ratingstext = array();
+    $postratings_vote_text_singular = sanitize_text_field(trim($_POST['postratings_vote_text_singular']));
+    $postratings_vote_text_plural = sanitize_text_field(trim($_POST['postratings_vote_text_plural']));
     if( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
         foreach( $postratings_ratingstext_array as $ratingstext ) {
             $postratings_ratingstext[] = wp_kses_post(trim( $ratingstext ));
@@ -79,6 +81,8 @@ if ( isset( $_POST['Submit'] ) ) {
     $update_ratings_queries[] = update_option('postratings_logging_method', $postratings_logging_method);
     $update_ratings_queries[] = update_option('postratings_allowtorate', $postratings_allowtorate);
     $update_ratings_queries[] = update_option('postratings_options', $postratings_options);
+    $update_ratings_queries[] = update_option('postratings_vote_text_singular', $postratings_vote_text_singular);
+    $update_ratings_queries[] = update_option('postratings_vote_text_plural', $postratings_vote_text_plural);
     $update_ratings_text[] = __('Custom Rating', 'wp-postratings');
     $update_ratings_text[] = __('Ratings Template Vote', 'wp-postratings');
     $update_ratings_text[] = __('Ratings Template Voted', 'wp-postratings');
@@ -94,6 +98,8 @@ if ( isset( $_POST['Submit'] ) ) {
     $update_ratings_text[] = __('Logging Method', 'wp-postratings');
     $update_ratings_text[] = __('Allow To Vote Option', 'wp-postratings');
     $update_ratings_text[] = __('Ratings Settings', 'wp-postratings');
+    $update_ratings_text[] = __('Custom vote text (singular)', 'wp-postratings');
+    $update_ratings_text[] = __('Custom vote text (plural)', 'wp-postratings');
     $i = 0;
     $text = '';
     foreach($update_ratings_queries as $update_ratings_query) {
@@ -124,22 +130,22 @@ $postratings_image = get_option('postratings_image');
         var default_template;
         switch(template) {
             case "vote":
-                default_template = "%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
+                default_template = "%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%)<br />%RATINGS_TEXT%";
                 break;
             case "text":
-                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)";
+                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%<?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)";
                 break;
             case "permission":
-                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php esc_html_e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
+                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%<?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)<br /><em><?php esc_html_e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
                 break;
             case "none":
                 default_template = "%RATINGS_IMAGES_VOTE% (<?php esc_html_e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
                 break;
             case "highestrated":
-                default_template = "<li><a href=\"%POST_URL%\" title=\"%POST_TITLE%\">%POST_TITLE%</a> (%RATINGS_SCORE% <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> %RATINGS_USERS% <?php esc_html_e('votes', 'wp-postratings'); ?>)</li>";
+                default_template = "<li><a href=\"%POST_URL%\" title=\"%POST_TITLE%\">%POST_TITLE%</a> (%RATINGS_SCORE% <?php esc_html_e('rating', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> %RATINGS_USERS% %RATINGS_VOTE_TEXT%)</li>";
                 break;
             case "mostrated":
-                default_template = "<li><a href=\"%POST_URL%\"  title=\"%POST_TITLE%\">%POST_TITLE%</a> - %RATINGS_USERS% <?php esc_html_e('votes', 'wp-postratings'); ?></li>";
+                default_template = "<li><a href=\"%POST_URL%\"  title=\"%POST_TITLE%\">%POST_TITLE%</a> - %RATINGS_USERS% %RATINGS_VOTE_TEXT%</li>";
                 break;
         }
         if(print) {
@@ -152,13 +158,13 @@ $postratings_image = get_option('postratings_image');
         var default_template;
         switch(template) {
             case "vote":
-                default_template = "%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%)<br />%RATINGS_TEXT%";
+                default_template = "%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%<?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%)<br />%RATINGS_TEXT%";
                 break;
             case "text":
-                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%<?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)";
+                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%<?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%<?php esc_html_e(',', 'wp-postratings'); ?> <strong><?php esc_html_e('rated', 'wp-postratings'); ?></strong></em>)";
                 break;
             case "permission":
-                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> <?php esc_html_e('votes', 'wp-postratings'); ?><?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php esc_html_e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
+                default_template = "%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> %RATINGS_VOTE_TEXT%<?php esc_html_e(',', 'wp-postratings'); ?> <?php esc_html_e('average', 'wp-postratings'); ?>: <strong>%RATINGS_AVERAGE%</strong> <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%</em>)<br /><em><?php esc_html_e('You need to be a registered member to rate this.', 'wp-postratings'); ?></em>";
                 break;
             case "none":
                 default_template = "%RATINGS_IMAGES_VOTE% (<?php esc_html_e('No Ratings Yet', 'wp-postratings'); ?>)<br />%RATINGS_TEXT%";
@@ -167,7 +173,7 @@ $postratings_image = get_option('postratings_image');
                 default_template = "<li><a href=\"%POST_URL%\" title=\"%POST_TITLE%\">%POST_TITLE%</a> %RATINGS_IMAGES% (%RATINGS_AVERAGE% <?php esc_html_e('out of', 'wp-postratings'); ?> %RATINGS_MAX%)</li>";
                 break;
             case "mostrated":
-                default_template = "<li><a href=\"%POST_URL%\"  title=\"%POST_TITLE%\">%POST_TITLE%</a> - %RATINGS_USERS% <?php esc_html_e('votes', 'wp-postratings'); ?></li>";
+                default_template = "<li><a href=\"%POST_URL%\"  title=\"%POST_TITLE%\">%POST_TITLE%</a> - %RATINGS_USERS% %RATINGS_VOTE_TEXT%</li>";
                 break;
         }
         if(print) {
@@ -363,6 +369,21 @@ $postratings_image = get_option('postratings_image');
                 </tbody>
             </table>
         </div>
+        <h2><?php esc_html_e('Custom vote text', 'wp-postratings'); ?></h2>
+        <table class="form-table">
+             <tr>
+                <th scope="row" valign="top"><?php esc_html_e('Vote text (singular):', 'wp-postratings'); ?></th>
+                <td>
+                    <input type="text" name="postratings_vote_text_singular" value="<?php echo esc_attr(stripslashes(get_option('postratings_vote_text_singular'))) ?>">                    
+                </td>
+            </tr>
+            <tr>
+                <th scope="row" valign="top"><?php esc_html_e('Vote text (plural):', 'wp-postratings'); ?></th>
+                <td>
+                    <input type="text" name="postratings_vote_text_plural" value="<?php echo esc_attr(stripslashes(get_option('postratings_vote_text_plural'))) ?>">                    
+                </td>
+            </tr>
+        </table>
         <?php $postratings_ajax_style = get_option('postratings_ajax_style'); ?>
         <h2><?php esc_html_e('Ratings AJAX Style', 'wp-postratings'); ?></h2>
         <table class="form-table">

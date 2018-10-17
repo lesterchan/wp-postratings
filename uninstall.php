@@ -25,6 +25,8 @@ $option_names = array(
 	, 'postratings_options'
 	, 'widget_ratings'
 	, 'widget_ratings-widget'
+	, 'postratings_vote_text_singular'
+	, 'postratings_vote_text_plural'
 );
 
 
