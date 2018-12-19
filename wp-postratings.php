@@ -259,7 +259,7 @@ function check_rated_cookie( $post_id ) {
 function check_rated_ip($post_id) {
     global $wpdb;
     // Check IP From IP Logging Database
-    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s", $post_id, ratings_get_ipaddress() ) );
+    $get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND (rating_ip = %s OR rating_ip = %s)", $post_id, ratings_get_ipaddress(), get_ipaddress()  ) );
     // 0: False | > 0: True
     return (int) $get_rated;
 }
