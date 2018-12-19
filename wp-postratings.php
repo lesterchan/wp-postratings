@@ -419,7 +419,6 @@ function ratings_get_hostname() {
 function ratings_images_folder($folder_name) {
     $normal_images = array('rating_over.'.RATINGS_IMG_EXT, 'rating_on.'.RATINGS_IMG_EXT, 'rating_half.'.RATINGS_IMG_EXT, 'rating_off.'.RATINGS_IMG_EXT);
     $postratings_path = WP_PLUGIN_DIR.'/wp-postratings/images/'.$folder_name;
-    $images_count = 1;
     $count = 0;
     $rating['max'] = 0;
     $rating['custom'] = 0;
@@ -434,7 +433,6 @@ function ratings_images_folder($folder_name) {
                         $rating['max'] = (int) substr( $filename,7, -7 );
                     }
                     $rating['images'][] = $filename;
-                    $images_count++;
                 }
             }
             closedir($handle);

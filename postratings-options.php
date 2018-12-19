@@ -32,68 +32,71 @@ $base_page = 'admin.php?page='.$base_name;
 
 ### If Form Is Submitted
 if ( isset( $_POST['Submit'] ) ) {
-    check_admin_referer('wp-postratings_options');
-    $postratings_customrating = intval($_POST['postratings_customrating']);
-    $postratings_template_vote = wp_kses_post(trim($_POST['postratings_template_vote']));
-    $postratings_template_text = wp_kses_post(trim($_POST['postratings_template_text']));
-    $postratings_template_permission = wp_kses_post(trim($_POST['postratings_template_permission']));
-    $postratings_template_none = wp_kses_post(trim($_POST['postratings_template_none']));
-    $postratings_template_highestrated = wp_kses_post(trim($_POST['postratings_template_highestrated']));
-    $postratings_template_mostrated = wp_kses_post(trim($_POST['postratings_template_mostrated']));
-    $postratings_image = sanitize_text_field( trim( $_POST['postratings_image'] ) );
-    $postratings_max = intval($_POST['postratings_max']);
-    $postratings_richsnippet = intval($_POST['postratings_richsnippet']);
-    $postratings_ratingstext_array = $_POST['postratings_ratingstext'];
+    check_admin_referer( 'wp-postratings_options' );
+    $postratings_customrating = isset( $_POST['postratings_customrating'] ) ? (int) $_POST['postratings_customrating'] : 0;
+    $postratings_template_vote = isset( $_POST['postratings_template_vote'] ) ? wp_kses_post( trim( $_POST['postratings_template_vote'] ) ) : '';
+    $postratings_template_text = isset( $_POST['postratings_template_text'] ) ? wp_kses_post( trim( $_POST['postratings_template_text'] ) ) : '';
+    $postratings_template_permission = isset( $_POST['postratings_template_permission'] ) ? wp_kses_post( trim( $_POST['postratings_template_permission'] ) ) : '';
+    $postratings_template_none = isset( $_POST['postratings_template_none'] ) ? wp_kses_post(trim($_POST['postratings_template_none'] ) ) : '';
+    $postratings_template_highestrated = isset( $_POST['postratings_template_highestrated'] ) ? wp_kses_post( trim( $_POST['postratings_template_highestrated'] ) ) : '';
+    $postratings_template_mostrated = isset( $_POST['postratings_template_mostrated'] ) ? wp_kses_post( trim( $_POST['postratings_template_mostrated'] ) ) : '';
+    $postratings_image = isset( $_POST['postratings_image'] ) ? sanitize_file_name( trim( $_POST['postratings_image'] ) ) : '';
+    $postratings_max = isset( $_POST['postratings_max'] ) ? (int) $_POST['postratings_max'] : 0;
+    $postratings_richsnippet = isset( $_POST['postratings_richsnippet'] ) ? (int) $_POST['postratings_richsnippet'] : 0;
+    $postratings_ratingstext_array = isset( $_POST['postratings_ratingstext'] ) ? $_POST['postratings_ratingstext'] : array();
     $postratings_ratingstext = array();
-    if( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
+    if ( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
         foreach( $postratings_ratingstext_array as $ratingstext ) {
-            $postratings_ratingstext[] = wp_kses_post(trim( $ratingstext ));
+            $postratings_ratingstext[] = wp_kses_post( trim( $ratingstext ) );
         }
     }
-    $postratings_ratingsvalue_array = $_POST['postratings_ratingsvalue'];
+    $postratings_ratingsvalue_array = isset( $_POST['postratings_ratingsvalue'] ) ? $_POST['postratings_ratingsvalue'] : array();
     $postratings_ratingsvalue = array();
-    if( ! empty( $postratings_ratingsvalue_array )  && is_array( $postratings_ratingsvalue_array ) ) {
-        foreach($postratings_ratingsvalue_array as $ratingsvalue) {
-            $postratings_ratingsvalue[] =intval( $ratingsvalue );
+    if ( ! empty( $postratings_ratingsvalue_array )  && is_array( $postratings_ratingsvalue_array ) ) {
+        foreach  ( $postratings_ratingsvalue_array as $ratingsvalue ) {
+            $postratings_ratingsvalue[] = (int) $ratingsvalue;
         }
     }
 
-    $postratings_ajax_style = array('loading' => intval($_POST['postratings_ajax_style_loading']), 'fading' => intval($_POST['postratings_ajax_style_fading']));
-    $postratings_logging_method = intval($_POST['postratings_logging_method']);
-    $postratings_allowtorate = intval($_POST['postratings_allowtorate']);
+    $postratings_ajax_style = array(
+        'loading' => isset( $_POST['postratings_ajax_style_loading'] ) ? (int) $_POST['postratings_ajax_style_loading'] : 0,
+        'fading' => isset( $_POST['postratings_ajax_style_fading'] ) ? (int)  $_POST['postratings_ajax_style_fading'] : 0
+    );
+    $postratings_logging_method = isset( $_POST['postratings_logging_method'] ) ? (int) $_POST['postratings_logging_method'] : 0;
+    $postratings_allowtorate = isset( $_POST['postratings_allowtorate'] ) ?  (int)  $_POST['postratings_allowtorate'] : 0;
     $update_ratings_queries = array();
     $update_ratings_text = array();
-    $postratings_options = array('richsnippet' => $postratings_richsnippet);
-    $update_ratings_queries[] = update_option('postratings_customrating', $postratings_customrating);
-    $update_ratings_queries[] = update_option('postratings_template_vote', $postratings_template_vote);
-    $update_ratings_queries[] = update_option('postratings_template_text', $postratings_template_text);
-    $update_ratings_queries[] = update_option('postratings_template_permission', $postratings_template_permission);
-    $update_ratings_queries[] = update_option('postratings_template_none', $postratings_template_none);
-    $update_ratings_queries[] = update_option('postratings_template_highestrated', $postratings_template_highestrated);
-    $update_ratings_queries[] = update_option('postratings_template_mostrated', $postratings_template_mostrated);
-    $update_ratings_queries[] = update_option('postratings_image', $postratings_image);
-    $update_ratings_queries[] = update_option('postratings_max', $postratings_max);
-    $update_ratings_queries[] = update_option('postratings_ratingstext', $postratings_ratingstext);
-    $update_ratings_queries[] = update_option('postratings_ratingsvalue', $postratings_ratingsvalue);
-    $update_ratings_queries[] = update_option('postratings_ajax_style', $postratings_ajax_style);
-    $update_ratings_queries[] = update_option('postratings_logging_method', $postratings_logging_method);
-    $update_ratings_queries[] = update_option('postratings_allowtorate', $postratings_allowtorate);
-    $update_ratings_queries[] = update_option('postratings_options', $postratings_options);
-    $update_ratings_text[] = __('Custom Rating', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template Vote', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template Voted', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template No Permission', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template For No Ratings', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template For Highest Rated', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Template For Most Rated', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Image', 'wp-postratings');
-    $update_ratings_text[] = __('Max Ratings', 'wp-postratings');
-    $update_ratings_text[] = __('Individual Rating Text', 'wp-postratings');
-    $update_ratings_text[] = __('Individual Rating Value', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings AJAX Style', 'wp-postratings');
-    $update_ratings_text[] = __('Logging Method', 'wp-postratings');
-    $update_ratings_text[] = __('Allow To Vote Option', 'wp-postratings');
-    $update_ratings_text[] = __('Ratings Settings', 'wp-postratings');
+    $postratings_options = array( 'richsnippet' => $postratings_richsnippet );
+    $update_ratings_queries[] = update_option( 'postratings_customrating', $postratings_customrating );
+    $update_ratings_queries[] = update_option( 'postratings_template_vote', $postratings_template_vote );
+    $update_ratings_queries[] = update_option( 'postratings_template_text', $postratings_template_text );
+    $update_ratings_queries[] = update_option( 'postratings_template_permission', $postratings_template_permission );
+    $update_ratings_queries[] = update_option( 'postratings_template_none', $postratings_template_none );
+    $update_ratings_queries[] = update_option( 'postratings_template_highestrated', $postratings_template_highestrated );
+    $update_ratings_queries[] = update_option( 'postratings_template_mostrated', $postratings_template_mostrated );
+    $update_ratings_queries[] = update_option( 'postratings_image', $postratings_image );
+    $update_ratings_queries[] = update_option( 'postratings_max', $postratings_max );
+    $update_ratings_queries[] = update_option( 'postratings_ratingstext', $postratings_ratingstext );
+    $update_ratings_queries[] = update_option( 'postratings_ratingsvalue', $postratings_ratingsvalue );
+    $update_ratings_queries[] = update_option( 'postratings_ajax_style', $postratings_ajax_style );
+    $update_ratings_queries[] = update_option( 'postratings_logging_method', $postratings_logging_method) ;
+    $update_ratings_queries[] = update_option( 'postratings_allowtorate', $postratings_allowtorate );
+    $update_ratings_queries[] = update_option( 'postratings_options', $postratings_options );
+    $update_ratings_text[] = __( 'Custom Rating', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template Vote', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template Voted', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template No Permission', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template For No Ratings', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template For Highest Rated', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Template For Most Rated', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Image', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Max Ratings', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Individual Rating Text', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Individual Rating Value', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings AJAX Style', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Logging Method', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Allow To Vote Option', 'wp-postratings' );
+    $update_ratings_text[] = __( 'Ratings Settings', 'wp-postratings' );
     $i = 0;
     $text = '';
     foreach($update_ratings_queries as $update_ratings_query) {
@@ -109,14 +112,14 @@ if ( isset( $_POST['Submit'] ) ) {
 
 
 ### Needed Variables
-$postratings_max = intval(get_option('postratings_max'));
-$postratings_options = get_option('postratings_options');
-$postratings_customrating = intval(get_option('postratings_customrating'));
-$postratings_url = plugins_url('wp-postratings/images');
-$postratings_path = WP_PLUGIN_DIR.'/wp-postratings/images';
-$postratings_ratingstext = get_option('postratings_ratingstext');
-$postratings_ratingsvalue = get_option('postratings_ratingsvalue');
-$postratings_image = get_option('postratings_image');
+$postratings_max = (int) get_option( 'postratings_max' );
+$postratings_options = get_option( 'postratings_options' );
+$postratings_customrating = (int) get_option( 'postratings_customrating' );
+$postratings_url = plugins_url( 'wp-postratings/images' );
+$postratings_path = WP_PLUGIN_DIR . '/wp-postratings/images';
+$postratings_ratingstext = get_option( 'postratings_ratingstext' );
+$postratings_ratingsvalue = get_option( 'postratings_ratingsvalue' );
+$postratings_image = get_option( 'postratings_image' );
 ?>
 <script type="text/javascript">
 /* <![CDATA[*/
