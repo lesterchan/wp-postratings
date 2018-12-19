@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
 Tested up to: 5.0  
-Stable tag: 1.86  
+Stable tag: 1.86.1  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -34,6 +34,9 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.86.1
+* FIXED: Sanitize file name for images folder in WP-Admin
+
 ### Version 1.86
 * NEW: Hashed IP and Anonymize Hostname to make it GDPR compliance
 * NEW: If Do Not Log is set in Rating Options, do not log to DB

@@ -1,17 +1,17 @@
 <?php
 /*
 Plugin Name: WP-PostRatings
-Plugin URI:  http://lesterchan.net/portfolio/programming/php/
+Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version:	 1.86
-Author:	  Lester 'GaMerZ' Chan
-Author URI:  http://lesterchan.net
+Version: 1.86.1
+Author: Lester 'GaMerZ' Chan
+Author URI: https://lesterchan.net
 Text Domain: wp-postratings
 */
 
 
 /*
-	Copyright 2018 Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2018 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,25 +41,25 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', 1.86 );
+define( 'WP_POSTRATINGS_VERSION', '1.86.1' );
 
 /**
  * Rating logs table name
  */
 global $wpdb;
-$wpdb->ratings = $wpdb->prefix.'ratings';
+$wpdb->ratings = $wpdb->prefix . 'ratings';
 
 /**
  * Load plugin files
  * Require the plugin files in an alphabetical order.
  */
-require_once( 'includes/postratings-activation.php' );
-require_once( 'includes/postratings-admin.php' );
-require_once( 'includes/postratings-i18n.php' );
-require_once( 'includes/postratings-scripts.php' );
-require_once( 'includes/postratings-shortcodes.php' );
-require_once( 'includes/postratings-stats.php' );
-require_once( 'includes/postratings-widgets.php' );
+require_once 'includes/postratings-activation.php';
+require_once 'includes/postratings-admin.php';
+require_once 'includes/postratings-i18n.php';
+require_once 'includes/postratings-scripts.php';
+require_once 'includes/postratings-shortcodes.php';
+require_once 'includes/postratings-stats.php';
+require_once 'includes/postratings-widgets.php';
 
 /**
  * Register plugin activation hook
@@ -69,7 +69,7 @@ register_activation_hook( __FILE__, 'ratings_activation' );
 ### Define Image Extension
 add_action( 'init', 'postratings_init' );
 function postratings_init() {
-	if( ! defined( 'RATINGS_IMG_EXT' ) ) {
+	if ( ! defined( 'RATINGS_IMG_EXT' ) ) {
 		define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
 	}
 }
