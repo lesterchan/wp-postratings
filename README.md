@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
 Tested up to: 5.0  
-Stable tag: 1.86.1  
+Stable tag: 1.86.2  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -34,6 +34,9 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.86.2
+* FIXED: Wrong type check for inser_half which affects half rating image.
+
 ### Version 1.86.1
 * FIXED: Sanitize file name for images folder in WP-Admin
 
@@ -140,10 +143,6 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ### Version 1.73
 * Add Stars Flat (PNG) Icons. Props hebaf.
 * Change Schema From http://schema.org/Product To http://schema.org/Article
-
-### Version 1.72 (11-07-2013)
-* Fixed not logging ratings
-* Fixed sorting of ratings logs
 
 ## Upgrade Notice
 
