@@ -1127,6 +1127,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	} elseif ( $average_diff > 0.75 ) {
 		$insert_half = ceil( $post_ratings );
 	}
+	$insert_half = (int) $insert_half;
+
 	// Replace the variables
 	$value = $template;
 	if ( strpos( $template, '%RATINGS_IMAGES%') !== false ) {
