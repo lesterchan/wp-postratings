@@ -36,7 +36,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### Version 1.87
 * FIXED: Rename filter `expand_ratings_template` to `wp_postratings_expand_ratings_template` for consistency.
-* NEW: Added `wp_postratings_ipaddress` and `wp_postratings_hostname` to allow user to overwride it.
+* NEW: Added `wp_postratings_ipaddress` and `wp_postratings_hostname` to allow user to overwrite it.
 
 ### Version 1.86.2
 * FIXED: Wrong type check for inser_half which affects half rating image.
