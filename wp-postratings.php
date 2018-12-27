@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.86.2
+Version: 1.87
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.86.2' );
+define( 'WP_POSTRATINGS_VERSION', '1.87' );
 
 /**
  * Rating logs table name
@@ -399,19 +399,19 @@ if ( ! function_exists( 'get_ipaddress' ) ) {
 	}
 }
 function ratings_get_ipaddress() {
-	return wp_hash( get_ipaddress() );
+	return apply_filters( 'wp_postratings_ipaddress', wp_hash( get_ipaddress() ) );
 }
 function ratings_get_hostname() {
 	$hostname = gethostbyaddr( get_ipaddress() );
 	if ( $hostname === get_ipaddress() ) {
-		return wp_privacy_anonymize_ip( get_ipaddress() );
+		$hostname = wp_privacy_anonymize_ip( get_ipaddress() );
 	}
 
 	if ( false !== $hostname ) {
-		return substr( $hostname, strpos( $hostname, '.' ) + 1 );
+		$hostname = substr( $hostname, strpos( $hostname, '.' ) + 1 );
 	}
 
-	return false;
+	return apply_filters( 'wp_postratings_hostname', $hostname );
 }
 
 
@@ -1263,5 +1263,5 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$google_structured_data =  apply_filters( 'wp_postratings_google_structured_data', ( empty( $itemtype ) ? $ratings_meta : ( $post_meta . $ratings_meta ) ) );
 	}
 
-	return apply_filters( 'expand_ratings_template', ( $value . $google_structured_data ) );
+	return apply_filters( 'wp_postratings_expand_ratings_template', $value . $google_structured_data );
 }
