@@ -15,14 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-
-### Function: Print Out jQuery Script At The Top
-add_action('wp_head', 'ratings_javascripts_header');
-function ratings_javascripts_header() {
-    wp_print_scripts('jquery');
-}
-
-
 ### Function: Enqueue Ratings JavaScripts/CSS
 add_action('wp_enqueue_scripts', 'ratings_scripts');
 function ratings_scripts() {
@@ -42,8 +34,8 @@ function ratings_scripts() {
             wp_enqueue_style( 'wp-postratings-rtl', plugins_url( 'wp-postratings/css/postratings-css-rtl.css' ), false, WP_POSTRATINGS_VERSION, 'all' );
         }
     }
-    $postratings_max = intval( get_option( 'postratings_max' ) );
-    $postratings_custom = intval( get_option( 'postratings_customrating' ) );
+    $postratings_max = (int)  get_option( 'postratings_max' );
+    $postratings_custom = (int) get_option( 'postratings_customrating' );
     $postratings_ajax_style = get_option( 'postratings_ajax_style' );
     $postratings_image = get_option( 'postratings_image' );
     $postratings_plugins_url = plugins_url( 'wp-postratings' );
@@ -63,8 +55,8 @@ function ratings_scripts() {
         'image' => $postratings_image,
         'image_ext' => RATINGS_IMG_EXT,
         'max' => $postratings_max,
-        'show_loading' => intval($postratings_ajax_style['loading']),
-        'show_fading' => intval($postratings_ajax_style['fading']),
+        'show_loading' => (int) $postratings_ajax_style['loading'],
+        'show_fading' => (int) $postratings_ajax_style['fading'],
         'custom' => $postratings_custom,
         'l10n_print_after' => $postratings_javascript
     ));
