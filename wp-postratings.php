@@ -1245,6 +1245,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
 		$post_meta .= '<div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
 		$post_meta .= '<meta itemprop="name" content="' . get_bloginfo( 'name' ) . '" />';
+		$post_meta .= '<meta itemprop="url" content="' . home_url() . '" />';
 		$post_meta .= '<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">';
 		$post_meta .= '<meta itemprop="url" content="' . $site_logo . '" />';
 		$post_meta .= '</div>';
