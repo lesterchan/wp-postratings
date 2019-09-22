@@ -1207,7 +1207,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		if ( empty( $post_excerpt ) ) {
 			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
 		}
-		$post_meta = '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
+		$post_meta = '<meta itemprop="name" content="' . esc_attr( $post_title ) . '" />';
+		$post_meta .= '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
 		$post_meta .= '<meta itemprop="description" content="' . wp_kses( $post_excerpt, array() ) . '" />';
 		$post_meta .= '<meta itemprop="datePublished" content="' . mysql2date( 'c', $post->post_date, false ) . '" />';
 		$post_meta .= '<meta itemprop="dateModified" content="' . mysql2date( 'c', $post->post_modified, false ) . '" />';
