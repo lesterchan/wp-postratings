@@ -3,7 +3,7 @@ Contributors: GamerZ
 Donate link: https://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
-Tested up to: 5.0  
+Tested up to: 5.3  
 Stable tag: 1.87  
 
 Adds an AJAX rating system for your WordPress site's content.
@@ -36,7 +36,11 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### Version 1.87
 * FIXED: Rename filter `expand_ratings_template` to `wp_postratings_expand_ratings_template` for consistency.
+* FIXED: Remove wp_print_scripts
+* FIXED: Added additional to Google Structured Data despite it is no longer working. Will consider removing it next time
 * NEW: Added `wp_postratings_ipaddress` and `wp_postratings_hostname` to allow user to overwrite it.
+* NEW: Add loading alt text filer
+* NEW: Add wp_postratings_always_log filter to allow user to always log no matter what
 
 ### Version 1.86.2
 * FIXED: Wrong type check for inser_half which affects half rating image.
