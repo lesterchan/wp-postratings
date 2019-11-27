@@ -109,7 +109,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$ratings_options = get_option('postratings_options');
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
 	if( is_singular() && $ratings_options['richsnippet'] ) {
-		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
+		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Product"');
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
 	} else {
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
@@ -1202,7 +1202,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	$google_structured_data = '';
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
 	if ( $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
-		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
+		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Product"' );
 
 		if ( empty( $post_excerpt ) ) {
 			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
