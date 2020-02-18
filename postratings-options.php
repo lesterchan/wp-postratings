@@ -114,6 +114,10 @@ if ( isset( $_POST['Submit'] ) ) {
 ### Needed Variables
 $postratings_max = (int) get_option( 'postratings_max' );
 $postratings_options = get_option( 'postratings_options' );
+
+### enable rich snippets by default
+$postratings_options['richsnippet'] = isset( $postratings_options['richsnippet'] ) ? $postratings_options['richsnippet'] : 1;
+
 $postratings_customrating = (int) get_option( 'postratings_customrating' );
 $postratings_url = plugins_url( 'wp-postratings/images' );
 $postratings_path = WP_PLUGIN_DIR . '/wp-postratings/images';
