@@ -1201,7 +1201,8 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	// Google Rich Snippet
 	$google_structured_data = '';
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
-	if ( $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
+	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
+	if ( ! $disable_richsnippet && $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
 		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Product"' );
 
 		if ( empty( $post_excerpt ) ) {
