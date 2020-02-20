@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
 Tested up to: 5.3  
-Stable tag: 1.87  
+Stable tag: 1.88  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -34,6 +34,10 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.88
+* NEW: Added filter `wp_postratings_disable_richsnippet` to disable richsnippet on the fly.
+* NEW: Added a setting in `WP-Admin -> Ratings -> Rating Options` to disable the ratings component of the Rich Snippet. Props @8ctopus
+
 ### Version 1.87
 * FIXED: Rename filter `expand_ratings_template` to `wp_postratings_expand_ratings_template` for consistency.
 * FIXED: Remove wp_print_scripts

@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.87
+Version: 1.88
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2019 Lester Chan (email: lesterchan@gmail.com)
+	Copyright 2020 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.87' );
+define( 'WP_POSTRATINGS_VERSION', '1.88' );
 
 /**
  * Rating logs table name
@@ -110,7 +110,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 	if( ! $disable_richsnippet && is_singular() && $ratings_options['richsnippet'] ) {
-		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Product"');
+		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
 	} else {
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
@@ -1205,7 +1205,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	$ratings_options['richsnippet_ratings'] = isset( $ratings_options['richsnippet_ratings'] ) ? $ratings_options['richsnippet_ratings'] : 1;
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 	if ( ! $disable_richsnippet && $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
-		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Product"' );
+		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
 
 		if ( empty( $post_excerpt ) ) {
 			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
