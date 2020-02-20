@@ -43,6 +43,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$postratings_image = isset( $_POST['postratings_image'] ) ? sanitize_file_name( trim( $_POST['postratings_image'] ) ) : '';
 	$postratings_max = isset( $_POST['postratings_max'] ) ? (int) $_POST['postratings_max'] : 0;
 	$postratings_richsnippet = isset( $_POST['postratings_richsnippet'] ) ? (int) $_POST['postratings_richsnippet'] : 0;
+	$postratings_richsnippet_ratings = isset( $_POST['postratings_richsnippet_ratings'] ) ? (int) $_POST['postratings_richsnippet_ratings'] : 0;
 	$postratings_ratingstext_array = isset( $_POST['postratings_ratingstext'] ) ? $_POST['postratings_ratingstext'] : array();
 	$postratings_ratingstext = array();
 	if ( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
@@ -66,7 +67,7 @@ if ( isset( $_POST['Submit'] ) ) {
 	$postratings_allowtorate = isset( $_POST['postratings_allowtorate'] ) ?  (int)  $_POST['postratings_allowtorate'] : 0;
 	$update_ratings_queries = array();
 	$update_ratings_text = array();
-	$postratings_options = array( 'richsnippet' => $postratings_richsnippet );
+	$postratings_options = array( 'richsnippet' => $postratings_richsnippet, 'richsnippet_ratings' => $postratings_richsnippet_ratings);
 	$update_ratings_queries[] = update_option( 'postratings_customrating', $postratings_customrating );
 	$update_ratings_queries[] = update_option( 'postratings_template_vote', $postratings_template_vote );
 	$update_ratings_queries[] = update_option( 'postratings_template_text', $postratings_template_text );
@@ -117,6 +118,7 @@ $postratings_options = get_option( 'postratings_options' );
 
 ### enable rich snippets by default
 $postratings_options['richsnippet'] = isset( $postratings_options['richsnippet'] ) ? $postratings_options['richsnippet'] : 1;
+$postratings_options['richsnippet_ratings'] = isset( $postratings_options['richsnippet_ratings'] ) ? $postratings_options['richsnippet_ratings'] : 1;
 
 $postratings_customrating = (int) get_option( 'postratings_customrating' );
 $postratings_url = plugins_url( 'wp-postratings/images' );
@@ -213,6 +215,11 @@ $postratings_image = get_option( 'postratings_image' );
 		}
 		jQuery("#postratings_customrating").val(custom);
 	}
+	function update_richsnippet_ratings() {
+		var status = !jQuery("#postratings_richsnippet_on").prop("checked");
+		jQuery("#postratings_richsnippet_ratings_on").prop("disabled", status);
+		jQuery("#postratings_richsnippet_ratings_off").prop("disabled", status);
+	}
 /* ]]> */
 </script>
 <?php if(!empty($text)) { echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>'; } ?>
@@ -306,9 +313,17 @@ $postratings_image = get_option( 'postratings_image' );
 			<tr>
 				<th scope="row" valign="top"><?php esc_html_e('Enable Google Rich Snippets?', 'wp-postratings'); ?></th>
 				<td>
-					<input type="radio" id="postratings_richsnippet_on" name="postratings_richsnippet" value="1" <?php if($postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('Yes', 'wp-postratings'); ?>
+					<input type="radio" id="postratings_richsnippet_on" name="postratings_richsnippet" value="1" <?php if($postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> onclick="update_richsnippet_ratings()" />&nbsp;<?php esc_html_e('Yes', 'wp-postratings'); ?>
 					&nbsp;&nbsp;
-					<input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
+					<input type="radio" id="postratings_richsnippet_off" name="postratings_richsnippet" value="0" <?php if(!$postratings_options['richsnippet']) { echo 'checked="checked"'; } ?> onclick="update_richsnippet_ratings()" />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row" valign="top"><?php esc_html_e('Enable Ratings in Rich Snippets?', 'wp-postratings'); ?></th>
+				<td>
+					<input type="radio" id="postratings_richsnippet_ratings_on" name="postratings_richsnippet_ratings" value="1" <?php if($postratings_options['richsnippet_ratings']) { echo 'checked="checked"'; } if(!$postratings_options['richsnippet']) { echo ' disabled'; } ?> />&nbsp;<?php esc_html_e('Yes', 'wp-postratings'); ?>
+					&nbsp;&nbsp;
+					<input type="radio" id="postratings_richsnippet_ratings_off" name="postratings_richsnippet_ratings" value="0" <?php if(!$postratings_options['richsnippet_ratings']) { echo 'checked="checked"'; } if(!$postratings_options['richsnippet']) { echo ' disabled'; } ?> />&nbsp;<?php esc_html_e('No', 'wp-postratings'); ?>
 				</td>
 			</tr>
 			<tr>
