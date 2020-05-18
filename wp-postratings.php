@@ -75,7 +75,7 @@ function postratings_init() {
 }
 
 ### Function: Display The Rating For The Post
-function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
+function the_ratings($only_view = false, $start_tag = 'div', $custom_id = 0, $display = true) {
 	global $id;
 	// Allow Custom ID
 	if ( (int) $custom_id > 0 ) {
@@ -116,7 +116,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
 	}
 	// If User Voted Or Is Not Allowed To Rate
-	if($user_voted) {
+	if(($user_voted) || ($only_view)) {
 		if(!$display) {
 			return "<$start_tag $attributes>".the_ratings_results($ratings_id).'</'.$start_tag.'>'.$loading;
 		} else {
