@@ -1181,20 +1181,20 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
 	if ( strpos( $template, '%POST_EXCERPT%') !== false ) {
 		if ( get_the_ID() !== $post_id ) {
-			$post = &get_post($post_id);
+			$post = get_post($post_id);
 		}
 		$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
 		$value = str_replace('%POST_EXCERPT%', $post_excerpt, $value );
 	}
 	if ( strpos( $template, '%POST_CONTENT%' ) !== false ) {
 		if ( get_the_ID() !== $post_id ) {
-			$post = &get_post( $post_id );
+			$post = get_post( $post_id );
 		}
 		$value = str_replace('%POST_CONTENT%', get_the_content(), $value );
 	}
 	if ( strpos( $template, '%POST_THUMBNAIL%') !== false ) {
 		if ( get_the_ID() !== $post_id ) {
-			$post = &get_post( $post_id );
+			$post = get_post( $post_id );
 		}
 		$value = str_replace( '%POST_THUMBNAIL%', get_the_post_thumbnail( $post, 'thumbnail' ), $value );
 	}
