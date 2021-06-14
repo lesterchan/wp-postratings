@@ -110,7 +110,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$ratings_options['richsnippet'] = isset( $ratings_options['richsnippet'] ) ? $ratings_options['richsnippet'] : 1;
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 	if( ! $disable_richsnippet && is_singular() && $ratings_options['richsnippet'] ) {
-		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"');
+		$itemtype = apply_filters('wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"');
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings" '.$itemtype;
 	} else {
 		$attributes = 'id="post-ratings-'.$ratings_id.'" class="post-ratings"';
@@ -1205,7 +1205,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 	$ratings_options['richsnippet_ratings'] = isset( $ratings_options['richsnippet_ratings'] ) ? $ratings_options['richsnippet_ratings'] : 1;
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 	if ( ! $disable_richsnippet && $ratings_options['richsnippet'] && is_singular() && $is_main_loop ) {
-		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="http://schema.org/Article"' );
+		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
 
 		if ( empty( $post_excerpt ) ) {
 			$post_excerpt = ratings_post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
@@ -1258,7 +1258,7 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
 		$ratings_meta = '';
 		if ( $ratings_options['richsnippet_ratings']  && $post_ratings_average > 0 ) {
-			$ratings_meta .= '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
+			$ratings_meta .= '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
 			$ratings_meta .= '<meta itemprop="bestRating" content="' . $ratings_max . '" />';
 			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
 			$ratings_meta .= '<meta itemprop="ratingValue" content="' . $post_ratings_average . '" />';

@@ -3,8 +3,8 @@ Contributors: GamerZ
 Donate link: https://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
-Tested up to: 5.5  
-Stable tag: 1.89  
+Tested up to: 5.6  
+Stable tag: 1.89.1  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -34,6 +34,9 @@ Adds an AJAX rating system for your WordPress site's content.
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.89.1
+* FIXED: Change all http://schema.org to https://schema.org
+
 ### Version 1.89
 * NEW: Added `post_id` to second argument of `wp_postratings_expand_ratings_template`.
 * NEW Removed passed by reference for `get_post()` 
