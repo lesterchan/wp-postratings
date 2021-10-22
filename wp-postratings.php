@@ -872,7 +872,7 @@ function postratings_page_general_stats($content) {
 	if($stats_display['ratings'] === 1) {
 		$content .= '<p><strong>'.esc_html__('WP-PostRatings', 'wp-postratings').'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
-		$content .= '<li>'.esc_html(sprintf(_n('%s user casted his vote.', '%s users casted their vote.', get_ratings_users(false), 'wp-postratings'), '<strong>'.number_format_i18n(get_ratings_users(false)).'</strong>')).'</li>'."\n";
+		$content .= '<li><strong>'.esc_html(number_format_i18n(get_ratings_users(false))).'</strong> '.esc_html__(sprintf(_n('user casted his vote.', 'users casted their vote.', get_ratings_users(false), 'wp-postratings'))).'</li>'."\n";
 		$content .= '</ul>'."\n";
 	}
 	return $content;
