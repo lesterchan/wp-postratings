@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.89
+Version: 1.90
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2020 Lester Chan (email: lesterchan@gmail.com)
+	Copyright 2022 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.89' );
+define( 'WP_POSTRATINGS_VERSION', '1.90' );
 
 /**
  * Rating logs table name
@@ -56,6 +56,7 @@ $wpdb->ratings = $wpdb->prefix . 'ratings';
 require_once 'includes/postratings-activation.php';
 require_once 'includes/postratings-admin.php';
 require_once 'includes/postratings-i18n.php';
+require_once 'includes/postratings-mutex.php';
 require_once 'includes/postratings-scripts.php';
 require_once 'includes/postratings-shortcodes.php';
 require_once 'includes/postratings-stats.php';
@@ -547,7 +548,14 @@ function process_ratings() {
 				}
 			}
 			header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
-			$rated = check_rated($post_id);
+			// Acquire lock
+			$fp_lock = ratings_acquire_lock( $post_id );
+			if ( $fp_lock === false ) {
+				esc_html_e( 'Unable to obtain lock', 'wp-postratings' );
+				exit();
+			}
+
+			$rated = check_rated( $post_id );
 			// Check Whether Post Has Been Rated By User
 			if(!$rated) {
 				// Check Whether Is There A Valid Post
@@ -602,9 +610,12 @@ function process_ratings() {
 					exit();
 				} // End if($post)
 			} else {
-				printf(esc_html__('You Had Already Rated This Post. Post ID #%s.', 'wp-postratings'), $post_id);
+				printf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id );
 				exit();
 			}// End if(!$rated)
+
+			// Release lock
+			ratings_release_lock( $fp_lock, $post_id );
 		} // End if($rate && $post_id && check_allowtorate())
 	} // End if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
 }
