@@ -42,5 +42,5 @@ function ratings_release_lock( $fp, $post_id ) {
 }
 
 function ratings_lock_file( $post_id ) {
-	return apply_filters( 'wp_postratings_lock_file', get_temp_dir() . '/wp-postratings-' . $post_id . '.lock', $post_id );
+	return apply_filters( 'wp_postratings_lock_file', get_temp_dir() . '/wp-blog-' . get_current_blog_id() . '-wp-postratings-' . $post_id . '.lock', $post_id );
 }

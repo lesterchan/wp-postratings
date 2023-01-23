@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.90
+Version: 1.90.1
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2022 Lester Chan (email: lesterchan@gmail.com)
+	Copyright 2023 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.90' );
+define( 'WP_POSTRATINGS_VERSION', '1.90.1' );
 
 /**
  * Rating logs table name
