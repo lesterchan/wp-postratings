@@ -98,7 +98,7 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	// Loading Style
 	$postratings_ajax_style = get_option('postratings_ajax_style');
 	if ( (int) $postratings_ajax_style['loading'] === 1 ) {
-		$loading_alt = apply_filters('wp_postratings_loading_alt', '');
+		$loading_alt = apply_filters('wp_postratings_loading_alt', 'loading post rating');
 		$loading_alt_html = ! empty( $loading_alt ) ? ' alt="' . esc_attr( $loading_alt ) . '"' : '';
 		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading"><img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image"' . $loading_alt_html . ' />' . esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
 	} else {
