@@ -556,63 +556,80 @@ function process_ratings() {
 			}
 
 			$rated = check_rated( $post_id );
+
+			$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', $user_ID );
+			$rating_ip = ratings_get_ipaddress();
+			$rating_host = ratings_get_hostname();
+
 			// Check Whether Post Has Been Rated By User
-			if(!$rated) {
-				// Check Whether Is There A Valid Post
-				$post = get_post($post_id);
-				// If Valid Post Then We Rate It
-				if($post && !wp_is_post_revision($post)) {
-					$ratings_max = (int) get_option( 'postratings_max' );
-					$ratings_custom = (int) get_option( 'postratings_customrating' );
-					$ratings_value = get_option('postratings_ratingsvalue');
-					$post_title = addslashes($post->post_title);
-					$post_ratings = get_post_custom($post_id);
-					$post_ratings_users = ! empty( $post_ratings['ratings_users'] ) ? (int) $post_ratings['ratings_users'][0] : 0;
-					$post_ratings_score = ! empty( $post_ratings['ratings_score'] ) ? (int) $post_ratings['ratings_score'][0] : 0;
-					// Check For Ratings Lesser Than 1 And Greater Than $ratings_max
-					if($rate < 1 || $rate > $ratings_max) {
-						$rate = 0;
-					}
-					++$post_ratings_users;
-					$post_ratings_score += (int) $ratings_value[ $rate - 1 ];
+			if($rated) {
+				$selectRatingQuery = "SELECT rating_rating, rating_id FROM {$wpdb->ratings} WHERE rating_postid = $post_id AND rating_userid = $rate_userid AND rating_ip = '$rating_ip' AND rating_host = '$rating_host'";
+				$user_rating = $wpdb->get_row($selectRatingQuery);
+				if (!$user_rating) {
+					printf( esc_html__( 'You Had Already Rated This Post and it cannot be changed. Post ID #%s.', 'wp-postratings' ), $post_id );
+					exit();
+				}
+			}
+				
+			// Check Whether Is There A Valid Post
+			$post = get_post($post_id);
+			// If Valid Post Then We Rate It
+			if($post && !wp_is_post_revision($post)) {
+
+				$ratings_max = (int) get_option( 'postratings_max' );
+				$ratings_custom = (int) get_option( 'postratings_customrating' );
+				$ratings_value = get_option('postratings_ratingsvalue');
+				$post_title = addslashes($post->post_title);
+				$post_ratings = get_post_custom($post_id);
+				$post_ratings_users = ! empty( $post_ratings['ratings_users'] ) ? (int) $post_ratings['ratings_users'][0] : 0;
+				$post_ratings_score = ! empty( $post_ratings['ratings_score'] ) ? (int) $post_ratings['ratings_score'][0] : 0;
+				// If rated, clean up old rating first
+				if ($rated) {
+					--$post_ratings_users;
+					$post_ratings_score -= $user_rating->rating_rating;
 					$post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
-					update_post_meta($post_id, 'ratings_users', $post_ratings_users);
-					update_post_meta($post_id, 'ratings_score', $post_ratings_score);
-					update_post_meta($post_id, 'ratings_average', $post_ratings_average);
 
-					// Add Log
-					if(!empty($user_identity)) {
-						$rate_user = addslashes($user_identity);
-					} elseif(!empty($_COOKIE['comment_author_'.COOKIEHASH])) {
-						$rate_user = addslashes($_COOKIE['comment_author_'.COOKIEHASH]);
-					} else {
-						$rate_user = __('Guest', 'wp-postratings');
-					}
-					$rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
-					$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', $user_ID );
+					$wpdb->delete( $wpdb->ratings, array( 'rating_id' => $user_rating->rating_id ) );
+				}
+				// Check For Ratings Lesser Than 1 And Greater Than $ratings_max
+				if($rate < 1 || $rate > $ratings_max) {
+					$rate = 0;
+				}
+				++$post_ratings_users;
+				$post_ratings_score += (int) $ratings_value[ $rate - 1 ];
+				$post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
+				update_post_meta($post_id, 'ratings_users', $post_ratings_users);
+				update_post_meta($post_id, 'ratings_score', $post_ratings_score);
+				update_post_meta($post_id, 'ratings_average', $post_ratings_average);
 
-					// Only Create Cookie If User Choose Logging Method 1 Or 3
-					$postratings_logging_method = (int) get_option( 'postratings_logging_method' );
-					if ( $postratings_logging_method === 1 || $postratings_logging_method === 3 ) {
-						setcookie( 'rated_' . $post_id, $ratings_value[ $rate - 1 ], apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 ), apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH ) );
-					}
-					// Log Ratings In DB If User Choose Logging Method 2, 3 or 4
-					if ( $postratings_logging_method > 1 || apply_filters( 'wp_postratings_always_log', false ) ) {
-						$wpdb->query($wpdb->prepare("INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate - 1], current_time('timestamp'), ratings_get_ipaddress(), ratings_get_hostname(), $rate_user, $rate_userid));
-					}
-					// Allow Other Plugins To Hook When A Post Is Rated
-					do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
-					// Output AJAX Result
-					echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
-					exit();
+				// Add Log
+				if(!empty($user_identity)) {
+					$rate_user = addslashes($user_identity);
+				} elseif(!empty($_COOKIE['comment_author_'.COOKIEHASH])) {
+					$rate_user = addslashes($_COOKIE['comment_author_'.COOKIEHASH]);
 				} else {
-					printf(esc_html__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
-					exit();
-				} // End if($post)
-			} else {
-				printf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id );
+					$rate_user = __('Guest', 'wp-postratings');
+				}
+				$rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
+
+				// Only Create Cookie If User Choose Logging Method 1 Or 3
+				$postratings_logging_method = (int) get_option( 'postratings_logging_method' );
+				if ( $postratings_logging_method === 1 || $postratings_logging_method === 3 ) {
+					setcookie( 'rated_' . $post_id, $ratings_value[ $rate - 1 ], apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 ), apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH ) );
+				}
+				// Log Ratings In DB If User Choose Logging Method 2, 3 or 4
+				if ( $postratings_logging_method > 1 || apply_filters( 'wp_postratings_always_log', false ) ) {
+					$wpdb->query($wpdb->prepare("INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d )", 0, $post_id, $post_title, $ratings_value[$rate - 1], current_time('timestamp'), $rating_ip, $rating_host, $rate_user, $rate_userid));
+				}
+				// Allow Other Plugins To Hook When A Post Is Rated
+				do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
+				// Output AJAX Result
+				echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
 				exit();
-			}// End if(!$rated)
+			} else {
+				printf(esc_html__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
+				exit();
+			} // End if($post)
 
 			// Release lock
 			ratings_release_lock( $fp_lock, $post_id );
