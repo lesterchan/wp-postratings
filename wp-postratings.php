@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.91
+Version: 1.91.1
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.91' );
+define( 'WP_POSTRATINGS_VERSION', '1.91.1' );
 
 /**
  * Rating logs table name
@@ -262,7 +262,7 @@ function check_rated_cookie( $post_id ) {
 function check_rated_ip($post_id) {
 	global $wpdb;
 	// Check IP From IP Logging Database
-	$get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND (rating_ip = %s OR rating_ip = %s)", $post_id, ratings_get_ipaddress(), get_ipaddress()  ) );
+	$get_rated = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s", $post_id, ratings_get_ipaddress() ) );
 	// 0: False | > 0: True
 	return (int) $get_rated;
 }
@@ -387,23 +387,8 @@ function comment_author_ratings_filter( $comment_text ) {
 
 
 ### Function: Get IP Address
-if ( ! function_exists( 'get_ipaddress' ) ) {
-	function get_ipaddress() {
-		foreach ( array( 'HTTP_CF_CONNECTING_IP', 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR' ) as $key ) {
-			if ( array_key_exists( $key, $_SERVER ) === true ) {
-				foreach ( explode( ',', $_SERVER[$key] ) as $ip ) {
-					$ip = trim( $ip );
-					if ( filter_var( $ip, FILTER_VALIDATE_IP ) !== false ) {
-						return esc_attr( $ip );
-					}
-				}
-			}
-		}
-	}
-}
-
 function ratings_get_ipaddress() {
-	$ip = get_ipaddress();
+	$ip = esc_attr( $_SERVER['REMOTE_ADDR'] );
 	$postratings_options = get_option( 'postratings_options' );
 
 	if ( ! empty( $postratings_options ) && ! empty( $postratings_options['ip_header'] ) && ! empty( $_SERVER[ $postratings_options['ip_header'] ] ) ) {
@@ -414,9 +399,10 @@ function ratings_get_ipaddress() {
 }
 
 function ratings_get_hostname() {
-	$hostname = gethostbyaddr( get_ipaddress() );
-	if ( $hostname === get_ipaddress() ) {
-		$hostname = wp_privacy_anonymize_ip( get_ipaddress() );
+	$ip_address = ratings_get_ipaddress();
+	$hostname = gethostbyaddr( $ip_address );
+	if ( $hostname === $ip_address ) {
+		$hostname = wp_privacy_anonymize_ip( $ip_address );
 	}
 
 	if ( false !== $hostname ) {
