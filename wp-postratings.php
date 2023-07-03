@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.90.1
+Version: 1.91
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.90.1' );
+define( 'WP_POSTRATINGS_VERSION', '1.91' );
 
 /**
  * Rating logs table name
@@ -401,9 +401,18 @@ if ( ! function_exists( 'get_ipaddress' ) ) {
 		}
 	}
 }
+
 function ratings_get_ipaddress() {
-	return apply_filters( 'wp_postratings_ipaddress', wp_hash( get_ipaddress() ) );
+	$ip = get_ipaddress();
+	$postratings_options = get_option( 'postratings_options' );
+	error_log(json_encode($_SERVER[ $postratings_options['ip_header'] ]));
+	if ( ! empty( $postratings_options ) && ! empty( $postratings_options['ip_header'] ) && ! empty( $_SERVER[ $postratings_options['ip_header'] ] ) ) {
+		$ip = esc_attr( $_SERVER[ $postratings_options['ip_header'] ] );
+	}
+
+	return apply_filters( 'wp_postratings_ipaddress', wp_hash( $ip ) );
 }
+
 function ratings_get_hostname() {
 	$hostname = gethostbyaddr( get_ipaddress() );
 	if ( $hostname === get_ipaddress() ) {
@@ -416,7 +425,6 @@ function ratings_get_hostname() {
 
 	return apply_filters( 'wp_postratings_hostname', $hostname );
 }
-
 
 ### Function: Return All Images From A Rating Image Folder
 function ratings_images_folder($folder_name) {

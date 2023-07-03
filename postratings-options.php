@@ -65,9 +65,11 @@ if ( isset( $_POST['Submit'] ) ) {
 	);
 	$postratings_logging_method = isset( $_POST['postratings_logging_method'] ) ? (int) $_POST['postratings_logging_method'] : 0;
 	$postratings_allowtorate = isset( $_POST['postratings_allowtorate'] ) ?  (int)  $_POST['postratings_allowtorate'] : 0;
+	$postratings_ip_header = isset( $_POST['postratings_ip_header'] )  ? sanitize_text_field( $_POST['postratings_ip_header'] ) : '';
+
 	$update_ratings_queries = array();
 	$update_ratings_text = array();
-	$postratings_options = array( 'richsnippet' => $postratings_richsnippet, 'richsnippet_ratings' => $postratings_richsnippet_ratings);
+	$postratings_options = array( 'richsnippet' => $postratings_richsnippet, 'richsnippet_ratings' => $postratings_richsnippet_ratings, 'ip_header' => $postratings_ip_header );
 	$update_ratings_queries[] = update_option( 'postratings_customrating', $postratings_customrating );
 	$update_ratings_queries[] = update_option( 'postratings_template_vote', $postratings_template_vote );
 	$update_ratings_queries[] = update_option( 'postratings_template_text', $postratings_template_text );
@@ -119,6 +121,8 @@ $postratings_options = get_option( 'postratings_options' );
 ### enable rich snippets by default
 $postratings_options['richsnippet'] = isset( $postratings_options['richsnippet'] ) ? $postratings_options['richsnippet'] : 1;
 $postratings_options['richsnippet_ratings'] = isset( $postratings_options['richsnippet_ratings'] ) ? $postratings_options['richsnippet_ratings'] : 1;
+$postratings_options['ip_header'] = ! empty( $postratings_options['ip_header'] ) ? $postratings_options['ip_header'] : '';
+
 
 $postratings_customrating = (int) get_option( 'postratings_customrating' );
 $postratings_url = plugins_url( 'wp-postratings/images' );
@@ -436,6 +440,10 @@ $postratings_image = get_option( 'postratings_image' );
 						<option value="4"<?php selected('4', get_option('postratings_logging_method')); ?>><?php esc_html_e('Logged By Username', 'wp-postratings'); ?></option>
 					</select>
 				</td>
+			</tr>
+			<tr>
+				<th scope="row" valign="top"><?php _e( 'Header That Contains The IP:', 'wp-postratings' ); ?></th>
+				<td><input type="text" name="postratings_ip_header" value="<?php echo esc_attr( $postratings_options['ip_header'] ); ?>" size="30" /> <?php _e( 'You can leave it blank to use the default', 'wp-postratings' ); ?><br /><?php _e( 'Example: REMOTE_ADDR', 'wp-postratings' ); ?></td>
 			</tr>
 		</table>
 		<p class="submit">
