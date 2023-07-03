@@ -399,10 +399,10 @@ function ratings_get_ipaddress() {
 }
 
 function ratings_get_hostname() {
-	$ip_address = ratings_get_ipaddress();
-	$hostname = gethostbyaddr( $ip_address );
-	if ( $hostname === $ip_address ) {
-		$hostname = wp_privacy_anonymize_ip( $ip_address );
+	$ip = esc_attr( $_SERVER['REMOTE_ADDR'] );
+	$hostname = gethostbyaddr( $ip );
+	if ( $hostname === $ip ) {
+		$hostname = wp_privacy_anonymize_ip( $ip );
 	}
 
 	if ( false !== $hostname ) {
