@@ -387,7 +387,7 @@ function comment_author_ratings_filter( $comment_text ) {
 
 
 ### Function: Get IP Address
-function ratings_get_ipaddress() {
+function ratings_get_raw_ipaddress() {
 	$ip = esc_attr( $_SERVER['REMOTE_ADDR'] );
 	$postratings_options = get_option( 'postratings_options' );
 
@@ -395,11 +395,15 @@ function ratings_get_ipaddress() {
 		$ip = esc_attr( $_SERVER[ $postratings_options['ip_header'] ] );
 	}
 
-	return apply_filters( 'wp_postratings_ipaddress', wp_hash( $ip ) );
+	return $ip;
+}
+
+function ratings_get_ipaddress() {
+	return apply_filters( 'wp_postratings_ipaddress', wp_hash( ratings_get_raw_ipaddress() ) );
 }
 
 function ratings_get_hostname() {
-	$ip = esc_attr( $_SERVER['REMOTE_ADDR'] );
+	$ip = ratings_get_raw_ipaddress();
 	$hostname = gethostbyaddr( $ip );
 	if ( $hostname === $ip ) {
 		$hostname = wp_privacy_anonymize_ip( $ip );
