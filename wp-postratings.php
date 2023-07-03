@@ -405,7 +405,7 @@ if ( ! function_exists( 'get_ipaddress' ) ) {
 function ratings_get_ipaddress() {
 	$ip = get_ipaddress();
 	$postratings_options = get_option( 'postratings_options' );
-	error_log(json_encode($_SERVER[ $postratings_options['ip_header'] ]));
+
 	if ( ! empty( $postratings_options ) && ! empty( $postratings_options['ip_header'] ) && ! empty( $_SERVER[ $postratings_options['ip_header'] ] ) ) {
 		$ip = esc_attr( $_SERVER[ $postratings_options['ip_header'] ] );
 	}
