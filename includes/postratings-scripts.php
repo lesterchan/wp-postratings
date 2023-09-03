@@ -18,6 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 ### Function: Enqueue Ratings JavaScripts/CSS
 add_action('wp_enqueue_scripts', 'ratings_scripts');
 function ratings_scripts() {
+    if ( is_404() ) {
+        return;
+    }
+
     if( @file_exists( get_stylesheet_directory() . '/postratings-css.css' ) ) {
         wp_enqueue_style( 'wp-postratings', get_stylesheet_directory_uri() . '/postratings-css.css', false, WP_POSTRATINGS_VERSION, 'all' );
     } elseif( @file_exists( get_stylesheet_directory() . '/css/postratings-css.css' ) ) {
