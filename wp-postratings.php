@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.91.1
+Version: 1.91.2
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2023 Lester Chan (email: lesterchan@gmail.com)
+	Copyright 2024 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.91.1' );
+define( 'WP_POSTRATINGS_VERSION', '1.91.2' );
 
 /**
  * Rating logs table name
@@ -1221,12 +1221,12 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		}
 		$post_meta = '<meta itemprop="name" content="' . esc_attr( $post_title ) . '" />';
 		$post_meta .= '<meta itemprop="headline" content="' . esc_attr( $post_title ) . '" />';
-		$post_meta .= '<meta itemprop="description" content="' . wp_kses( $post_excerpt, array() ) . '" />';
-		$post_meta .= '<meta itemprop="datePublished" content="' . mysql2date( 'c', $post->post_date, false ) . '" />';
-		$post_meta .= '<meta itemprop="dateModified" content="' . mysql2date( 'c', $post->post_modified, false ) . '" />';
-		$post_meta .= '<meta itemprop="url" content="' . $post_link . '" />';
-		$post_meta .= '<meta itemprop="author" content="' . get_the_author() . '" />';
-		$post_meta .= '<meta itemprop="mainEntityOfPage" content="' . get_permalink() . '" />';
+		$post_meta .= '<meta itemprop="description" content="' . esc_attr( wp_kses( $post_excerpt, array() ) ) . '" />';
+		$post_meta .= '<meta itemprop="datePublished" content="' . esc_attr( mysql2date( 'c', $post->post_date, false ) ) . '" />';
+		$post_meta .= '<meta itemprop="dateModified" content="' . esc_attr( mysql2date( 'c', $post->post_modified, false ) ) . '" />';
+		$post_meta .= '<meta itemprop="url" content="' . esc_url( $post_link ) . '" />';
+		$post_meta .= '<meta itemprop="author" content="' . esc_attr( get_the_author() ) . '" />';
+		$post_meta .= '<meta itemprop="mainEntityOfPage" content="' . esc_url( get_permalink() ) . '" />';
 		// Post Thumbnail
 		$thumbnail = '';
 		if ( has_post_thumbnail() ) {
@@ -1235,9 +1235,9 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		$thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
 		if ( ! empty( $thumbnail ) ) {
 			$post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
-			$post_meta .= '<meta itemprop="url" content="' . $thumbnail[0] . '" />';
-			$post_meta .= '<meta itemprop="width" content="' . $thumbnail[1] . '" />';
-			$post_meta .= '<meta itemprop="height" content="' . $thumbnail[2] . '" />';
+			$post_meta .= '<meta itemprop="url" content="' . esc_url( $thumbnail[0] ) . '" />';
+			$post_meta .= '<meta itemprop="width" content="' . esc_attr( $thumbnail[1] ). '" />';
+			$post_meta .= '<meta itemprop="height" content="' . esc_attr( $thumbnail[2] ). '" />';
 			$post_meta .= '</div>';
 		}
 
@@ -1258,20 +1258,20 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 		}
 		$site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
 		$post_meta .= '<div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
-		$post_meta .= '<meta itemprop="name" content="' . get_bloginfo( 'name' ) . '" />';
-		$post_meta .= '<meta itemprop="url" content="' . home_url() . '" />';
+		$post_meta .= '<meta itemprop="name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '" />';
+		$post_meta .= '<meta itemprop="url" content="' . esc_url( home_url() ) . '" />';
 		$post_meta .= '<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">';
-		$post_meta .= '<meta itemprop="url" content="' . $site_logo . '" />';
+		$post_meta .= '<meta itemprop="url" content="' . esc_url( $site_logo ). '" />';
 		$post_meta .= '</div>';
 		$post_meta .= '</div>';
 
 		$ratings_meta = '';
 		if ( $ratings_options['richsnippet_ratings']  && $post_ratings_average > 0 ) {
 			$ratings_meta .= '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
-			$ratings_meta .= '<meta itemprop="bestRating" content="' . $ratings_max . '" />';
+			$ratings_meta .= '<meta itemprop="bestRating" content="' . esc_attr( $ratings_max ) . '" />';
 			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
-			$ratings_meta .= '<meta itemprop="ratingValue" content="' . $post_ratings_average . '" />';
-			$ratings_meta .= '<meta itemprop="ratingCount" content="' . $post_ratings_users . '" />';
+			$ratings_meta .= '<meta itemprop="ratingValue" content="' . esc_attr( $post_ratings_average ) . '" />';
+			$ratings_meta .= '<meta itemprop="ratingCount" content="' . esc_attr( $post_ratings_users ) . '" />';
 			$ratings_meta .= '</div>';
 		}
 
