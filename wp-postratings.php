@@ -1174,7 +1174,11 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 
 	// Post Template Variables
 	$post_link = get_permalink( $post_data );
-	$post_title = get_the_title( $post_data );
+	if ((get_post_meta($post_id, '_yoast_wpseo_title', true)) == “”) {
+		$post_title = get_the_title($post_data);
+	} else {
+		$post_title = get_post_meta($post_id, '_yoast_wpseo_title', true);
+	}
 	if ( $max_post_title_chars > 0 ) {
 		$post_title = snippet_text( $post_title, $max_post_title_chars );
 	}
@@ -1206,6 +1210,10 @@ function expand_ratings_template($template, $post_data, $post_ratings_data = nul
 			$post = get_post( $post_id );
 		}
 		$value = str_replace( '%POST_THUMBNAIL%', get_the_post_thumbnail( $post, 'thumbnail' ), $value );
+	}
+	
+	if (get_post_meta($post_id, '_yoast_wpseo_metadesc', true) <> “”) {
+		$post_excerpt = get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
 	}
 
 	// Google Rich Snippet
