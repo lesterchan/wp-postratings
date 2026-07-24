@@ -838,7 +838,7 @@ function postratings_wp_stats() {
 ### Function: Add WP-PostRatings General Stats To WP-Stats Page Options
 function postratings_page_admin_general_stats($content) {
 	$stats_display = get_option('stats_display');
-	if($stats_display['ratings'] == 1) {
+	if((int) ($stats_display['ratings'] ?? 0) === 1) {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
 	} else {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
@@ -851,22 +851,22 @@ function postratings_page_admin_general_stats($content) {
 function postratings_page_admin_most_stats($content) {
 	$stats_display = get_option('stats_display');
 	$stats_mostlimit = (int) get_option( 'stats_mostlimit' );
-	if($stats_display['rated_highest_post'] === 1) {
+	if(($stats_display['rated_highest_post'] ?? 0) === 1) {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	} else {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	}
-	if($stats_display['rated_highest_page'] === 1) {
+	if(($stats_display['rated_highest_page'] ?? 0) === 1) {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	} else {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	}
-	if($stats_display['rated_most_post'] === 1) {
+	if(($stats_display['rated_most_post'] ?? 0) === 1) {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	} else {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	}
-	if($stats_display['rated_most_page'] === 1) {
+	if(($stats_display['rated_most_page'] ?? 0) === 1) {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
 	} else {
 		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
@@ -878,7 +878,7 @@ function postratings_page_admin_most_stats($content) {
 ### Function: Add WP-PostRatings General Stats To WP-Stats Page
 function postratings_page_general_stats($content) {
 	$stats_display = get_option('stats_display');
-	if($stats_display['ratings'] === 1) {
+	if(($stats_display['ratings'] ?? 0) === 1) {
 		$content .= '<p><strong>'.esc_html__('WP-PostRatings', 'wp-postratings').'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
 		$content .= '<li><strong>'.esc_html(number_format_i18n(get_ratings_users(false))).'</strong> '.esc_html__(sprintf(_n('user casted his vote.', 'users casted their vote.', get_ratings_users(false), 'wp-postratings'))).'</li>'."\n";
@@ -892,25 +892,25 @@ function postratings_page_general_stats($content) {
 function postratings_page_most_stats($content) {
 	$stats_display = get_option('stats_display');
 	$stats_mostlimit = (int) get_option( 'stats_mostlimit' );
-	if ( $stats_display['rated_highest_post'] === 1 ) {
+	if ( ($stats_display['rated_highest_post'] ?? 0) === 1 ) {
 		$content .= '<p><strong>'.sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
 		$content .= get_highest_rated('post', 0, $stats_mostlimit, 0, false);
 		$content .= '</ul>'."\n";
 	}
-	if ( $stats_display['rated_highest_page'] === 1 ) {
+	if ( ($stats_display['rated_highest_page'] ?? 0) === 1 ) {
 		$content .= '<p><strong>'.sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
 		$content .= get_highest_rated('page', 0, $stats_mostlimit, 0, false);
 		$content .= '</ul>'."\n";
 	}
-	if ( $stats_display['rated_most_post'] === 1 ) {
+	if ( ($stats_display['rated_most_post'] ?? 0) === 1 ) {
 		$content .= '<p><strong>'.sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
 		$content .= get_most_rated('post', 0, $stats_mostlimit, 0, false);
 		$content .= '</ul>'."\n";
 	}
-	if ( $stats_display['rated_most_page'] === 1 ) {
+	if ( ($stats_display['rated_most_page'] ?? 0) === 1 ) {
 		$content .= '<p><strong>'.sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
 		$content .= get_most_rated('page', 0, $stats_mostlimit, 0, false);
