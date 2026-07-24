@@ -3,8 +3,8 @@ Contributors: GamerZ
 Donate link: https://lesterchan.net/site/donation/  
 Tags: ratings, rating, postratings, postrating, vote, digg, ajax, post  
 Requires at least: 4.9.6  
-Tested up to: 6.6  
-Stable tag: 1.91.2  
+Tested up to: 7.0  
+Stable tag: 1.91.3  
 
 Adds an AJAX rating system for your WordPress site's content.
 
@@ -25,12 +25,15 @@ Adds an AJAX rating system for your WordPress site's content.
 
 ### Credits
 * Plugin icon by [Freepik](http://www.freepik.com) from [Flaticon](http://www.flaticon.com)
-* Icons courtesy of [FamFamFam](http://www.famfamfam.com/ "FamFamFam") and [Everaldo](http://www.everaldo.com "Everaldo")
 
 ### Donations
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
 ## Changelog
+### Version 1.91.3
+* NEW: WordPress 7.0
+* FIXED: Escape individual rating text in the admin AJAX handler to prevent XSS
+
 ### Version 1.91.2
 * FIXED: XSS in Google Rich Text Snippets
 

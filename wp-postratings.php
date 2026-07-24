@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: https://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress site's content.
-Version: 1.91.2
+Version: 1.91.3
 Author: Lester 'GaMerZ' Chan
 Author URI: https://lesterchan.net
 Text Domain: wp-postratings
@@ -11,7 +11,7 @@ Text Domain: wp-postratings
 
 
 /*
-	Copyright 2024 Lester Chan (email: lesterchan@gmail.com)
+	Copyright 2026 Lester Chan (email: lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin version
  * Set wp-postratings plugin version.
  */
-define( 'WP_POSTRATINGS_VERSION', '1.91.2' );
+define( 'WP_POSTRATINGS_VERSION', '1.91.3' );
 
 /**
  * Rating logs table name
@@ -699,7 +699,7 @@ function manage_ratings()
 						}
 						echo '</td>'."\n";
 						echo '<td>'."\n";
-						echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.$postratings_text.'" size="20" maxlength="50" />'."\n";
+						echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.esc_attr( $postratings_text ).'" size="20" maxlength="50" />'."\n";
 						echo '</td>'."\n";
 						echo '<td>'."\n";
 						echo '<input type="text" id="postratings_ratingsvalue_'.$i.'" name="postratings_ratingsvalue[]" value="'.$postratings_value.'" size="2" maxlength="2" />'."\n";
