@@ -828,6 +828,7 @@ function sort_postratings( $query ) {
 ### Function: Plug Into WP-Stats
 add_action( 'plugins_loaded','postratings_wp_stats' );
 function postratings_wp_stats() {
+	add_filter( 'wp_stats_display_defaults', 'postratings_wp_stats_defaults' );
 	add_filter( 'wp_stats_page_admin_plugins', 'postratings_page_admin_general_stats' );
 	add_filter( 'wp_stats_page_admin_most', 'postratings_page_admin_most_stats' );
 	add_filter( 'wp_stats_page_plugins', 'postratings_page_general_stats' );
@@ -835,53 +836,97 @@ function postratings_wp_stats() {
 }
 
 
+### Function: Tell WP-Stats About The Toggles This Plugin Owns
+# Without this WP-Stats only learns a key exists once its checkbox has been
+# submitted, so the panels would start out off on a fresh install.
+function postratings_wp_stats_defaults( $defaults ) {
+	// WP-Stats' own defaults win, so this only ever adds.
+	return array_merge(
+		array(
+			'ratings'            => 1,
+			'rated_highest_post' => 1,
+			'rated_highest_page' => 0,
+			'rated_most_post'    => 1,
+			'rated_most_page'    => 0,
+		),
+		(array) $defaults
+	);
+}
+
+
+### Function: Whether A WP-Stats Display Toggle Is On
+function postratings_wp_stats_enabled( $key ) {
+	if ( function_exists( 'wp_stats_display_enabled' ) ) {
+		return wp_stats_display_enabled( $key );
+	}
+
+	// WP-Stats before 3.0.0 kept the toggles in their own option row.
+	$stats_display = get_option( 'stats_display' );
+
+	return is_array( $stats_display ) && 1 === (int) ( $stats_display[ $key ] ?? 0 );
+}
+
+
+### Function: How Many "Most" Entries WP-Stats Shows
+function postratings_wp_stats_limit() {
+	if ( function_exists( 'wp_stats_most_limit' ) ) {
+		return wp_stats_most_limit();
+	}
+
+	return (int) get_option( 'stats_mostlimit' );
+}
+
+
+### Function: One Checkbox On The WP-Stats Options Screen
+function postratings_wp_stats_checkbox( $value, $label ) {
+	// WP-Stats 3.0.0 owns the field name, which changed when it consolidated its
+	// option rows.
+	if ( function_exists( 'wp_stats_checkbox' ) ) {
+		return wp_stats_checkbox( $value, $label );
+	}
+
+	return '<input type="checkbox" name="stats_display[]" id="wpstats_' . esc_attr( $value ) . '" value="' . esc_attr( $value ) . '"' .
+		checked( postratings_wp_stats_enabled( $value ), true, false ) .
+		' />&nbsp;&nbsp;<label for="wpstats_' . esc_attr( $value ) . '">' . esc_html( $label ) . '</label><br />' . "\n";
+}
+
+
 ### Function: Add WP-PostRatings General Stats To WP-Stats Page Options
 function postratings_page_admin_general_stats($content) {
-	$stats_display = get_option('stats_display');
-	if((int) ($stats_display['ratings'] ?? 0) === 1) {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" checked="checked" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
-	} else {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_ratings" value="ratings" />&nbsp;&nbsp;<label for="wpstats_ratings">'.esc_html__('WP-PostRatings', 'wp-postratings').'</label><br />'."\n";
-	}
-	return $content;
+	return $content . postratings_wp_stats_checkbox( 'ratings', __( 'WP-PostRatings', 'wp-postratings' ) );
 }
 
 
 ### Function: Add WP-PostRatings Top Most/Highest Stats To WP-Stats Page Options
 function postratings_page_admin_most_stats($content) {
-	$stats_display = get_option('stats_display');
-	$stats_mostlimit = (int) get_option( 'stats_mostlimit' );
-	if(($stats_display['rated_highest_post'] ?? 0) === 1) {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	} else {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_post" value="rated_highest_post" />&nbsp;&nbsp;<label for="wpstats_rated_highest_post">'.esc_html(sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
+	$stats_mostlimit = postratings_wp_stats_limit();
+
+	$boxes = array(
+		/* translators: %s: number of posts. */
+		'rated_highest_post' => _n( '%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings' ),
+		/* translators: %s: number of pages. */
+		'rated_highest_page' => _n( '%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings' ),
+		/* translators: %s: number of posts. */
+		'rated_most_post'    => _n( '%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings' ),
+		/* translators: %s: number of pages. */
+		'rated_most_page'    => _n( '%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings' ),
+	);
+
+	foreach ( $boxes as $key => $label ) {
+		$content .= postratings_wp_stats_checkbox( $key, sprintf( $label, number_format_i18n( $stats_mostlimit ) ) );
 	}
-	if(($stats_display['rated_highest_page'] ?? 0) === 1) {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	} else {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_highest_page" value="rated_highest_page" />&nbsp;&nbsp;<label for="wpstats_rated_highest_page">'.esc_html(sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	}
-	if(($stats_display['rated_most_post'] ?? 0) === 1) {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	} else {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_post" value="rated_most_post" />&nbsp;&nbsp;<label for="wpstats_rated_most_post">'.esc_html(sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	}
-	if(($stats_display['rated_most_page'] ?? 0) === 1) {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" checked="checked" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	} else {
-		$content .= '<input type="checkbox" name="stats_display[]" id="wpstats_rated_most_page" value="rated_most_page" />&nbsp;&nbsp;<label for="wpstats_rated_most_page">'.esc_html(sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit))).'</label><br />'."\n";
-	}
+
 	return $content;
 }
 
 
 ### Function: Add WP-PostRatings General Stats To WP-Stats Page
 function postratings_page_general_stats($content) {
-	$stats_display = get_option('stats_display');
-	if(($stats_display['ratings'] ?? 0) === 1) {
+	if ( postratings_wp_stats_enabled( 'ratings' ) ) {
+		$users = get_ratings_users(false);
 		$content .= '<p><strong>'.esc_html__('WP-PostRatings', 'wp-postratings').'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
-		$content .= '<li><strong>'.esc_html(number_format_i18n(get_ratings_users(false))).'</strong> '.esc_html__(sprintf(_n('user casted his vote.', 'users casted their vote.', get_ratings_users(false), 'wp-postratings'))).'</li>'."\n";
+		$content .= '<li><strong>'.esc_html(number_format_i18n($users)).'</strong> '.esc_html(_n('user casted his vote.', 'users casted their vote.', $users, 'wp-postratings')).'</li>'."\n";
 		$content .= '</ul>'."\n";
 	}
 	return $content;
@@ -890,32 +935,32 @@ function postratings_page_general_stats($content) {
 
 ### Function: Add WP-PostRatings Top Most/Highest Stats To WP-Stats Page
 function postratings_page_most_stats($content) {
-	$stats_display = get_option('stats_display');
-	$stats_mostlimit = (int) get_option( 'stats_mostlimit' );
-	if ( ($stats_display['rated_highest_post'] ?? 0) === 1 ) {
-		$content .= '<p><strong>'.sprintf(_n('%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
+	$stats_mostlimit = postratings_wp_stats_limit();
+
+	$panels = array(
+		/* translators: %s: number of posts. */
+		'rated_highest_post' => array( 'get_highest_rated', 'post', _n( '%s Highest Rated Post', '%s Highest Rated Posts', $stats_mostlimit, 'wp-postratings' ) ),
+		/* translators: %s: number of pages. */
+		'rated_highest_page' => array( 'get_highest_rated', 'page', _n( '%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings' ) ),
+		/* translators: %s: number of posts. */
+		'rated_most_post'    => array( 'get_most_rated', 'post', _n( '%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings' ) ),
+		/* translators: %s: number of pages. */
+		'rated_most_page'    => array( 'get_most_rated', 'page', _n( '%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings' ) ),
+	);
+
+	foreach ( $panels as $key => $panel ) {
+		if ( ! postratings_wp_stats_enabled( $key ) ) {
+			continue;
+		}
+
+		list( $callback, $mode, $heading ) = $panel;
+
+		$content .= '<p><strong>'.esc_html(sprintf($heading, number_format_i18n($stats_mostlimit))).'</strong></p>'."\n";
 		$content .= '<ul>'."\n";
-		$content .= get_highest_rated('post', 0, $stats_mostlimit, 0, false);
+		$content .= $callback($mode, 0, $stats_mostlimit, 0, false);
 		$content .= '</ul>'."\n";
 	}
-	if ( ($stats_display['rated_highest_page'] ?? 0) === 1 ) {
-		$content .= '<p><strong>'.sprintf(_n('%s Highest Rated Page', '%s Highest Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
-		$content .= '<ul>'."\n";
-		$content .= get_highest_rated('page', 0, $stats_mostlimit, 0, false);
-		$content .= '</ul>'."\n";
-	}
-	if ( ($stats_display['rated_most_post'] ?? 0) === 1 ) {
-		$content .= '<p><strong>'.sprintf(_n('%s Most Rated Post', '%s Most Rated Posts', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
-		$content .= '<ul>'."\n";
-		$content .= get_most_rated('post', 0, $stats_mostlimit, 0, false);
-		$content .= '</ul>'."\n";
-	}
-	if ( ($stats_display['rated_most_page'] ?? 0) === 1 ) {
-		$content .= '<p><strong>'.sprintf(_n('%s Most Rated Page', '%s Most Rated Pages', $stats_mostlimit, 'wp-postratings'), number_format_i18n($stats_mostlimit)).'</strong></p>'."\n";
-		$content .= '<ul>'."\n";
-		$content .= get_most_rated('page', 0, $stats_mostlimit, 0, false);
-		$content .= '</ul>'."\n";
-	}
+
 	return $content;
 }
 
