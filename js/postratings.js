@@ -132,17 +132,20 @@
 	/**
 	 * Fade an element by stepping its opacity.
 	 *
-	 * @param {Element}  element Element to fade.
-	 * @param {number}   to      Target opacity.
-	 * @param {Function} done    Called when finished.
+	 * @param {Element} element Element to fade.
+	 * @param {number}  to      Target opacity.
 	 * @return {void}
 	 */
-	function fade( element, to, done ) {
-		if ( ! element || ! Number( l10n.showFading ) ) {
-			if ( element ) {
-				element.style.opacity = to;
-			}
-			done();
+	function fade( element, to ) {
+		// Purely cosmetic, and deliberately not something the vote waits on:
+		// requestAnimationFrame is paused outright while a tab is hidden, so
+		// anything sequenced behind it would simply never run there.
+		if ( ! element ) {
+			return;
+		}
+
+		if ( ! Number( l10n.showFading ) || document.hidden ) {
+			element.style.opacity = to;
 			return;
 		}
 
@@ -161,10 +164,7 @@
 
 			if ( progress < 1 ) {
 				window.requestAnimationFrame( step );
-				return;
 			}
-
-			done();
 		}
 
 		window.requestAnimationFrame( step );
@@ -212,42 +212,44 @@
 
 		isBeingRated = true;
 
-		fade( container, 0, function() {
-			toggleLoading( postId, true );
+		// The request goes out straight away; the fade runs alongside it rather
+		// than in front of it.
+		fade( container, 0 );
+		toggleLoading( postId, true );
 
-			const body = new URLSearchParams();
+		const body = new URLSearchParams();
 
-			body.append( 'action', 'postratings' );
-			body.append( 'pid', postId );
-			body.append( 'rate', currentRating );
-			body.append( 'postratings_' + postId + '_nonce', nonce );
+		body.append( 'action', 'postratings' );
+		body.append( 'pid', postId );
+		body.append( 'rate', currentRating );
+		body.append( 'postratings_' + postId + '_nonce', nonce );
 
-			window
-				.fetch( l10n.ajaxUrl, {
-					method: 'POST',
-					credentials: 'same-origin',
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-					},
-					body: body.toString(),
-				} )
-				.then( function( response ) {
-					return response.text();
-				} )
-				.then( function( html ) {
-					container.innerHTML = html;
-					toggleLoading( postId, false );
-					fade( container, 1, function() {
-						isBeingRated = false;
-					} );
-				} )
-				.catch( function() {
-					toggleLoading( postId, false );
-					fade( container, 1, function() {
-						isBeingRated = false;
-					} );
-				} );
-		} );
+		function finish( html ) {
+			if ( 'string' === typeof html ) {
+				container.innerHTML = html;
+			}
+
+			toggleLoading( postId, false );
+			fade( container, 1 );
+			isBeingRated = false;
+		}
+
+		window
+			.fetch( l10n.ajaxUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+				},
+				body: body.toString(),
+			} )
+			.then( function( response ) {
+				return response.text();
+			} )
+			.then( finish )
+			.catch( function() {
+				finish();
+			} );
 	}
 
 	/**
