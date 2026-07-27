@@ -1,13 +1,32 @@
 {
-    "name": "lesterchan/wp-postratings",
-    "description": "Adds an AJAX rating system for your WordPress site's content",
-    "type": "wordpress-plugin",
-    "authors": [
-        {
-            "name": "Lester Chan",
-            "email": "lesterchan@gmail.com"
-        }
-    ],
-    "license": "GPL-2.0+",
-    "require": {}
+	"name": "lesterchan/wp-postratings",
+	"description": "Adds an AJAX rating system for your WordPress site's content.",
+	"type": "wordpress-plugin",
+	"keywords": [
+		"wordpress",
+		"plugin",
+		"ratings"
+	],
+	"license": [
+		"GPL-2.0-only"
+	],
+	"authors": [
+		{
+			"name": "Lester Chan",
+			"email": "lesterchan@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.6",
+		"yoast/phpunit-polyfills": "^2.0"
+	},
+	"scripts": {
+		"test": "phpunit"
+	},
+	"config": {
+		"allow-plugins": false
+	}
 }

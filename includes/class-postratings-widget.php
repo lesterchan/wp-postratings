@@ -144,7 +144,7 @@ class Postratings_Widget extends WP_Widget {
 		$instance['type'] = isset( $types[ $type ] ) ? $type : $instance['type'];
 
 		$cat_ids             = isset( $new_instance['cat_ids'] ) ? wp_parse_id_list( $new_instance['cat_ids'] ) : array();
-		$instance['cat_ids'] = implode( ',', $cat_ids );
+		$instance['cat_ids'] = implode( ',', array_filter( $cat_ids ) );
 
 		return $instance;
 	}

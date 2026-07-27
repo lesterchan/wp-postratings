@@ -355,14 +355,36 @@ class Postratings_Rating {
 			exit;
 		}
 
+		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
+		echo self::process_vote( $post_id, $rate );
+		exit;
+	}
+
+	/**
+	 * Apply a vote and build the response.
+	 *
+	 * Split out from handle_vote() so it can be driven from a test: the handler
+	 * ends in exit(), which takes the runner with it.
+	 *
+	 * @param int $post_id Post being rated.
+	 * @param int $rate    Position on the scale.
+	 *
+	 * @return string Markup to send back, or '' to say nothing.
+	 */
+	public static function process_vote( $post_id, $rate ) {
+		$post_id = (int) $post_id;
+		$rate    = (int) $rate;
+
 		if ( $rate <= 0 || $post_id <= 0 || ! self::can_rate() ) {
-			exit;
+			return '';
 		}
 
 		$useragent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 		if ( self::is_bot( $useragent ) ) {
-			exit;
+			return '';
 		}
 
 		$ratings_max    = (int) Postratings_Options::get( 'max' );
@@ -372,50 +394,41 @@ class Postratings_Rating {
 		// become $ratings_values[-1]: a warning, and a vote worth nothing.
 		if ( $rate > $ratings_max || ! isset( $ratings_values[ $rate - 1 ] ) ) {
 			/* translators: %s: rating that was submitted. */
-			printf( esc_html__( 'Invalid Rating (#%s).', 'wp-postratings' ), (int) $rate );
-			exit;
+			return sprintf( esc_html__( 'Invalid Rating (#%s).', 'wp-postratings' ), $rate );
 		}
-
-		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 
 		$lock = self::acquire_lock( $post_id );
 
 		if ( false === $lock ) {
-			esc_html_e( 'Unable to obtain lock', 'wp-postratings' );
-			exit;
+			return esc_html__( 'Unable to obtain lock', 'wp-postratings' );
 		}
 
-		// Every branch below exits, so the lock is released on each one. A
-		// single release after the if/else was unreachable, and each rating
-		// left its lock file behind in the temp directory.
-		if ( self::has_rated( $post_id ) ) {
+		// The lock is released on every path below. A single release at the end
+		// of the old handler was unreachable, because each branch exited first,
+		// so every rating left its lock file behind in the temp directory.
+		try {
+			if ( self::has_rated( $post_id ) ) {
+				/* translators: %s: post id. */
+				return sprintf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id );
+			}
+
+			$post = get_post( $post_id );
+
+			if ( ! $post || wp_is_post_revision( $post ) ) {
+				/* translators: %s: post id. */
+				return sprintf( esc_html__( 'Invalid Post ID (#%s).', 'wp-postratings' ), $post_id );
+			}
+
+			$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
+
+			return Postratings_Template::expand(
+				Postratings_Options::template( 'text' ),
+				$post_id,
+				(object) $totals
+			);
+		} finally {
 			self::release_lock( $lock, $post_id );
-			/* translators: %s: post id. */
-			printf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), (int) $post_id );
-			exit;
 		}
-
-		$post = get_post( $post_id );
-
-		if ( ! $post || wp_is_post_revision( $post ) ) {
-			self::release_lock( $lock, $post_id );
-			/* translators: %s: post id. */
-			printf( esc_html__( 'Invalid Post ID (#%s).', 'wp-postratings' ), (int) $post_id );
-			exit;
-		}
-
-		$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
-
-		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-		echo Postratings_Template::expand(
-			Postratings_Options::template( 'text' ),
-			$post_id,
-			(object) $totals
-		);
-		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
-
-		self::release_lock( $lock, $post_id );
-		exit;
 	}
 
 	/**

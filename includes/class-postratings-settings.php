@@ -460,7 +460,10 @@ class Postratings_Settings {
 
 		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
 		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
-		$image  = isset( $_GET['image'] ) ? sanitize_file_name( wp_unslash( $_GET['image'] ) ) : '';
+		// Checked against the globbed directory list rather than passed through
+		// sanitize_file_name(), which mangles a bare directory name whose
+		// spelling is also a known file extension.
+		$image = isset( $_GET['image'] ) ? trim( wp_unslash( $_GET['image'] ) ) : '';
 
 		if ( ! in_array( $image, Postratings_Template::image_folders(), true ) ) {
 			wp_die( -1, 400 );

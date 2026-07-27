@@ -251,11 +251,16 @@ class Postratings_Options {
 		$clean = $current;
 
 		if ( isset( $options['image'] ) ) {
-			$image = sanitize_file_name( trim( (string) $options['image'] ) );
+			// Deliberately not sanitize_file_name(): that is for files with an
+			// extension, and it mangles a bare directory name whose spelling
+			// happens to be a known extension -- it turns "numbers" into
+			// "unnamed-file.numbers", so that image set saved, reported success
+			// and silently reverted. Membership of the globbed directory list is
+			// the real guard, and it admits no traversal.
+			$image = trim( (string) $options['image'] );
 
-			// A style the sanitizer rejects would save, report success and
-			// silently revert, so the allow list is derived from the same
-			// helper that builds the radio buttons.
+			// The allow list is the same helper that builds the radio buttons,
+			// so the screen cannot offer a style the sanitizer would reject.
 			$clean['image'] = in_array( $image, Postratings_Template::image_folders(), true ) ? $image : $current['image'];
 		}
 
