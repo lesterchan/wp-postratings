@@ -94,16 +94,16 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 */
 	public function log_views() {
 		return array(
-			'default'         => array( array() ),
-			'sorted ascending' => array(
+			'default'             => array( array() ),
+			'sorted ascending'    => array(
 				array(
 					'orderby' => 'rating_username',
 					'order'   => 'asc',
 				),
 			),
-			'filtered by rating' => array( array( 'rating' => '4' ) ),
-			'searched'           => array( array( 's' => 'Brien' ) ),
-			'second page'        => array( array( 'paged' => '2' ) ),
+			'filtered by rating'  => array( array( 'rating' => '4' ) ),
+			'searched'            => array( array( 's' => 'Brien' ) ),
+			'second page'         => array( array( 'paged' => '2' ) ),
 			'unknown sort column' => array( array( 'orderby' => 'evil; DROP TABLE' ) ),
 		);
 	}
@@ -258,7 +258,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * update() saves rather than aborting.
+	 * Saving works without the old hidden "submit" field.
 	 *
 	 * The old form carried a hidden "submit" field and returned false without
 	 * it, which blocked Customizer saves.

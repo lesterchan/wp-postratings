@@ -49,7 +49,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	/**
 	 * Re-running the installer is a no-op rather than an ALTER on every load.
 	 *
-	 * dbDelta cannot round-trip this schema, so calling it unconditionally
+	 * DbDelta cannot round-trip this schema, so calling it unconditionally
 	 * emits "ALTER TABLE ... SET DEFAULT ''" against the table every time.
 	 *
 	 * @return void
@@ -78,7 +78,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * uninstall.php lifts WP_Site_Query's default cap of 100 sites.
+	 * The uninstaller lifts WP_Site_Query's default cap of 100 sites.
 	 *
 	 * A single-site suite cannot build a 101-site network, so this is a
 	 * source-level guard: without 'number' => 0 the loop silently stops at the
@@ -95,10 +95,10 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * restore_current_blog() sits inside the site loop.
+	 * The call to restore_current_blog() sits inside the site loop.
 	 *
-	 * switch_to_blog() pushes onto a stack, so switching many times and
-	 * restoring once leaves the stack unwound by exactly one.
+	 * Switching pushes onto a stack, so switching many times and restoring
+	 * once leaves the stack unwound by exactly one.
 	 *
 	 * @return void
 	 */
@@ -112,7 +112,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * wp_get_sites() is gone; it was removed in WP 5.1.
+	 * The removed wp_get_sites() is gone; it went in WP 5.1.
 	 *
 	 * @return void
 	 */

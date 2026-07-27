@@ -251,8 +251,8 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	/**
 	 * The stored post title is not double-slashed.
 	 *
-	 * addslashes() ran before $wpdb->prepare(), so a quoted title was stored
-	 * with a literal backslash.
+	 * Slashing ran before $wpdb->prepare(), so a quoted title was stored with
+	 * a literal backslash.
 	 *
 	 * @return void
 	 */

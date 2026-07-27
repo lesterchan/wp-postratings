@@ -127,6 +127,38 @@
 		<exclude-pattern>*/includes/deprecated.php</exclude-pattern>
 	</rule>
 
+	<!--
+		Test-file exemptions. The suite drives the plugin's own table directly,
+		names its classes Test_* as PHPUnit discovery expects, and builds the
+		request superglobals the code under test then reads.
+	-->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.GlobalVariablesOverride">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
+	<!--
+		The lock tests take raw handles on purpose, because holding a contending
+		lock is the thing being tested; the uninstall tests read the source file
+		to assert a guard a single-site suite cannot exercise; and the admin
+		screen helper installs an error handler to collect the diagnostics it
+		asserts on.
+	-->
+	<rule ref="WordPress.WP.AlternativeFunctions">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
 	<!-- The standard exempts test classes from the class-*.php file naming. -->
 	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
 		<exclude-pattern>*/tests/*</exclude-pattern>

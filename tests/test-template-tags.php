@@ -121,7 +121,7 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * expand() restores the global $post it reassigns.
+	 * Expanding a template restores the global $post it reassigns.
 	 *
 	 * It used to leak the other post to the rest of the loop.
 	 *
@@ -277,7 +277,7 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 		$high = $this->make_rated_post( 2, 10 );
 
 		// %POST_ID% is unambiguous; permalinks vary with the rewrite rules.
-		$options                          = Postratings_Options::get();
+		$options                              = Postratings_Options::get();
 		$options['templates']['highestrated'] = '<li>[%POST_ID%]</li>';
 		$options['templates']['mostrated']    = '<li>[%POST_ID%]</li>';
 		Postratings_Options::update( $options );

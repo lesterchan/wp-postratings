@@ -460,10 +460,11 @@ class Postratings_Settings {
 
 		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
 		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
-		// Checked against the globbed directory list rather than passed through
-		// sanitize_file_name(), which mangles a bare directory name whose
-		// spelling is also a known file extension.
-		$image = isset( $_GET['image'] ) ? trim( wp_unslash( $_GET['image'] ) ) : '';
+		// sanitize_text_field() rather than sanitize_file_name(): the latter is
+		// for files with an extension and mangles a bare directory name whose
+		// spelling is also a known extension ("numbers" becomes
+		// "unnamed-file.numbers"). The real guard is the allow list below.
+		$image = isset( $_GET['image'] ) ? trim( sanitize_text_field( wp_unslash( $_GET['image'] ) ) ) : '';
 
 		if ( ! in_array( $image, Postratings_Template::image_folders(), true ) ) {
 			wp_die( -1, 400 );
