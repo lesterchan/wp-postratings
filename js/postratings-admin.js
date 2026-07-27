@@ -72,6 +72,10 @@
 			.then( function( html ) {
 				target.innerHTML = html;
 			} )
+			.catch( function() {
+				// Leaves the existing rows in place. Without this the rejection
+				// is unhandled and surfaces in the browser console.
+			} )
 			.finally( function() {
 				if ( spinner ) {
 					spinner.classList.remove( 'is-active' );

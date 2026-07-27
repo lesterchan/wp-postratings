@@ -94,3 +94,10 @@ jobs:
         run: |
           npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratings \
             vendor/bin/phpunit
+
+      # The network-only tests skip themselves on the single site run above, so
+      # this is the only place they actually execute.
+      - name: Run PHPUnit (multisite)
+        run: |
+          npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratings \
+            vendor/bin/phpunit -c tests/phpunit-multisite.xml
