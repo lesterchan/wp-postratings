@@ -7,9 +7,7 @@
 		"plugin",
 		"ratings"
 	],
-	"license": [
-		"GPL-2.0-only"
-	],
+	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
 			"name": "Lester Chan",
