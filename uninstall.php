@@ -29,51 +29,42 @@ $option_names = array(
 
 
 if ( is_multisite() ) {
-	$ms_sites = function_exists( 'get_sites' ) ? get_sites() : wp_get_sites();
+	// 'number' => 0 lifts WP_SITE_Query's default cap of 100, which would
+	// otherwise leave the options and tables behind on every site past the
+	// hundredth while still reporting success.
+	$site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
 
-	if ( 0 < count( $ms_sites ) ) {
-		foreach ( $ms_sites as $ms_site ) {
-			$blog_id = class_exists( 'WP_Site' ) ? $ms_site->blog_id : $ms_site['blog_id'];
-			switch_to_blog( $blog_id );
-			if ( count( $option_names ) > 0 ) {
-				foreach ( $option_names as $option_name ) {
-					delete_option( $option_name );
-					plugin_uninstalled();
-					restore_current_blog();
-				}
-			}
-		}
+	foreach ( $site_ids as $site_id ) {
+		switch_to_blog( (int) $site_id );
+		plugin_uninstalled( $option_names );
+		restore_current_blog();
 	}
 } else {
-	if ( count( $option_names ) > 0 ) {
-		foreach ( $option_names as $option_name ) {
-			delete_option( $option_name );
-			plugin_uninstalled();
-		}
-	}
+	plugin_uninstalled( $option_names );
 }
 
 /**
- * Delete plugin table when uninstalled
+ * Delete the plugin's options, table and post meta for the current site.
  *
- * @access public
+ * @param array $option_names Option rows to remove.
+ *
  * @return void
  */
-function plugin_uninstalled() {
+function plugin_uninstalled( $option_names ) {
 	global $wpdb;
 
+	foreach ( $option_names as $option_name ) {
+		delete_option( $option_name );
+	}
+
 	$table_names = array( 'ratings' );
-	if( sizeof( $table_names ) > 0 ) {
-		foreach( $table_names as $table_name ) {
-			$table = $wpdb->prefix . $table_name;
-			$wpdb->query( "DROP TABLE IF EXISTS $table" );
-		}
+	foreach ( $table_names as $table_name ) {
+		$table = $wpdb->prefix . $table_name;
+		$wpdb->query( "DROP TABLE IF EXISTS `$table`" );
 	}
 
 	$post_meta_names = array( 'ratings_users', 'ratings_score', 'ratings_average' );
-	if( sizeof( $post_meta_names ) > 0 ) {
-		foreach( $post_meta_names as $post_meta_name ) {
-			$wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_key = '$post_meta_name'" );
-		}
+	foreach ( $post_meta_names as $post_meta_name ) {
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", $post_meta_name ) );
 	}
 }

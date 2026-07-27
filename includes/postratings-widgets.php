@@ -32,6 +32,21 @@ class WP_Widget_PostRatings extends WP_Widget {
 
     // Display Widget
     function widget($args, $instance) {
+        // A widget dropped in without being configured has none of these keys,
+        // which is a warning per key on PHP 8 rather than an empty widget.
+        $instance = wp_parse_args(
+            (array) $instance,
+            array(
+                'title'      => '',
+                'type'       => 'highest_rated',
+                'mode'       => '',
+                'limit'      => 10,
+                'min_votes'  => 0,
+                'chars'      => 200,
+                'cat_ids'    => '0',
+                'time_range' => '1 day',
+            )
+        );
         $title = apply_filters('widget_title', esc_attr($instance['title']));
         $type = esc_attr($instance['type']);
         $mode = esc_attr($instance['mode']);
@@ -99,14 +114,14 @@ class WP_Widget_PostRatings extends WP_Widget {
             return false;
         }
         $instance = $old_instance;
-        $instance['title'] = strip_tags($new_instance['title']);
-        $instance['type'] = strip_tags($new_instance['type']);
-        $instance['mode'] = strip_tags($new_instance['mode']);
-        $instance['limit'] = intval($new_instance['limit']);
-        $instance['min_votes'] = intval($new_instance['min_votes']);
-        $instance['chars'] = intval($new_instance['chars']);
-        $instance['cat_ids'] = strip_tags($new_instance['cat_ids']);
-        $instance['time_range'] = strip_tags($new_instance['time_range']);
+        $instance['title'] = isset($new_instance['title']) ? strip_tags($new_instance['title']) : '';
+        $instance['type'] = isset($new_instance['type']) ? strip_tags($new_instance['type']) : 'highest_rated';
+        $instance['mode'] = isset($new_instance['mode']) ? strip_tags($new_instance['mode']) : '';
+        $instance['limit'] = isset($new_instance['limit']) ? intval($new_instance['limit']) : 10;
+        $instance['min_votes'] = isset($new_instance['min_votes']) ? intval($new_instance['min_votes']) : 0;
+        $instance['chars'] = isset($new_instance['chars']) ? intval($new_instance['chars']) : 200;
+        $instance['cat_ids'] = isset($new_instance['cat_ids']) ? strip_tags($new_instance['cat_ids']) : '0';
+        $instance['time_range'] = isset($new_instance['time_range']) ? strip_tags($new_instance['time_range']) : '1 day';
         return $instance;
     }
 

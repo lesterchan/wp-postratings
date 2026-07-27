@@ -44,14 +44,14 @@ if ( isset( $_POST['Submit'] ) ) {
 	$postratings_max = isset( $_POST['postratings_max'] ) ? (int) $_POST['postratings_max'] : 0;
 	$postratings_richsnippet = isset( $_POST['postratings_richsnippet'] ) ? (int) $_POST['postratings_richsnippet'] : 0;
 	$postratings_richsnippet_ratings = isset( $_POST['postratings_richsnippet_ratings'] ) ? (int) $_POST['postratings_richsnippet_ratings'] : 0;
-	$postratings_ratingstext_array = isset( $_POST['postratings_ratingstext'] ) ? $_POST['postratings_ratingstext'] : array();
+	$postratings_ratingstext_array = isset( $_POST['postratings_ratingstext'] ) && is_array( $_POST['postratings_ratingstext'] ) ? $_POST['postratings_ratingstext'] : array();
 	$postratings_ratingstext = array();
 	if ( ! empty( $postratings_ratingstext_array ) && is_array( $postratings_ratingstext_array ) ) {
 		foreach( $postratings_ratingstext_array as $ratingstext ) {
 			$postratings_ratingstext[] = wp_kses_post( trim( $ratingstext ) );
 		}
 	}
-	$postratings_ratingsvalue_array = isset( $_POST['postratings_ratingsvalue'] ) ? $_POST['postratings_ratingsvalue'] : array();
+	$postratings_ratingsvalue_array = isset( $_POST['postratings_ratingsvalue'] ) && is_array( $_POST['postratings_ratingsvalue'] ) ? $_POST['postratings_ratingsvalue'] : array();
 	$postratings_ratingsvalue = array();
 	if ( ! empty( $postratings_ratingsvalue_array )  && is_array( $postratings_ratingsvalue_array ) ) {
 		foreach  ( $postratings_ratingsvalue_array as $ratingsvalue ) {
@@ -256,7 +256,8 @@ $postratings_image = get_option( 'postratings_image' );
 							closedir($handle);
 						}
 						foreach($postratings_images_array as $key => $value) {
-							if(strpos($value['images'][0], '.'.RATINGS_IMG_EXT) === false) {
+							// An empty or unreadable folder has no images[0] to test.
+							if ( empty( $value['images'][0] ) || strpos( $value['images'][0], '.' . RATINGS_IMG_EXT ) === false ) {
 								continue;
 							}
 							echo '<p>';
@@ -331,7 +332,7 @@ $postratings_image = get_option( 'postratings_image' );
 				</td>
 			</tr>
 			<tr>
-				<td colspan="2" align="center"><input type="button" name="update" value="<?php esc_attr_e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo wp_create_nonce('wp-postratings_option_update_individual_rating')?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo $postratings_url; ?>/loading.gif" alt="" style="display: none;" /></td>
+				<td colspan="2" align="center"><input type="button" name="update" value="<?php esc_attr_e('Update \'Individual Rating Text/Value\' Display', 'wp-postratings'); ?>" onclick="update_rating_text_value('<?php echo esc_js( wp_create_nonce( 'wp-postratings_option_update_individual_rating' ) ); ?>');" class="button" /><br /><img id="postratings_loading" src="<?php echo esc_url( $postratings_url . '/loading.gif' ); ?>" alt="" style="display: none;" /></td>
 			</tr>
 		</table>
 		<h2><?php esc_html_e('Individual Rating Text/Value', 'wp-postratings'); ?></h2>
@@ -373,15 +374,19 @@ $postratings_image = get_option( 'postratings_image' );
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_end.'.RATINGS_IMG_EXT.'" alt="rating_end.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 							}
 							echo '</td>'."\n";
+							// Raising Max Ratings leaves these arrays shorter than
+							// the loop, so neither index is guaranteed to exist.
+							$rating_text  = isset( $postratings_ratingstext[ $i - 1 ] ) ? $postratings_ratingstext[ $i - 1 ] : '';
+							$rating_value = isset( $postratings_ratingsvalue[ $i - 1 ] ) ? (int) $postratings_ratingsvalue[ $i - 1 ] : $i;
 							echo '<td>'."\n";
-							echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.esc_attr(stripslashes($postratings_ratingstext[$i-1])).'" size="20" maxlength="50" />'."\n";
+							echo '<input type="text" id="postratings_ratingstext_'.$i.'" name="postratings_ratingstext[]" value="'.esc_attr(stripslashes($rating_text)).'" size="20" maxlength="50" />'."\n";
 							echo '</td>'."\n";
 							echo '<td>'."\n";
 							echo '<input type="text" id="postratings_ratingsvalue_'.$i.'" name="postratings_ratingsvalue[]" value="';
-							if($postratings_ratingsvalue[$i-1] > 0 && $postratings_customrating) {
+							if($rating_value > 0 && $postratings_customrating) {
 								echo '+';
 							}
-							echo intval($postratings_ratingsvalue[$i-1]).'" size="3" maxlength="5" />'."\n";
+							echo intval($rating_value).'" size="3" maxlength="5" />'."\n";
 							echo '</td>'."\n";
 							echo '</tr>'."\n";
 						}

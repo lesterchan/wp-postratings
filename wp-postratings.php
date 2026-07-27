@@ -96,8 +96,9 @@ function the_ratings($start_tag = 'div', $custom_id = 0, $display = true) {
 	$ratings_id = (int) $ratings_id;
 
 	// Loading Style
-	$postratings_ajax_style = get_option('postratings_ajax_style');
-	if ( (int) $postratings_ajax_style['loading'] === 1 ) {
+	$postratings_ajax_style = get_option( 'postratings_ajax_style' );
+	$postratings_ajax_style = is_array( $postratings_ajax_style ) ? $postratings_ajax_style : array();
+	if ( isset( $postratings_ajax_style['loading'] ) && (int) $postratings_ajax_style['loading'] === 1 ) {
 		$loading_alt = apply_filters('wp_postratings_loading_alt', '');
 		$loading_alt_html = ! empty( $loading_alt ) ? ' alt="' . esc_attr( $loading_alt ) . '"' : '';
 		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading"><img src="' . plugins_url('wp-postratings/images/loading.gif') . '" width="16" height="16" class="post-ratings-image"' . $loading_alt_html . ' />' . esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
@@ -302,6 +303,37 @@ function get_comment_authors_ratings() {
 }
 
 
+### Function: Look Up A Comment Author's Rating
+# The map built by get_comment_authors_ratings() is keyed by username and by the
+# *hashed* IP, which is what the log table stores. Looking it up with a raw
+# address never matched, so the IP fallback has been dead since ratings started
+# being hashed.
+function ratings_comment_author_rating( $comment_author, $logging_method ) {
+	global $comment_authors_ratings;
+
+	if ( ! is_array( $comment_authors_ratings ) ) {
+		return 0;
+	}
+
+	$rating = isset( $comment_authors_ratings[ $comment_author ] ) ? (int) $comment_authors_ratings[ $comment_author ] : 0;
+
+	// If we logged by username, we don't want to use IP at all.
+	if ( 4 !== $logging_method && 0 === $rating ) {
+		$comment_author_ip = get_comment_author_IP();
+
+		if ( ! empty( $comment_author_ip ) ) {
+			$hashed = wp_hash( $comment_author_ip );
+
+			if ( isset( $comment_authors_ratings[ $hashed ] ) ) {
+				$rating = (int) $comment_authors_ratings[ $hashed ];
+			}
+		}
+	}
+
+	return $rating;
+}
+
+
 ### Function: Comment Author Ratings
 function comment_author_ratings( $comment_author_specific = '', $display = true ) {
 	global $comment_authors_ratings;
@@ -316,11 +348,7 @@ function comment_author_ratings( $comment_author_specific = '', $display = true 
 			$comment_author = get_comment_author();
 		}
 
-		$comment_author_rating = (int) $comment_authors_ratings[ $comment_author ];
-		// If we logged by username, we don't want to use IP at all.
-		if ( $postratings_logging_method !== 4 && $comment_author_rating === 0 ) {
-			$comment_author_rating = (int) $comment_authors_ratings[ get_comment_author_IP() ];
-		}
+		$comment_author_rating = ratings_comment_author_rating( $comment_author, $postratings_logging_method );
 		if ( $comment_author_rating !== 0 ) {
 			// Display Rated Images
 			if ( $ratings_custom && $ratings_max === 2 ) {
@@ -357,11 +385,7 @@ function comment_author_ratings_filter( $comment_text ) {
 				$ratings_custom = (int) get_option( 'postratings_customrating' );
 				$postratings_logging_method = (int) get_option( 'postratings_logging_method' );
 				$comment_author = get_comment_author();
-				$comment_author_rating = (int) $comment_authors_ratings[ $comment_author ];
-				// If we logged by username, we don't want to use IP at all.
-				if ( $postratings_logging_method !== 4 && $comment_author_rating === 0 ) {
-					$comment_author_rating = (int) $comment_authors_ratings[ get_comment_author_IP() ];
-				}
+				$comment_author_rating = ratings_comment_author_rating( $comment_author, $postratings_logging_method );
 				if ( $comment_author_rating !== 0 ) {
 					// Display Rated Images
 					if ( $ratings_custom && $ratings_max === 2 ) {
@@ -386,13 +410,45 @@ function comment_author_ratings_filter( $comment_text ) {
 }
 
 
+### Function: Pick The First Valid IP Out Of A Header Value
+# X-Forwarded-For and friends are a chain -- "client, proxy1, proxy2" -- and the
+# visitor controls the left of it. Hashing the whole string as an identity means
+# appending one more hop yields a different value, so the vote limiting it keys
+# is defeated even though the site opted in on purpose. Take the first address
+# that validates and let the caller fall back to REMOTE_ADDR when there is none.
+function ratings_parse_ip_header( $value ) {
+	foreach ( explode( ',', $value ) as $candidate ) {
+		$candidate = filter_var( trim( $candidate ), FILTER_VALIDATE_IP );
+
+		if ( false !== $candidate ) {
+			return $candidate;
+		}
+	}
+
+	return '';
+}
+
+
 ### Function: Get IP Address
 function ratings_get_raw_ipaddress() {
-	$ip = esc_attr( $_SERVER['REMOTE_ADDR'] );
-	$postratings_options = get_option( 'postratings_options' );
+	// esc_attr() is an escaper, not a sanitizer, and this value is headed for a
+	// hash and the database. Validating REMOTE_ADDR on the way through is safe
+	// for data already recorded: it is a bare address, so it and its hash come
+	// out unchanged.
+	$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	$ip          = (string) filter_var( $remote_addr, FILTER_VALIDATE_IP );
 
-	if ( ! empty( $postratings_options ) && ! empty( $postratings_options['ip_header'] ) && ! empty( $_SERVER[ $postratings_options['ip_header'] ] ) ) {
-		$ip = esc_attr( $_SERVER[ $postratings_options['ip_header'] ] );
+	$postratings_options = get_option( 'postratings_options' );
+	$ip_header           = ! empty( $postratings_options['ip_header'] ) ? $postratings_options['ip_header'] : '';
+
+	// Only a header the site has explicitly named is trusted. Left blank -- the
+	// default -- nothing but REMOTE_ADDR is consulted.
+	if ( '' !== $ip_header && ! empty( $_SERVER[ $ip_header ] ) ) {
+		$forwarded = ratings_parse_ip_header( sanitize_text_field( wp_unslash( $_SERVER[ $ip_header ] ) ) );
+
+		if ( '' !== $forwarded ) {
+			$ip = $forwarded;
+		}
 	}
 
 	return $ip;
@@ -404,6 +460,13 @@ function ratings_get_ipaddress() {
 
 function ratings_get_hostname() {
 	$ip = ratings_get_raw_ipaddress();
+
+	// gethostbyaddr() warns on anything that is not an address, which is what
+	// an unroutable or absent REMOTE_ADDR now resolves to.
+	if ( '' === $ip ) {
+		return apply_filters( 'wp_postratings_hostname', '' );
+	}
+
 	$hostname = gethostbyaddr( $ip );
 	if ( $hostname === $ip ) {
 		$hostname = wp_privacy_anonymize_ip( $ip );
@@ -539,12 +602,24 @@ function process_ratings() {
 		if($rate > 0 && $post_id > 0 && check_allowtorate()) {
 			// Check For Bot
 			$bots_useragent = array('googlebot', 'google', 'msnbot', 'ia_archiver', 'lycos', 'jeeves', 'scooter', 'fast-webcrawler', 'slurp@inktomi', 'turnitinbot', 'technorati', 'yahoo', 'findexa', 'findlinks', 'gaisbo', 'zyborg', 'surveybot', 'bloglines', 'blogsearch', 'ubsub', 'syndic8', 'userland', 'gigabot', 'become.com');
-			$useragent = $_SERVER['HTTP_USER_AGENT'];
+			$useragent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 			foreach ($bots_useragent as $bot) {
 				if (stristr($useragent, $bot) !== false) {
 					return;
 				}
 			}
+
+			// Validate the rating against the configured scale before anything
+			// is written. Out of range used to be clamped to 0 and then read as
+			// $ratings_value[-1], which warned and logged a vote worth nothing.
+			$ratings_max   = (int) get_option( 'postratings_max' );
+			$ratings_value = get_option( 'postratings_ratingsvalue' );
+
+			if ( ! is_array( $ratings_value ) || $rate > $ratings_max || ! isset( $ratings_value[ $rate - 1 ] ) ) {
+				printf( esc_html__( 'Invalid Rating (#%s).', 'wp-postratings' ), (int) $rate );
+				exit();
+			}
+
 			header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 			// Acquire lock
 			$fp_lock = ratings_acquire_lock( $post_id );
@@ -560,17 +635,10 @@ function process_ratings() {
 				$post = get_post($post_id);
 				// If Valid Post Then We Rate It
 				if($post && !wp_is_post_revision($post)) {
-					$ratings_max = (int) get_option( 'postratings_max' );
-					$ratings_custom = (int) get_option( 'postratings_customrating' );
-					$ratings_value = get_option('postratings_ratingsvalue');
-					$post_title = addslashes($post->post_title);
+					$post_title = $post->post_title;
 					$post_ratings = get_post_custom($post_id);
 					$post_ratings_users = ! empty( $post_ratings['ratings_users'] ) ? (int) $post_ratings['ratings_users'][0] : 0;
 					$post_ratings_score = ! empty( $post_ratings['ratings_score'] ) ? (int) $post_ratings['ratings_score'][0] : 0;
-					// Check For Ratings Lesser Than 1 And Greater Than $ratings_max
-					if($rate < 1 || $rate > $ratings_max) {
-						$rate = 0;
-					}
 					++$post_ratings_users;
 					$post_ratings_score += (int) $ratings_value[ $rate - 1 ];
 					$post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
@@ -579,10 +647,14 @@ function process_ratings() {
 					update_post_meta($post_id, 'ratings_average', $post_ratings_average);
 
 					// Add Log
+					// No addslashes(): $wpdb->prepare() escapes these already, so
+					// slashing first stored a literal backslash. The read path
+					// still stripslashes(), which leaves rows written either way
+					// displaying correctly.
 					if(!empty($user_identity)) {
-						$rate_user = addslashes($user_identity);
+						$rate_user = $user_identity;
 					} elseif(!empty($_COOKIE['comment_author_'.COOKIEHASH])) {
-						$rate_user = addslashes($_COOKIE['comment_author_'.COOKIEHASH]);
+						$rate_user = sanitize_text_field( wp_unslash( $_COOKIE['comment_author_'.COOKIEHASH] ) );
 					} else {
 						$rate_user = __('Guest', 'wp-postratings');
 					}
@@ -601,19 +673,23 @@ function process_ratings() {
 					// Allow Other Plugins To Hook When A Post Is Rated
 					do_action('rate_post', $rate_userid, $post_id, $ratings_value[$rate-1]);
 					// Output AJAX Result
+					// The lock is released on every branch below rather than
+					// after the if/else: each one exits, so the single release
+					// that used to sit at the end was unreachable and every
+					// rating left its lock file behind in the temp directory.
 					echo the_ratings_results($post_id, $post_ratings_users, $post_ratings_score, $post_ratings_average);
+					ratings_release_lock( $fp_lock, $post_id );
 					exit();
 				} else {
+					ratings_release_lock( $fp_lock, $post_id );
 					printf(esc_html__('Invalid Post ID (#%s).', 'wp-postratings'), $post_id);
 					exit();
 				} // End if($post)
 			} else {
+				ratings_release_lock( $fp_lock, $post_id );
 				printf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id );
 				exit();
 			}// End if(!$rated)
-
-			// Release lock
-			ratings_release_lock( $fp_lock, $post_id );
 		} // End if($rate && $post_id && check_allowtorate())
 	} // End if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'postratings')
 }
@@ -635,8 +711,10 @@ function manage_ratings()
 		$postratings_ratingsvalue = get_option('postratings_ratingsvalue');
 
 		// Form Processing
+		// The image name is concatenated into a filesystem path below, so it is
+		// sanitized as a file name rather than merely escaped for HTML.
 		$postratings_customrating = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
-		$postratings_image = isset( $_GET['image'] ) ? esc_attr( trim( $_GET['image'] ) ) : '';
+		$postratings_image = isset( $_GET['image'] ) ? sanitize_file_name( trim( wp_unslash( $_GET['image'] ) ) ) : '';
 		$postratings_max = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
 
 		// If It Is A Up/Down Rating

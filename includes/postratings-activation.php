@@ -16,15 +16,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 function ratings_activation( $network_wide ) {
 	if ( is_multisite() && $network_wide ) {
-		$ms_sites = function_exists( 'get_sites' ) ? get_sites() : wp_get_sites();
+		// 'number' => 0 lifts WP_Site_Query's default cap of 100, which would
+		// otherwise silently skip installing the table on every site past the
+		// hundredth. wp_get_sites() was removed in WP 5.1, so there is nothing
+		// left to fall back to.
+		$site_ids = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
 
-		if( 0 < count( $ms_sites ) ) {
-			foreach ( $ms_sites as $ms_site ) {
-				$blog_id = class_exists( 'WP_Site' ) ? $ms_site->blog_id : $ms_site['blog_id'];
-				switch_to_blog( $blog_id );
-				ratings_activate();
-				restore_current_blog();
-			}
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( (int) $site_id );
+			ratings_activate();
+			restore_current_blog();
 		}
 	} else {
 		ratings_activate();
@@ -91,14 +92,18 @@ function ratings_activate() {
 			$key_name[]= $i->Key_name;
 		}
 	}
-	if ( ! in_array( 'rating_userid', $key_name ) ) {
+	if ( ! in_array( 'rating_userid', $key_name, true ) ) {
 		$wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_userid (rating_userid);" );
 	}
-	if ( ! in_array( 'rating_postid_ip', $key_name ) ) {
+	if ( ! in_array( 'rating_postid_ip', $key_name, true ) ) {
 		$wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_postid_ip (rating_postid, rating_ip);" );
 	}
 
 	// Set 'manage_ratings' Capabilities To Administrator
+	// get_role() returns null when the role has been removed, which is a fatal
+	// rather than a missing capability if it is not checked.
 	$role = get_role( 'administrator' );
-	$role->add_cap( 'manage_ratings' );
+	if ( $role instanceof WP_Role ) {
+		$role->add_cap( 'manage_ratings' );
+	}
 }

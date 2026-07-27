@@ -34,20 +34,33 @@ $ratings_image              = esc_attr( get_option( 'postratings_image' ) );
 $ratings_max                = intval( get_option( 'postratings_max' ) );
 
 // Handle $_GET values
-$postratings_filterid     = isset( $_GET['id'] )           ? intval( $_GET['id'] )                : 0;
-$postratings_filterrating = isset( $_GET['rating'] )       ? intval( $_GET['rating'] )            : 0;
-$postratings_filteruser   = isset( $_GET['user'] )         ? sanitize_text_field( $_GET['user'] ) : '';
-$postratings_log_perpage  = isset( $_GET['perpage'] )      ? intval( $_GET['perpage'] )           : 20;
-$postratings_page         = ! empty( $_GET['ratingpage'] ) ? intval( $_GET['ratingpage'] )        : 1;
+$postratings_filterid     = isset( $_GET['id'] )           ? intval( $_GET['id'] )                                     : 0;
+$postratings_filterrating = isset( $_GET['rating'] )       ? intval( $_GET['rating'] )                                 : 0;
+$postratings_filteruser   = isset( $_GET['user'] )         ? sanitize_text_field( wp_unslash( $_GET['user'] ) )        : '';
+$postratings_log_perpage  = isset( $_GET['perpage'] )      ? intval( $_GET['perpage'] )                                : 20;
+$postratings_page         = ! empty( $_GET['ratingpage'] ) ? intval( $_GET['ratingpage'] )                             : 1;
 $postratings_sortby       = 'rating_timestamp';
 $postratings_sortorder    = 'DESC';
 
-// For BY and ORDER, only accept data from a finite list of known and trusted values.
-if ( isset( $_GET['by'] ) && in_array( $_GET['by'], array( 'date', 'host', 'id', 'ip', 'postid', 'posttitle', 'rating', 'username', ) ) )
-	$postratings_sortby = $_GET['by'];
+// A perpage of 0 divides by zero when the page count is worked out.
+if ( $postratings_log_perpage < 1 ) {
+	$postratings_log_perpage = 20;
+}
+if ( $postratings_page < 1 ) {
+	$postratings_page = 1;
+}
 
-if ( isset( $_GET['order'] ) && in_array( $_GET['order'], array( 'asc', 'desc', ) ) )
-	$postratings_sortorder = $_GET['order'];
+// For BY and ORDER, only accept data from a finite list of known and trusted values.
+if ( isset( $_GET['by'] ) && in_array( wp_unslash( $_GET['by'] ), array( 'date', 'host', 'id', 'ip', 'postid', 'posttitle', 'rating', 'username', ), true ) )
+	$postratings_sortby = sanitize_key( wp_unslash( $_GET['by'] ) );
+
+// Normalised to upper case: it is interpolated into ORDER BY and also drives
+// the "Sorted by ... in ... order" label, which compared against 'ASC' and so
+// always read "Descending" however the list was actually sorted.
+if ( isset( $_GET['order'] ) && in_array( strtolower( wp_unslash( $_GET['order'] ) ), array( 'asc', 'desc', ), true ) )
+	$postratings_sortorder = strtoupper( sanitize_key( wp_unslash( $_GET['order'] ) ) );
+
+$text = '';
 
 
 ### Form Processing
@@ -62,14 +75,23 @@ if ( ! empty( $_POST['do'] ) ) {
 	// delete_postid is either a comma-separated list of integers, or "all".
 	if ( ! empty( $_POST['delete_postid'] ) ) {
 
+		$delete_postid = sanitize_text_field( wp_unslash( $_POST['delete_postid'] ) );
+
 		// "all" is the only string value accepted
-		if ( $_POST['delete_postid'] != 'all' ) {
-			$post_ids_list = wp_parse_id_list( $_POST['delete_postid'] );
+		if ( 'all' !== $delete_postid ) {
+			$post_ids_list = wp_parse_id_list( $delete_postid );
 			$post_ids      = implode( ',', $post_ids_list );
 		}
 		else {
 			$post_ids = 'all';
 		}
+	}
+
+	// A list that parsed to nothing would build "IN ()", which is a SQL error
+	// rather than a no-op.
+	if ( '' === $post_ids ) {
+		$delete_datalog = 0;
+		$text           = '<p style="color: red;">' . esc_html__( 'No valid Post ID(s) given.', 'wp-postratings' ) . '</p>';
 	}
 
 	switch($delete_datalog) {
@@ -206,7 +228,7 @@ switch($postratings_sortby) {
 
 
 ### Get Sort Order
-if ( $postratings_sortorder == 'ASC' )
+if ( $postratings_sortorder === 'ASC' )
 	$postratings_sortorder_text = __('Ascending', 'wp-postratings');
 else
 	$postratings_sortorder_text = __('Descending', 'wp-postratings');
@@ -347,7 +369,7 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 				}
 				echo '</td>'."\n";
 				echo '<td>'.number_format_i18n($postratings_postid).'</td>'."\n";
-				echo '<td><a href="'.$postratings_post_url.'" target="_new">'.$postratings_posttitle.'</a></td>'."\n";
+				echo '<td><a href="'.esc_url( $postratings_post_url ).'" target="_new">'.$postratings_posttitle.'</a></td>'."\n";
 				echo "<td>$postratings_date</td>\n";
 				echo "<td>$postratings_ip / $postratings_host</td>\n";
 				echo '</tr>';
@@ -420,12 +442,12 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 		?>
 	<br />
 	<form action="<?php echo esc_url( $base_page ); ?>" method="get">
-		<input type="hidden" name="page" value="<?php echo $base_name; ?>" />
+		<input type="hidden" name="page" value="<?php echo esc_attr( $base_name ); ?>" />
 		<table class="widefat">
 			<tr>
 				<th><?php esc_html_e('Filter Options:', 'wp-postratings'); ?></th>
 				<td>
-					<?php esc_html_e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo $postratings_filterid; ?>" size="7" maxlength="10" />
+					<?php esc_html_e('Post ID:', 'wp-postratings'); ?>&nbsp;<input type="text" name="id" value="<?php echo esc_attr( $postratings_filterid ); ?>" size="7" maxlength="10" />
 					&nbsp;&nbsp;&nbsp;
 					<select name="user" size="1">
 						<option value=""></option>
@@ -484,8 +506,8 @@ $postratings_logs = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->r
 					</select>
 					&nbsp;&nbsp;&nbsp;
 					<select name="order" size="1">
-						<option value="asc"<?php if($postratings_sortorder == 'asc') { echo ' selected="selected"'; }?>><?php esc_html_e('Ascending', 'wp-postratings'); ?></option>
-						<option value="desc"<?php if($postratings_sortorder == 'desc') { echo ' selected="selected"'; } ?>><?php esc_html_e('Descending', 'wp-postratings'); ?></option>
+						<option value="asc"<?php if($postratings_sortorder === 'ASC') { echo ' selected="selected"'; }?>><?php esc_html_e('Ascending', 'wp-postratings'); ?></option>
+						<option value="desc"<?php if($postratings_sortorder === 'DESC') { echo ' selected="selected"'; } ?>><?php esc_html_e('Descending', 'wp-postratings'); ?></option>
 					</select>
 					&nbsp;&nbsp;&nbsp;
 					<select name="perpage" size="1">

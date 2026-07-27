@@ -33,12 +33,16 @@ $base_page = 'admin.php?page='.$base_name;
 ### If Form Is Submitted
 if ( isset( $_POST['Submit'] ) ) {
 	check_admin_referer('wp-postratings_templates');
-	$postratings_template_vote = wp_kses_post(trim($_POST['postratings_template_vote']));
-	$postratings_template_text = wp_kses_post(trim($_POST['postratings_template_text']));
-	$postratings_template_permission = wp_kses_post(trim($_POST['postratings_template_permission']));
-	$postratings_template_none = wp_kses_post(trim($_POST['postratings_template_none']));
-	$postratings_template_highestrated = wp_kses_post(trim($_POST['postratings_template_highestrated']));
-	$postratings_template_mostrated = wp_kses_post(trim($_POST['postratings_template_mostrated']));
+	// Deliberately not unslashed: every read path stripslashes() these, so the
+	// stored value is slashed on purpose. Unslashing here without changing the
+	// reads would eat a backslash on every save. The slashing is normalised in
+	// one place by the 2.0.0 option migration instead.
+	$postratings_template_vote = isset( $_POST['postratings_template_vote'] ) ? wp_kses_post( trim( $_POST['postratings_template_vote'] ) ) : '';
+	$postratings_template_text = isset( $_POST['postratings_template_text'] ) ? wp_kses_post( trim( $_POST['postratings_template_text'] ) ) : '';
+	$postratings_template_permission = isset( $_POST['postratings_template_permission'] ) ? wp_kses_post( trim( $_POST['postratings_template_permission'] ) ) : '';
+	$postratings_template_none = isset( $_POST['postratings_template_none'] ) ? wp_kses_post( trim( $_POST['postratings_template_none'] ) ) : '';
+	$postratings_template_highestrated = isset( $_POST['postratings_template_highestrated'] ) ? wp_kses_post( trim( $_POST['postratings_template_highestrated'] ) ) : '';
+	$postratings_template_mostrated = isset( $_POST['postratings_template_mostrated'] ) ? wp_kses_post( trim( $_POST['postratings_template_mostrated'] ) ) : '';
 	$update_ratings_queries = array();
 	$update_ratings_text = array();
 	$update_ratings_queries[] = update_option('postratings_template_vote', $postratings_template_vote);

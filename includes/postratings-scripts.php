@@ -37,6 +37,10 @@ function ratings_scripts() {
     $postratings_max = (int)  get_option( 'postratings_max' );
     $postratings_custom = (int) get_option( 'postratings_customrating' );
     $postratings_ajax_style = get_option( 'postratings_ajax_style' );
+    $postratings_ajax_style = wp_parse_args(
+        is_array( $postratings_ajax_style ) ? $postratings_ajax_style : array(),
+        array( 'loading' => 0, 'fading' => 0 )
+    );
     $postratings_image = get_option( 'postratings_image' );
     $postratings_plugins_url = plugins_url( 'wp-postratings' );
     $postratings_javascript = '';
