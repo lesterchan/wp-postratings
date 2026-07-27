@@ -91,6 +91,12 @@ class Postratings_Comments {
 			return $rating;
 		}
 
+		// get_comment_author_IP() reads the current comment, so outside a
+		// comment loop there is nothing to read and it errors on PHP 8.
+		if ( empty( $GLOBALS['comment'] ) ) {
+			return 0;
+		}
+
 		$comment_author_ip = get_comment_author_IP();
 
 		if ( empty( $comment_author_ip ) ) {

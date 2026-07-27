@@ -235,23 +235,30 @@ class Postratings {
 		if ( 'most_rated' === $sortby ) {
 			add_filter( 'posts_fields', array( $this, 'most_fields' ) );
 			add_filter( 'posts_join', array( $this, 'most_join' ) );
-			add_filter( 'posts_orderby', array( $this, 'most_orderby' ) );
+			add_filter( 'posts_orderby', array( $this, 'most_orderby' ), 10, 2 );
 		} elseif ( 'highest_rated' === $sortby ) {
 			add_filter( 'posts_fields', array( $this, 'highest_fields' ) );
 			add_filter( 'posts_join', array( $this, 'highest_join' ) );
-			add_filter( 'posts_orderby', array( $this, 'highest_orderby' ) );
+			add_filter( 'posts_orderby', array( $this, 'highest_orderby' ), 10, 2 );
 		}
 	}
 
 	/**
-	 * The requested sort direction, restricted to ASC or DESC.
+	 * The requested sort direction, restricted to asc or desc.
+	 *
+	 * @param WP_Query|null $query Query being filtered, when there is one.
 	 *
 	 * @return string
 	 */
-	private function order_direction() {
-		$order = strtolower( trim( (string) get_query_var( 'r_orderby' ) ) );
+	private function order_direction( $query = null ) {
+		// Taken from the query being filtered when there is one. get_query_var()
+		// reads the *main* query, so a secondary WP_Query asking for a
+		// direction had it silently ignored.
+		$order = $query instanceof WP_Query
+			? (string) $query->get( 'r_orderby' )
+			: (string) get_query_var( 'r_orderby' );
 
-		return 'asc' === $order ? 'asc' : 'desc';
+		return 'asc' === strtolower( trim( $order ) ) ? 'asc' : 'desc';
 	}
 
 	/**
@@ -283,12 +290,13 @@ class Postratings {
 	/**
 	 * Order by vote count.
 	 *
-	 * @param string $orderby Order clause.
+	 * @param string   $orderby Order clause.
+	 * @param WP_Query $query   Query being filtered.
 	 *
 	 * @return string
 	 */
-	public function most_orderby( $orderby ) {
-		$clause = ' ratings_votes ' . $this->order_direction();
+	public function most_orderby( $orderby, $query = null ) {
+		$clause = ' ratings_votes ' . $this->order_direction( $query );
 
 		return ! empty( $orderby ) ? $clause . ', ' . $orderby : $clause;
 	}
@@ -327,12 +335,13 @@ class Postratings {
 	/**
 	 * Order by average rating.
 	 *
-	 * @param string $orderby Order clause.
+	 * @param string   $orderby Order clause.
+	 * @param WP_Query $query   Query being filtered.
 	 *
 	 * @return string
 	 */
-	public function highest_orderby( $orderby ) {
-		$direction = $this->order_direction();
+	public function highest_orderby( $orderby, $query = null ) {
+		$direction = $this->order_direction( $query );
 		$clause    = ' ratings_average ' . $direction . ', ratings_users ' . $direction;
 
 		return ! empty( $orderby ) ? $clause . ', ' . $orderby : $clause;

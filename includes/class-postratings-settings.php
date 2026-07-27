@@ -491,7 +491,11 @@ class Postratings_Settings {
 		}
 
 		self::render_rating_fields( $custom, $max, $image, $texts, $values );
-		exit;
+
+		// wp_die() rather than exit: an AJAX handler ending in a bare exit is
+		// untestable, because it takes the test runner with it. With no message
+		// the AJAX die handler emits nothing extra.
+		wp_die();
 	}
 
 	/**
