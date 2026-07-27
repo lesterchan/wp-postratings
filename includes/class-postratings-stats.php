@@ -56,16 +56,17 @@ class Postratings_Stats {
 	 * Build and run one of the ranking queries.
 	 *
 	 * @param array $args {
-	 *     @type string       $source    'meta' or 'range'.
-	 *     @type string       $order     most|highest|lowest|score.
-	 *     @type string       $mode      Post type, or '' for all.
-	 *     @type int          $min_votes Minimum number of votes (meta only).
-	 *     @type int          $limit     Number of rows.
-	 *     @type string       $time      Time range, e.g. '1 day' (range only).
-	 *     @type string       $taxonomy  'category', 'post_tag' or ''.
-	 *     @type int|array    $terms     Term ids to filter on.
-	 * }
+	 *     Query arguments.
 	 *
+	 *     @type string    $source    Either 'meta' or 'range'.
+	 *     @type string    $order     One of most, highest, lowest, score.
+	 *     @type string    $mode      Post type, or '' for all.
+	 *     @type int       $min_votes Minimum number of votes, meta source only.
+	 *     @type int       $limit     Number of rows.
+	 *     @type string    $time      Time range such as '1 day', range source only.
+	 *     @type string    $taxonomy  One of 'category', 'post_tag' or ''.
+	 *     @type int|array $terms     Term ids to filter on.
+	 * }
 	 * @return array
 	 */
 	private static function query( $args ) {
@@ -172,6 +173,7 @@ class Postratings_Stats {
 		$results   = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $results ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is built above by $wpdb->prepare(); the interpolated parts are allow-listed identifiers.
 			$results = $wpdb->get_results( $sql, ARRAY_A );
 			wp_cache_add( $cache_key, $results, self::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
@@ -221,6 +223,7 @@ class Postratings_Stats {
 		$output = self::render( self::query( $args ), $template, $chars );
 
 		if ( $display ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
 			echo $output;
 
 			return;

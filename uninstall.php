@@ -42,15 +42,15 @@ if ( is_multisite() ) {
 	// 'number' => 0 lifts WP_Site_Query's default cap of 100, which would
 	// otherwise leave the options and tables behind on every site past the
 	// hundredth while uninstall still reported success.
-	$site_ids = get_sites(
+	$postratings_site_ids = get_sites(
 		array(
 			'fields' => 'ids',
 			'number' => 0,
 		)
 	);
 
-	foreach ( $site_ids as $site_id ) {
-		switch_to_blog( (int) $site_id );
+	foreach ( $postratings_site_ids as $postratings_site_id ) {
+		switch_to_blog( (int) $postratings_site_id );
 		postratings_uninstall_site();
 		restore_current_blog();
 	}

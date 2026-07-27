@@ -84,8 +84,8 @@ class Postratings {
 	private function register_table() {
 		global $wpdb;
 
-		$wpdb->tables[]  = 'ratings';
-		$wpdb->ratings   = $wpdb->prefix . 'ratings';
+		$wpdb->tables[] = 'ratings';
+		$wpdb->ratings  = $wpdb->prefix . 'ratings';
 	}
 
 	/**

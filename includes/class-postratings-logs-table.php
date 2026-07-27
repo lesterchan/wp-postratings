@@ -152,9 +152,11 @@ class Postratings_Logs_Table extends WP_List_Table {
 
 		$count_sql = "SELECT COUNT(rating_id) FROM {$wpdb->ratings} WHERE $where";
 
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $count_sql is built above from bound %d/%s placeholders and a literal table name.
 		$this->total_items = (int) ( empty( $values )
 			? $wpdb->get_var( $count_sql )
 			: $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		// Both halves come from the allow list above, never from the request.
 		$orderby = self::current_orderby();
@@ -162,9 +164,11 @@ class Postratings_Logs_Table extends WP_List_Table {
 
 		$sql = "SELECT * FROM {$wpdb->ratings} WHERE $where ORDER BY $orderby $order LIMIT %d, %d";
 
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $sql is built above from bound placeholders; $orderby/$order come from the allow list, never the request.
 		$this->items = $wpdb->get_results(
 			$wpdb->prepare( $sql, array_merge( $values, array( ( $paged - 1 ) * $per_page, $per_page ) ) )
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		$this->set_pagination_args(
 			array(

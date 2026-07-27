@@ -146,7 +146,7 @@ class Postratings_Installer {
 		global $wpdb;
 
 		// $row->Key_name is MySQL's column name from SHOW INDEX, not ours.
-		$indexes  = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings" );
+		$indexes   = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings" );
 		$key_names = array();
 
 		if ( is_array( $indexes ) ) {

@@ -43,9 +43,9 @@ class Postratings_Options {
 	/**
 	 * The rows consolidated into self::OPTION by the 2.0.0 migration.
 	 *
-	 * self::OPTION is deliberately absent: it is the row being written, and
-	 * deleting it here would throw away every setting the migration has just
-	 * merged.
+	 * Note that self::OPTION is deliberately absent: it is the row being
+	 * written, and deleting it here would throw away every setting the
+	 * migration has just merged.
 	 *
 	 * @var array
 	 */
@@ -203,7 +203,7 @@ class Postratings_Options {
 	/**
 	 * Merge stored settings over defaults, one level into the nested groups.
 	 *
-	 * array_merge() alone would let a stored 'templates' array missing a key
+	 * Plain array_merge() would let a stored 'templates' array missing a key
 	 * shadow the whole default group; array_merge_recursive() would concatenate
 	 * the rating text lists instead of replacing them.
 	 *
@@ -268,13 +268,13 @@ class Postratings_Options {
 		}
 
 		if ( isset( $options['allowtorate'] ) ) {
-			$allowtorate           = (int) $options['allowtorate'];
-			$clean['allowtorate']  = in_array( $allowtorate, array( 0, 1, 2, 3 ), true ) ? $allowtorate : $defaults['allowtorate'];
+			$allowtorate          = (int) $options['allowtorate'];
+			$clean['allowtorate'] = in_array( $allowtorate, array( 0, 1, 2, 3 ), true ) ? $allowtorate : $defaults['allowtorate'];
 		}
 
 		if ( isset( $options['logging_method'] ) ) {
-			$logging_method           = (int) $options['logging_method'];
-			$clean['logging_method']  = in_array( $logging_method, array( 0, 1, 2, 3, 4 ), true ) ? $logging_method : $defaults['logging_method'];
+			$logging_method          = (int) $options['logging_method'];
+			$clean['logging_method'] = in_array( $logging_method, array( 0, 1, 2, 3, 4 ), true ) ? $logging_method : $defaults['logging_method'];
 		}
 
 		if ( isset( $options['ip_header'] ) ) {
@@ -300,12 +300,14 @@ class Postratings_Options {
 
 		if ( isset( $options['ratings'] ) && is_array( $options['ratings'] ) ) {
 			if ( isset( $options['ratings']['text'] ) && is_array( $options['ratings']['text'] ) ) {
-				$clean['ratings']['text'] = array_values( array_map(
-					static function ( $text ) {
-						return wp_kses_post( trim( (string) $text ) );
-					},
-					$options['ratings']['text']
-				) );
+				$clean['ratings']['text'] = array_values(
+					array_map(
+						static function ( $text ) {
+							return wp_kses_post( trim( (string) $text ) );
+						},
+						$options['ratings']['text']
+					)
+				);
 			}
 
 			if ( isset( $options['ratings']['value'] ) && is_array( $options['ratings']['value'] ) ) {

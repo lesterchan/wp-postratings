@@ -6,14 +6,14 @@
  * carrying per-rating text through esc_js( esc_attr( ... ) ), which is where the
  * plugin's escaping bugs lived.
  */
-( function () {
+( function() {
 	'use strict';
 
-	var l10n = window.ratingsL10n || {};
+	const l10n = window.ratingsL10n || {};
 
-	var isBeingRated = false;
-	var currentPostId = 0;
-	var currentRating = 0;
+	let isBeingRated = false;
+	let currentPostId = 0;
+	let currentRating = 0;
 
 	/**
 	 * URL of one rating image in the configured set.
@@ -45,7 +45,7 @@
 	 */
 	function imagesFor( postId ) {
 		return Array.prototype.slice.call(
-			document.querySelectorAll( '.post-ratings-vote[data-post-id="' + postId + '"]' )
+			document.querySelectorAll( '.post-ratings-vote[data-post-id="' + postId + '"]' ),
 		);
 	}
 
@@ -60,16 +60,16 @@
 			return;
 		}
 
-		var postId = Number( image.dataset.postId );
-		var rating = Number( image.dataset.rating );
+		const postId = Number( image.dataset.postId );
+		const rating = Number( image.dataset.rating );
 
 		currentPostId = postId;
 		currentRating = rating;
 
-		var max = Number( l10n.max );
+		const max = Number( l10n.max );
 
-		imagesFor( postId ).forEach( function ( candidate ) {
-			var position = Number( candidate.dataset.rating );
+		imagesFor( postId ).forEach( function( candidate ) {
+			const position = Number( candidate.dataset.rating );
 
 			// An up/down set only ever lights the image under the cursor.
 			if ( Number( l10n.custom ) && 2 === max ) {
@@ -84,7 +84,7 @@
 			}
 		} );
 
-		var text = document.getElementById( 'ratings_' + postId + '_text' );
+		const text = document.getElementById( 'ratings_' + postId + '_text' );
 
 		if ( text ) {
 			text.style.display = '';
@@ -103,14 +103,14 @@
 			return;
 		}
 
-		var postId = Number( image.dataset.postId );
-		var postRating = Number( image.dataset.postRating );
-		var insertHalf = Number( image.dataset.insertHalf );
-		var halfRtl = Number( image.dataset.halfRtl );
+		const postId = Number( image.dataset.postId );
+		const postRating = Number( image.dataset.postRating );
+		const insertHalf = Number( image.dataset.insertHalf );
+		const halfRtl = Number( image.dataset.halfRtl );
 
-		imagesFor( postId ).forEach( function ( candidate ) {
-			var position = Number( candidate.dataset.rating );
-			var prefix = prefixFor( position );
+		imagesFor( postId ).forEach( function( candidate ) {
+			const position = Number( candidate.dataset.rating );
+			const prefix = prefixFor( position );
 
 			if ( position <= postRating ) {
 				candidate.src = imageUrl( prefix + '_on' );
@@ -121,7 +121,7 @@
 			}
 		} );
 
-		var text = document.getElementById( 'ratings_' + postId + '_text' );
+		const text = document.getElementById( 'ratings_' + postId + '_text' );
 
 		if ( text ) {
 			text.style.display = 'none';
@@ -146,18 +146,18 @@
 			return;
 		}
 
-		var from = '' === element.style.opacity ? 1 : parseFloat( element.style.opacity );
-		var start = null;
-		var duration = 400;
+		const from = '' === element.style.opacity ? 1 : parseFloat( element.style.opacity );
+		let startedAt = null;
+		const duration = 400;
 
 		function step( timestamp ) {
-			if ( null === start ) {
-				start = timestamp;
+			if ( null === startedAt ) {
+				startedAt = timestamp;
 			}
 
-			var progress = Math.min( ( timestamp - start ) / duration, 1 );
+			const progress = Math.min( ( timestamp - startedAt ) / duration, 1 );
 
-			element.style.opacity = from + ( to - from ) * progress;
+			element.style.opacity = from + ( ( to - from ) * progress );
 
 			if ( progress < 1 ) {
 				window.requestAnimationFrame( step );
@@ -182,7 +182,7 @@
 			return;
 		}
 
-		var loading = document.getElementById( 'post-ratings-' + postId + '-loading' );
+		const loading = document.getElementById( 'post-ratings-' + postId + '-loading' );
 
 		if ( loading ) {
 			loading.style.display = visible ? '' : 'none';
@@ -196,25 +196,26 @@
 	 */
 	function ratePost() {
 		if ( isBeingRated ) {
+			// eslint-disable-next-line no-alert -- Long-standing behaviour: warns rather than queueing a second vote.
 			window.alert( l10n.textWait );
 			return;
 		}
 
-		var postId = currentPostId;
-		var container = document.getElementById( 'post-ratings-' + postId );
+		const postId = currentPostId;
+		const container = document.getElementById( 'post-ratings-' + postId );
 
 		if ( ! container ) {
 			return;
 		}
 
-		var nonce = container.dataset.nonce || container.getAttribute( 'data-nonce' );
+		const nonce = container.dataset.nonce || container.getAttribute( 'data-nonce' );
 
 		isBeingRated = true;
 
-		fade( container, 0, function () {
+		fade( container, 0, function() {
 			toggleLoading( postId, true );
 
-			var body = new URLSearchParams();
+			const body = new URLSearchParams();
 
 			body.append( 'action', 'postratings' );
 			body.append( 'pid', postId );
@@ -230,19 +231,19 @@
 					},
 					body: body.toString(),
 				} )
-				.then( function ( response ) {
+				.then( function( response ) {
 					return response.text();
 				} )
-				.then( function ( html ) {
+				.then( function( html ) {
 					container.innerHTML = html;
 					toggleLoading( postId, false );
-					fade( container, 1, function () {
+					fade( container, 1, function() {
 						isBeingRated = false;
 					} );
 				} )
-				.catch( function () {
+				.catch( function() {
 					toggleLoading( postId, false );
-					fade( container, 1, function () {
+					fade( container, 1, function() {
 						isBeingRated = false;
 					} );
 				} );
@@ -257,30 +258,30 @@
 	function start() {
 		document.addEventListener(
 			'mouseover',
-			function ( event ) {
-				var image = event.target.closest( '.post-ratings-vote' );
+			function( event ) {
+				const image = event.target.closest( '.post-ratings-vote' );
 
 				if ( image ) {
 					highlight( image );
 				}
 			},
-			true
+			true,
 		);
 
 		document.addEventListener(
 			'mouseout',
-			function ( event ) {
-				var image = event.target.closest( '.post-ratings-vote' );
+			function( event ) {
+				const image = event.target.closest( '.post-ratings-vote' );
 
 				if ( image ) {
 					restore( image );
 				}
 			},
-			true
+			true,
 		);
 
-		document.addEventListener( 'click', function ( event ) {
-			var image = event.target.closest( '.post-ratings-vote' );
+		document.addEventListener( 'click', function( event ) {
+			const image = event.target.closest( '.post-ratings-vote' );
 
 			if ( image ) {
 				event.preventDefault();
@@ -289,12 +290,12 @@
 			}
 		} );
 
-		document.addEventListener( 'keydown', function ( event ) {
+		document.addEventListener( 'keydown', function( event ) {
 			if ( 'Enter' !== event.key && ' ' !== event.key ) {
 				return;
 			}
 
-			var image = event.target.closest( '.post-ratings-vote' );
+			const image = event.target.closest( '.post-ratings-vote' );
 
 			if ( image ) {
 				event.preventDefault();
@@ -309,4 +310,4 @@
 	} else {
 		start();
 	}
-} )();
+}() );

@@ -369,6 +369,7 @@ class Postratings_Settings {
 				(int) $info['max']
 			);
 
+			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered image markup, escaped as it is built.
 			echo Postratings_Template::ratings_images(
 				(int) $info['custom'],
 				(int) $info['max'],
@@ -377,6 +378,7 @@ class Postratings_Settings {
 				'',
 				$info['custom'] ? 0 : 3
 			);
+			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			echo '&nbsp;&nbsp;&nbsp;(' . esc_html( $folder ) . ')';
 			echo '</p>' . "\n";
@@ -415,14 +417,16 @@ class Postratings_Settings {
 					<tr>
 						<td>
 							<?php
-							echo Postratings_Template::ratings_images(
-								$custom,
-								$custom && 2 === (int) $max ? $i : $i,
-								$i,
-								$image,
-								'',
-								0
-							);
+							// Preview of this step: an up/down set shows the one
+							// image for this position, anything else shows the
+							// strip lit up to it.
+							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered image markup, escaped as it is built.
+							if ( $custom && 2 === (int) $max ) {
+								echo Postratings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : 0, $image, '' );
+							} else {
+								echo Postratings_Template::ratings_images( $custom, $i, $i, $image, '', 0 );
+							}
+							// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 							?>
 						</td>
 						<td>

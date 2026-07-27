@@ -4,10 +4,10 @@
  * Delegated listeners for the "Restore Default" template buttons, the rating
  * text/value table refresh, and the rich snippet toggle.
  */
-( function () {
+( function() {
 	'use strict';
 
-	var l10n = window.postratingsAdminL10n || {};
+	const l10n = window.postratingsAdminL10n || {};
 
 	/**
 	 * Enable or disable the "ratings in rich snippets" radios to match the
@@ -16,19 +16,19 @@
 	 * @return {void}
 	 */
 	function syncRichSnippetRatings() {
-		var parent = document.getElementById( 'postratings_richsnippet_on' );
+		const parent = document.getElementById( 'postratings_richsnippet_on' );
 
 		if ( ! parent ) {
 			return;
 		}
 
-		var disabled = ! parent.checked;
+		const disabled = ! parent.checked;
 
 		Array.prototype.forEach.call(
 			document.querySelectorAll( '.postratings-richsnippet-ratings' ),
-			function ( input ) {
+			function( input ) {
 				input.disabled = disabled;
-			}
+			},
 		);
 	}
 
@@ -38,22 +38,23 @@
 	 * @return {void}
 	 */
 	function refreshRatingFields() {
-		var button = document.getElementById( 'postratings-refresh-ratings' );
-		var target = document.getElementById( 'postratings-rating-fields' );
-		var spinner = document.getElementById( 'postratings-spinner' );
-		var custom = document.getElementById( 'postratings_customrating' );
-		var max = document.getElementById( 'postratings_max' );
-		var image = document.querySelector( 'input[name$="[image]"]:checked' );
+		const button = document.getElementById( 'postratings-refresh-ratings' );
+		const target = document.getElementById( 'postratings-rating-fields' );
+		const image = document.querySelector( 'input[name$="[image]"]:checked' );
 
 		if ( ! button || ! target || ! image ) {
 			return;
 		}
 
+		const spinner = document.getElementById( 'postratings-spinner' );
+		const custom = document.getElementById( 'postratings_customrating' );
+		const max = document.getElementById( 'postratings_max' );
+
 		if ( spinner ) {
 			spinner.classList.add( 'is-active' );
 		}
 
-		var query = new URLSearchParams( {
+		const query = new URLSearchParams( {
 			action: 'postratings_rating_fields',
 			_ajax_nonce: button.dataset.nonce,
 			custom: custom ? custom.value : '0',
@@ -65,13 +66,13 @@
 			.fetch( l10n.ajaxUrl + '?' + query.toString(), {
 				credentials: 'same-origin',
 			} )
-			.then( function ( response ) {
+			.then( function( response ) {
 				return response.text();
 			} )
-			.then( function ( html ) {
+			.then( function( html ) {
 				target.innerHTML = html;
 			} )
-			.finally( function () {
+			.finally( function() {
 				if ( spinner ) {
 					spinner.classList.remove( 'is-active' );
 				}
@@ -87,8 +88,8 @@
 	 * @return {void}
 	 */
 	function applyImageChoice( input ) {
-		var custom = document.getElementById( 'postratings_customrating' );
-		var max = document.getElementById( 'postratings_max' );
+		const custom = document.getElementById( 'postratings_customrating' );
+		const max = document.getElementById( 'postratings_max' );
 
 		if ( custom ) {
 			custom.value = input.dataset.custom;
@@ -100,15 +101,15 @@
 		}
 	}
 
-	document.addEventListener( 'click', function ( event ) {
-		var restore = event.target.closest( '.postratings-restore-template' );
+	document.addEventListener( 'click', function( event ) {
+		const restore = event.target.closest( '.postratings-restore-template' );
 
 		if ( restore ) {
 			event.preventDefault();
 
-			var name = restore.dataset.template;
-			var set = 'updown' === restore.dataset.variant ? l10n.updownTemplates : l10n.defaultTemplates;
-			var textarea = document.getElementById( 'postratings_template_' + name );
+			const name = restore.dataset.template;
+			const set = 'updown' === restore.dataset.variant ? l10n.updownTemplates : l10n.defaultTemplates;
+			const textarea = document.getElementById( 'postratings_template_' + name );
 
 			if ( textarea && set && set[ name ] ) {
 				textarea.value = set[ name ];
@@ -123,23 +124,24 @@
 			return;
 		}
 
-		var imageChoice = event.target.closest( '.postratings-image-choice' );
+		const imageChoice = event.target.closest( '.postratings-image-choice' );
 
 		if ( imageChoice ) {
 			applyImageChoice( imageChoice );
 			return;
 		}
 
-		var deleteButton = event.target.closest( '#postratings-delete-data' );
+		const deleteButton = event.target.closest( '#postratings-delete-data' );
 
+		// eslint-disable-next-line no-alert -- Deleting rating data is irreversible.
 		if ( deleteButton && ! window.confirm( deleteButton.dataset.confirm ) ) {
 			event.preventDefault();
 		}
 	} );
 
-	document.addEventListener( 'change', function ( event ) {
+	document.addEventListener( 'change', function( event ) {
 		if ( event.target.closest( 'input[name$="[richsnippet]"]' ) ) {
 			syncRichSnippetRatings();
 		}
 	} );
-} )();
+}() );

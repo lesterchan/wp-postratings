@@ -166,6 +166,7 @@ class Postratings_Template {
 			$handle = opendir( $path );
 
 			if ( false !== $handle ) {
+				// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Idiomatic readdir() loop.
 				while ( false !== ( $filename = readdir( $handle ) ) ) {
 					if ( '.' === $filename || '..' === $filename || 0 === strpos( $filename, '.' ) ) {
 						continue;
@@ -277,17 +278,17 @@ class Postratings_Template {
 				$file,
 				$alt,
 				array(
-					'id'                => 'rating_' . $post_id . '_' . $i,
-					'class'             => 'post-ratings-image post-ratings-vote',
-					'style'             => 'cursor: pointer; border: 0px;',
-					'data-post-id'      => $post_id,
-					'data-rating'       => $i,
-					'data-rating-text'  => $ratings_text,
-					'data-post-rating'  => $post_rating,
-					'data-insert-half'  => (int) $insert_half,
-					'data-half-rtl'     => $half_rtl,
-					'role'              => 'button',
-					'tabindex'          => '0',
+					'id'               => 'rating_' . $post_id . '_' . $i,
+					'class'            => 'post-ratings-image post-ratings-vote',
+					'style'            => 'cursor: pointer; border: 0px;',
+					'data-post-id'     => $post_id,
+					'data-rating'      => $i,
+					'data-rating-text' => $ratings_text,
+					'data-post-rating' => $post_rating,
+					'data-insert-half' => (int) $insert_half,
+					'data-half-rtl'    => $half_rtl,
+					'role'             => 'button',
+					'tabindex'         => '0',
 				)
 			);
 		}
@@ -363,6 +364,7 @@ class Postratings_Template {
 		// expand() reassigns the global $post to read another post's excerpt or
 		// content. Without restoring it the rest of the loop renders against
 		// whichever post this template happened to name.
+		// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited -- Reassigned to read another post's excerpt/content, and restored below.
 		$original_post = $post;
 
 		$options        = Postratings_Options::get();
@@ -468,7 +470,7 @@ class Postratings_Template {
 		$post_title = get_the_title( $post_data );
 
 		if ( $max_post_title_chars > 0 ) {
-			$post_title = Postratings_Template::snippet( $post_title, $max_post_title_chars );
+			$post_title = self::snippet( $post_title, $max_post_title_chars );
 		}
 
 		$value = str_replace(
@@ -517,6 +519,7 @@ class Postratings_Template {
 		);
 
 		$post = $original_post;
+		// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		return apply_filters( 'wp_postratings_expand_ratings_template', $value . $structured_data, $post_id );
 	}

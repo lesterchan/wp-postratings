@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<ruleset name="WP-PostRatings">
+	<description>WordPress Coding Standards for WP-PostRatings.</description>
+
+	<file>.</file>
+
+	<!--
+		PHP only. WPCS dropped its JavaScript sniffs in 3.0, so pointing phpcs at
+		a .js file applies PHP_CodeSniffer's own PEAR/Squiz PHP conventions
+		through a generic tokenizer, which is actively wrong for WordPress JS.
+		The scripts are checked with ESLint instead.
+	-->
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+	<arg name="parallel" value="8"/>
+
+	<!-- Scanning either of these runs the checker out of memory. -->
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+
+	<rule ref="WordPress"/>
+
+	<config name="minimum_wp_version" value="6.0"/>
+	<config name="text_domain" value="wp-postratings"/>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="wp_postratings"/>
+				<element value="postratings"/>
+				<element value="Postratings"/>
+				<element value="ratings"/>
+				<element value="RATINGS"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		The plugin owns wp_ratings. There is no core API for a table of one's
+		own, and nothing to cache a write behind.
+	-->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<exclude-pattern>*/includes/class-postratings-*.php</exclude-pattern>
+		<exclude-pattern>*/uninstall.php</exclude-pattern>
+	</rule>
+
+	<!--
+		Creating and dropping the plugin's own table is the entire job of the
+		installer and the uninstaller.
+	-->
+	<rule ref="WordPress.DB.DirectDatabaseQuery.SchemaChange">
+		<exclude-pattern>*/includes/class-postratings-installer.php</exclude-pattern>
+		<exclude-pattern>*/uninstall.php</exclude-pattern>
+	</rule>
+
+	<!--
+		Table identifiers cannot be bound, and %i needs WP 6.2 while the floor
+		here is 6.0.
+	-->
+	<rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
+		<exclude-pattern>*/includes/class-postratings-*.php</exclude-pattern>
+		<exclude-pattern>*/uninstall.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare">
+		<exclude-pattern>*/includes/class-postratings-stats.php</exclude-pattern>
+	</rule>
+
+	<!--
+		$row->Key_name is MySQL's own column name from SHOW INDEX, not ours.
+	-->
+	<rule ref="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase">
+		<exclude-pattern>*/includes/class-postratings-installer.php</exclude-pattern>
+	</rule>
+
+	<!--
+		The list table and the settings screen read request data to decide what
+		to render and write nothing; the writes in the admin class do their own
+		check_admin_referer().
+	-->
+	<rule ref="WordPress.Security.NonceVerification.Recommended">
+		<exclude-pattern>*/includes/class-postratings-logs-table.php</exclude-pattern>
+		<exclude-pattern>*/includes/class-postratings-settings.php</exclude-pattern>
+	</rule>
+
+	<!--
+		The vote endpoint is reachable logged out, where a nonce is shared by
+		every anonymous visitor and so proves nothing. It is verified anyway,
+		but the real guards are the logging method and the advisory lock.
+	-->
+	<rule ref="WordPress.Security.NonceVerification.NoNonceVerification">
+		<exclude-pattern>*/includes/class-postratings-rating.php</exclude-pattern>
+	</rule>
+
+	<!--
+		WP_Filesystem has no locking primitive — it abstracts over FTP and SSH
+		— so there is nothing to port the flock() advisory lock to. The
+		unlink() beside it is wp_delete_file().
+	-->
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_operations_fopen">
+		<exclude-pattern>*/includes/class-postratings-rating.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_operations_fclose">
+		<exclude-pattern>*/includes/class-postratings-rating.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_operations_fwrite">
+		<exclude-pattern>*/includes/class-postratings-rating.php</exclude-pattern>
+	</rule>
+
+	<!--
+		current_time( 'timestamp' ) is what rating_timestamp already holds for
+		every row ever written; changing it would reinterpret stored data.
+	-->
+	<rule ref="WordPress.DateTime.CurrentTimeTimestamp">
+		<exclude-pattern>*/includes/class-postratings-rating.php</exclude-pattern>
+		<exclude-pattern>*/includes/class-postratings-stats.php</exclude-pattern>
+	</rule>
+
+	<!--
+		the_ratings(), get_most_rated() and friends are the plugin's documented
+		public API. Themes have called them by these names since 2005, so they
+		cannot take a prefix. Scoped to the two files that define them so a new
+		unprefixed global anywhere else is still reported.
+	-->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound">
+		<exclude-pattern>*/includes/template-tags.php</exclude-pattern>
+		<exclude-pattern>*/includes/deprecated.php</exclude-pattern>
+	</rule>
+
+	<!-- The standard exempts test classes from the class-*.php file naming. -->
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
+	<!-- Escaping is asserted by the suite itself, not by the sniff. -->
+	<rule ref="WordPress.Security.EscapeOutput">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+</ruleset>

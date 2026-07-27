@@ -406,11 +406,13 @@ class Postratings_Rating {
 
 		$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
 
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
 		echo Postratings_Template::expand(
 			Postratings_Options::template( 'text' ),
 			$post_id,
 			(object) $totals
 		);
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		self::release_lock( $lock, $post_id );
 		exit;
@@ -484,6 +486,16 @@ class Postratings_Rating {
 			);
 		}
 
+		/**
+		 * Fires after a post has been rated.
+		 *
+		 * Unprefixed because it has been public since 2005.
+		 *
+		 * @param int $rate_userid  User id that rated, 0 for a guest.
+		 * @param int $post_id      Post that was rated.
+		 * @param int $rating_value Score the rating was worth.
+		 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Public since 2005.
 		do_action( 'rate_post', $rate_userid, $post_id, $rating_value );
 
 		return array(

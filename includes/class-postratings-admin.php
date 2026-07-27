@@ -183,6 +183,7 @@ class Postratings_Admin {
 				$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
 
 				$deleted = $wpdb->query(
+					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders is a generated run of %d, one per id.
 					$wpdb->prepare( "DELETE FROM {$wpdb->ratings} WHERE rating_id IN ( $placeholders )", $ids )
 				);
 
@@ -239,6 +240,7 @@ class Postratings_Admin {
 				$placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
 
 				$deleted = $wpdb->query(
+					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders is a generated run of %d, one per id.
 					$wpdb->prepare( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN ( $placeholders )", $post_ids )
 				);
 			}
@@ -452,6 +454,7 @@ class Postratings_Admin {
 			Postratings_Options::template( 'vote' )
 		);
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
 		echo Postratings_Template::expand( $template, $post, null, 0, false );
 	}
 

@@ -93,9 +93,11 @@ class Postratings_Widget extends WP_Widget {
 
 		$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sidebar chrome supplied by the theme; the title is escaped.
 		echo $args['before_widget'] . $args['before_title'] . esc_html( $title ) . $args['after_title'];
 		echo '<ul>' . "\n";
 
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered list markup, escaped as it is built.
 		echo Postratings_Stats::output(
 			array(
 				'source'    => $source,
@@ -112,7 +114,10 @@ class Postratings_Widget extends WP_Widget {
 			false
 		);
 
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+
 		echo '</ul>' . "\n";
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sidebar chrome supplied by the theme.
 		echo $args['after_widget'];
 	}
 
@@ -138,7 +143,7 @@ class Postratings_Widget extends WP_Widget {
 		$type             = isset( $new_instance['type'] ) ? sanitize_key( $new_instance['type'] ) : '';
 		$instance['type'] = isset( $types[ $type ] ) ? $type : $instance['type'];
 
-		$cat_ids            = isset( $new_instance['cat_ids'] ) ? wp_parse_id_list( $new_instance['cat_ids'] ) : array();
+		$cat_ids             = isset( $new_instance['cat_ids'] ) ? wp_parse_id_list( $new_instance['cat_ids'] ) : array();
 		$instance['cat_ids'] = implode( ',', $cat_ids );
 
 		return $instance;

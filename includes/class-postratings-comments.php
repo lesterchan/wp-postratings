@@ -64,7 +64,9 @@ class Postratings_Comments {
 			self::$ratings[ $row->rating_ip ]                       = $row->rating_rating;
 		}
 
-		// Kept in sync for anything reading the old global directly.
+		// Kept in sync for anything reading the old global directly. The name
+		// predates the prefix rule and is part of the shipped surface.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 		$GLOBALS['comment_authors_ratings'] = self::$ratings;
 	}
 
