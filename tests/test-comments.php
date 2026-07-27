@@ -179,7 +179,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 
 		$html = Postratings_Comments::author_ratings();
 
-		$this->assertStringContainsString( 'rating_on', $html );
+		$this->assertStringContainsString( 'post-ratings-item', $html );
 		$this->assertStringContainsString( 'Alice gives a rating of 4', $html );
 	}
 

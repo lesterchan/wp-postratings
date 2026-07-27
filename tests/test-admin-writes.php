@@ -402,7 +402,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '3',
-				'image'       => 'stars',
+				'image'       => 'star',
 			)
 		);
 
@@ -423,7 +423,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '1',
 				'max'         => '2',
-				'image'       => 'thumbs',
+				'image'       => 'thumb',
 			)
 		);
 
@@ -443,7 +443,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => '../../../etc',
+				'image'       => 'not-a-shape',
 			)
 		);
 
@@ -451,25 +451,25 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The "numbers" set is accepted here too.
+	 * A pre-2.0.0 image set name is still accepted, and maps to its shape.
 	 *
-	 * WordPress mangled it into "unnamed-file.numbers" via sanitize_file_name(),
-	 * so this endpoint rejected the very set the settings screen offered.
+	 * An install that has not run the migration yet sends the old value from
+	 * its own settings screen.
 	 *
 	 * @return void
 	 */
-	public function test_the_numbers_set_is_accepted() {
+	public function test_a_legacy_set_name_is_accepted() {
 		$html = $this->call_rating_fields(
 			array(
 				'action'      => 'postratings_rating_fields',
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'numbers',
+				'image'       => 'stars_crystal',
 			)
 		);
 
-		$this->assertStringContainsString( 'images/numbers/', $html );
+		$this->assertStringContainsString( 'post-ratings-shape-star', $html );
 	}
 
 	/**
@@ -486,7 +486,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'stars',
+				'image'       => 'star',
 			)
 		);
 
@@ -505,7 +505,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => 'not-a-nonce',
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'stars',
+				'image'       => 'star',
 			)
 		);
 
@@ -524,7 +524,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '100000',
-				'image'       => 'stars',
+				'image'       => 'star',
 			)
 		);
 

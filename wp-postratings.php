@@ -58,6 +58,7 @@ define( 'WP_POSTRATINGS_DIR', plugin_dir_path( __FILE__ ) );
  */
 define( 'WP_POSTRATINGS_URL', plugin_dir_url( __FILE__ ) );
 
+require_once __DIR__ . '/includes/class-postratings-shapes.php';
 require_once __DIR__ . '/includes/class-postratings-options.php';
 require_once __DIR__ . '/includes/class-postratings-installer.php';
 require_once __DIR__ . '/includes/class-postratings-template.php';

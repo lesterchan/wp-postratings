@@ -1,11 +1,13 @@
 /**
  * Tests for the front end voting script.
  *
- * The script has no exports; it attaches delegated listeners to document and is
- * driven here the way a visitor drives it.
+ * Much of what this file used to cover is gone: hovering and filling the scale
+ * are CSS since 2.0.0, so there is no image swapping left to assert. What
+ * remains is the part CSS cannot do -- posting the vote -- plus the field-name
+ * contract the PHP handler depends on.
  */
 import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { l10nFixture, loadScript, voteMarkup } from './helpers.js';
+import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helpers.js';
 
 describe( 'wp-postratings front end', () => {
 	beforeAll( () => {
@@ -22,8 +24,6 @@ describe( 'wp-postratings front end', () => {
 		window.fetch = vi.fn( () =>
 			Promise.resolve( { text: () => Promise.resolve( '<em>Thanks!</em>' ) } ),
 		);
-
-		hide( false );
 	} );
 
 	afterEach( () => {
@@ -31,89 +31,26 @@ describe( 'wp-postratings front end', () => {
 	} );
 
 	/**
-	 * Control what document.hidden reports.
+	 * Choose a value on the scale, the way a click or an arrow key does.
 	 *
-	 * @param {boolean} hidden Whether the tab is backgrounded.
+	 * @param {number} rating Value to pick.
+	 * @return {Element} The input.
 	 */
-	function hide( hidden ) {
-		Object.defineProperty( document, 'hidden', {
-			configurable: true,
-			get: () => hidden,
-		} );
+	function choose( rating ) {
+		const input = document.querySelector( 'input[value="' + rating + '"]' );
+
+		input.checked = true;
+		input.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+
+		return input;
 	}
-
-	/**
-	 * The vote image for one position on the scale.
-	 *
-	 * @param {number} rating Position.
-	 * @return {Element} Image element.
-	 */
-	function star( rating ) {
-		return document.querySelector( '.post-ratings-vote[data-rating="' + rating + '"]' );
-	}
-
-	/**
-	 * File names of the rating images currently displayed.
-	 *
-	 * @return {Array} File names.
-	 */
-	function shownImages() {
-		return [ ...document.querySelectorAll( '.post-ratings-vote' ) ].map( ( img ) =>
-			img.src.split( '/' ).pop(),
-		);
-	}
-
-	/**
-	 * Click one star and let the promise chain settle.
-	 *
-	 * @param {number} rating Position to click.
-	 */
-	async function vote( rating ) {
-		star( rating ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( rating ).dispatchEvent(
-			new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ),
-		);
-		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
-		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
-	}
-
-	// --- hover ------------------------------------------------------------
-
-	it( 'lights the strip up to the hovered star', () => {
-		star( 3 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-
-		expect( shownImages() ).toEqual( [
-			'rating_over.gif',
-			'rating_over.gif',
-			'rating_over.gif',
-			'rating_off.gif',
-			'rating_off.gif',
-		] );
-	} );
-
-	it( 'shows the rating text while hovering and clears it after', () => {
-		const text = document.getElementById( 'ratings_4_text' );
-
-		star( 2 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		expect( text.textContent ).toBe( '2 Stars' );
-
-		star( 2 ).dispatchEvent( new window.MouseEvent( 'mouseout', { bubbles: true } ) );
-		expect( text.textContent ).toBe( '' );
-	} );
-
-	it( 'restores the stored rating on mouseout', () => {
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'mouseout', { bubbles: true } ) );
-
-		expect( shownImages().every( ( name ) => 'rating_off.gif' === name ) ).toBe( true );
-	} );
 
 	// --- the request ------------------------------------------------------
 
-	it( 'posts the vote to admin-ajax', async () => {
-		await vote( 4 );
+	it( 'posts the vote when a value is chosen', async () => {
+		choose( 4 );
 
-		expect( window.fetch ).toHaveBeenCalledTimes( 1 );
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalledTimes( 1 ) );
 
 		const [ url, options ] = window.fetch.mock.calls[ 0 ];
 
@@ -122,74 +59,70 @@ describe( 'wp-postratings front end', () => {
 	} );
 
 	it( 'sends the field names the PHP side reads', async () => {
-		await vote( 4 );
+		choose( 4 );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
 		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
 
-		// This is the contract Postratings_Rating::handle_vote() depends on;
-		// rename any of these and votes are silently dropped.
+		// The contract Postratings_Rating::handle_vote() depends on; rename any
+		// of these and votes are dropped silently.
 		expect( body.get( 'action' ) ).toBe( 'postratings' );
 		expect( body.get( 'pid' ) ).toBe( '4' );
 		expect( body.get( 'rate' ) ).toBe( '4' );
 		expect( body.get( 'postratings_4_nonce' ) ).toBe( 'abc123' );
 	} );
 
-	it( 'sends the rating that was clicked, not the last hovered', async () => {
-		star( 2 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		await vote( 5 );
+	it( 'sends the value that was chosen', async () => {
+		choose( 2 );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
 		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
 
-		expect( body.get( 'rate' ) ).toBe( '5' );
+		expect( body.get( 'rate' ) ).toBe( '2' );
 	} );
 
 	it( 'swaps the response into the container', async () => {
-		await vote( 4 );
+		choose( 4 );
 
-		expect( document.getElementById( 'post-ratings-4' ).innerHTML ).toBe( '<em>Thanks!</em>' );
+		await vi.waitFor( () =>
+			expect( document.getElementById( 'post-ratings-4' ).innerHTML ).toBe( '<em>Thanks!</em>' ),
+		);
 	} );
 
 	it( 'hides the loading indicator once the response lands', async () => {
-		await vote( 4 );
+		choose( 4 );
 
-		expect( document.getElementById( 'post-ratings-4-loading' ).style.display ).toBe( 'none' );
+		await vi.waitFor( () =>
+			expect( document.getElementById( 'post-ratings-4-loading' ).style.display ).toBe( 'none' ),
+		);
 	} );
 
-	// --- the regression that shipped past a headless run -------------------
+	// --- keyboard ---------------------------------------------------------
 
-	it( 'still sends the vote when the tab is in the background', async () => {
-		// A hidden document does not merely throttle requestAnimationFrame, it
-		// stops delivering the callbacks altogether, so this stubs rAF to never
-		// fire rather than trusting jsdom -- which happily runs rAF regardless
-		// of document.hidden, and would let this pass for the wrong reason.
-		//
-		// The fade used to drive itself with rAF and the fetch was nested in its
-		// completion callback, so a backgrounded tab dropped the vote entirely.
-		hide( true );
-		const raf = vi
-			.spyOn( window, 'requestAnimationFrame' )
-			.mockImplementation( () => 0 );
+	/*
+	 * Arrow keys move between radios natively and fire "change", which is why
+	 * the script listens for that rather than for clicks: the control is
+	 * keyboard operable without a single key handler. Before 2.0.0 each value
+	 * was an <img role="button"> and this had to be hand-rolled.
+	 */
+	it( 'votes from a change event however it was triggered', async () => {
+		const input = document.querySelector( 'input[value="3"]' );
 
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( 4 ).dispatchEvent(
-			new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ),
-		);
+		// What a browser does when the user arrows onto a radio.
+		input.checked = true;
+		input.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalledTimes( 1 ) );
 
-		raf.mockRestore();
-	} );
-
-	it( 'leaves the container visible when the tab is hidden', async () => {
-		hide( true );
-		await vote( 4 );
-
-		expect( document.getElementById( 'post-ratings-4' ).style.opacity ).toBe( '1' );
+		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
+		expect( body.get( 'rate' ) ).toBe( '3' );
 	} );
 
 	// --- guards -----------------------------------------------------------
 
-	it( 'does not post twice while a vote is in flight', async () => {
+	it( 'does not post twice while a vote is in flight', () => {
 		let release;
 		window.fetch = vi.fn(
 			() =>
@@ -199,9 +132,8 @@ describe( 'wp-postratings front end', () => {
 		);
 		window.alert = vi.fn();
 
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'click', { bubbles: true } ) );
-		star( 5 ).dispatchEvent( new window.MouseEvent( 'click', { bubbles: true } ) );
+		choose( 4 );
+		choose( 5 );
 
 		expect( window.fetch ).toHaveBeenCalledTimes( 1 );
 		expect( window.alert ).toHaveBeenCalledWith( window.ratingsL10n.textWait );
@@ -209,89 +141,109 @@ describe( 'wp-postratings front end', () => {
 		release();
 	} );
 
-	it( 'accepts another vote once the first has finished', async () => {
-		await vote( 4 );
+	it( 'marks the container busy while voting and clears it after', async () => {
+		const container = document.getElementById( 'post-ratings-4' );
 
-		document.body.innerHTML = voteMarkup( 7 );
-		await vote( 3 );
+		choose( 4 );
 
-		expect( window.fetch ).toHaveBeenCalledTimes( 2 );
+		expect( container.getAttribute( 'aria-busy' ) ).toBe( 'true' );
+
+		await vi.waitFor( () => expect( container.hasAttribute( 'aria-busy' ) ).toBe( false ) );
 	} );
 
 	it( 'recovers from a failed request rather than locking up', async () => {
 		window.fetch = vi.fn( () => Promise.reject( new Error( 'offline' ) ) );
 
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( 4 ).dispatchEvent( new window.MouseEvent( 'click', { bubbles: true } ) );
+		choose( 4 );
 
 		await vi.waitFor( () =>
-			expect( document.getElementById( 'post-ratings-4' ).style.opacity ).toBe( '1' ),
+			expect(
+				document.getElementById( 'post-ratings-4' ).hasAttribute( 'aria-busy' ),
+			).toBe( false ),
 		);
 
 		// A second attempt must still be possible.
 		window.fetch = vi.fn( () =>
 			Promise.resolve( { text: () => Promise.resolve( 'ok' ) } ),
 		);
-		await vote( 4 );
+		choose( 3 );
 
-		expect( window.fetch ).toHaveBeenCalledTimes( 1 );
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalledTimes( 1 ) );
 	} );
 
-	it( 'ignores clicks outside a rating image', () => {
-		document.body.insertAdjacentHTML( 'beforeend', '<a href="#" id="elsewhere">Link</a>' );
+	it( 'ignores changes outside a rating control', () => {
+		document.body.insertAdjacentHTML( 'beforeend', '<input type="checkbox" id="elsewhere" />' );
 
 		document
 			.getElementById( 'elsewhere' )
+			.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+
+		expect( window.fetch ).not.toHaveBeenCalled();
+	} );
+
+	// --- up / down --------------------------------------------------------
+
+	it( 'posts an up vote from the up button', async () => {
+		document.body.innerHTML = updownMarkup( 7 );
+
+		document
+			.querySelector( '.post-ratings-up' )
+			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ) );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
+
+		expect( body.get( 'pid' ) ).toBe( '7' );
+		expect( body.get( 'rate' ) ).toBe( '2' );
+	} );
+
+	it( 'posts a down vote from the down button', async () => {
+		document.body.innerHTML = updownMarkup( 7 );
+
+		document
+			.querySelector( '.post-ratings-down' )
+			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ) );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
+
+		expect( body.get( 'rate' ) ).toBe( '1' );
+	} );
+
+	it( 'does not submit a surrounding form when an up/down button is used', () => {
+		document.body.innerHTML = updownMarkup( 7 );
+
+		const button = document.querySelector( '.post-ratings-up' );
+		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
+
+		button.dispatchEvent( event );
+
+		expect( event.defaultPrevented ).toBe( true );
+	} );
+
+	it( 'ignores clicks that are not on a vote button', () => {
+		document.body.innerHTML = updownMarkup( 7 );
+
+		document
+			.querySelector( '.post-ratings' )
 			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true } ) );
 
 		expect( window.fetch ).not.toHaveBeenCalled();
 	} );
 
-	// --- keyboard ---------------------------------------------------------
+	// --- what CSS took over -----------------------------------------------
 
-	it( 'votes on Enter, for keyboard users', async () => {
-		star( 3 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-		star( 3 ).dispatchEvent(
-			new window.KeyboardEvent( 'keydown', { key: 'Enter', bubbles: true } ),
-		);
+	it( 'never writes an image source', async () => {
+		// The hover-and-fill behaviour is CSS now, and the shapes are masks, so
+		// there is nothing left for the script to point at a file.
+		choose( 3 );
 
-		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalledTimes( 1 ) );
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
-		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
-		expect( body.get( 'rate' ) ).toBe( '3' );
-	} );
+		const items = [ ...document.querySelectorAll( '.post-ratings-item' ) ];
 
-	it( 'ignores other keys', () => {
-		star( 3 ).dispatchEvent(
-			new window.KeyboardEvent( 'keydown', { key: 'a', bubbles: true } ),
-		);
-
-		expect( window.fetch ).not.toHaveBeenCalled();
-	} );
-
-	// --- image sets -------------------------------------------------------
-
-	it( 'uses per-step images for a custom set', () => {
-		window.ratingsL10n.custom = '1';
-
-		star( 2 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-
-		expect( shownImages()[ 0 ] ).toBe( 'rating_1_over.gif' );
-		expect( shownImages()[ 1 ] ).toBe( 'rating_2_over.gif' );
-
-		window.ratingsL10n.custom = '0';
-	} );
-
-	it( 'lights only the hovered image on an up/down set', () => {
-		window.ratingsL10n.custom = '1';
-		window.ratingsL10n.max = '2';
-
-		star( 2 ).dispatchEvent( new window.MouseEvent( 'mouseover', { bubbles: true } ) );
-
-		expect( shownImages()[ 0 ] ).toBe( 'rating_off.gif' );
-		expect( shownImages()[ 1 ] ).toBe( 'rating_2_over.gif' );
-
-		window.ratingsL10n.custom = '0';
-		window.ratingsL10n.max = '5';
+		expect( items.every( ( el ) => null === el.getAttribute( 'src' ) ) ).toBe( true );
 	} );
 } );

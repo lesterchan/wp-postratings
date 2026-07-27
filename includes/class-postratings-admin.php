@@ -395,10 +395,20 @@ class Postratings_Admin {
 			return;
 		}
 
+		// The shape previews on the settings screen are the front end control,
+		// so they need the front end stylesheet that draws the masks -- without
+		// it the picker renders as a list of labels with nothing beside them.
+		wp_enqueue_style(
+			'wp-postratings',
+			WP_POSTRATINGS_URL . 'css/postratings.css',
+			array(),
+			WP_POSTRATINGS_VERSION
+		);
+
 		wp_enqueue_style(
 			'wp-postratings-admin',
 			WP_POSTRATINGS_URL . 'css/postratings-admin-css.css',
-			array(),
+			array( 'wp-postratings' ),
 			WP_POSTRATINGS_VERSION
 		);
 

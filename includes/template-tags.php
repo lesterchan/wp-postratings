@@ -44,12 +44,12 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 	$loading    = '';
 
 	if ( ! empty( $ajax_style['loading'] ) ) {
-		$loading_alt      = apply_filters( 'wp_postratings_loading_alt', '' );
-		$loading_alt_html = ! empty( $loading_alt ) ? ' alt="' . esc_attr( $loading_alt ) . '"' : '';
+		// The spinner is a CSS pseudo-element since 2.0.0, so there is no
+		// loading.gif to request and it inherits the surrounding text colour.
+		$loading_text = apply_filters( 'wp_postratings_loading_alt', esc_html__( 'Loading...', 'wp-postratings' ) );
 
-		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading">' .
-			'<img src="' . esc_url( WP_POSTRATINGS_URL . 'images/loading.gif' ) . '" width="16" height="16" class="post-ratings-image"' . $loading_alt_html . ' />' .
-			esc_html__( 'Loading...', 'wp-postratings' ) . '</' . $start_tag . '>';
+		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading"' .
+			' role="status" style="display:none">' . esc_html( $loading_text ) . '</' . $start_tag . '>';
 	}
 
 	$user_voted = check_rated( $ratings_id );
@@ -185,12 +185,25 @@ function comment_author_ratings( $comment_author_specific = '', $display = true 
 /**
  * Describe an image set.
  *
- * @param string $folder_name Image set folder name.
+ * @deprecated 2.0.0 The image sets are gone; shapes are SVG masks now. Kept
+ *                   because it was a global function, and answered in the same
+ *                   shape from the shape registry so a caller reading ['max']
+ *                   or ['custom'] still gets something true.
+ *
+ * @param string $folder_name Image set folder name, or a shape name.
  *
  * @return array
  */
 function ratings_images_folder( $folder_name ) {
-	return Postratings_Template::folder_info( $folder_name );
+	_deprecated_function( __FUNCTION__, '2.0.0', 'Postratings_Shapes::get()' );
+
+	$shape = Postratings_Template::resolve_shape( $folder_name );
+
+	return array(
+		'max'    => Postratings_Shapes::is_updown( $shape ) ? 2 : (int) Postratings_Options::get( 'max' ),
+		'custom' => Postratings_Shapes::is_updown( $shape ) ? 1 : 0,
+		'images' => array(),
+	);
 }
 
 if ( ! function_exists( 'get_ratings_users' ) ) {

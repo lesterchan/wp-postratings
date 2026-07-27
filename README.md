@@ -34,13 +34,18 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 
 ## Changelog
 ### 2.0.0
+* IMPORTANT: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
+* IMPORTANT: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. `.post-ratings-image` no longer exists, so custom CSS targeting it needs updating. Colour, size and spacing are CSS custom properties now, which is usually a one-line replacement; see the FAQ.
+* IMPORTANT: Ratings display a true percentage instead of being rounded to the nearest half image, so an average of 3.7 out of 5 now fills 74% of the stars rather than showing three and a half.
 * IMPORTANT: If you set "Header That Contains The IP" (for Cloudflare, a load balancer or any reverse proxy), that header is now parsed as the forwarded-for chain it is, and only the first valid address in it is used. Previously the whole header value was stored, so a visitor could rate repeatedly just by appending another address to it. Existing rating logs recorded through such a header will no longer match, so some visitors may be able to rate once more. Leave the field blank unless you are actually behind a proxy. See the FAQ.
 * IMPORTANT: The vote images no longer carry inline `onmouseover`/`onclick` attributes; hovering and clicking are handled by one delegated listener. Custom CSS or JavaScript that targeted those inline handlers, or that called `current_rating()` or `rate_post()` directly, needs updating.
 * NEW: Requires WordPress 6.0 and PHP 7.4.
 * NEW: Rewritten as classes under `includes/`, so the plugin now works installed under any directory name.
 * NEW: Settings moved to the WordPress Settings API, with the options and templates screens merged into one tabbed page.
 * NEW: The rating log is now a standard WordPress list table, with sortable columns, bulk delete, a search box and Screen Options.
-* NEW: The scripts are vanilla JavaScript; the jQuery dependency is gone.
+* NEW: The scripts are vanilla JavaScript; the jQuery dependency is gone, and hovering the stars is pure CSS, so nothing runs on mouse move at all.
+* NEW: `wp_postratings_shapes` lets you register your own rating shape.
+* NEW: `RATINGS_IMG_EXT` and `wp_postratings_image_extension` are gone; there are no image files left to have an extension.
 * NEW: The fifteen `postratings_*` option rows are consolidated into a single `postratings_options` row. Your settings are migrated automatically.
 * FIXED: The per-post lock file was never released, so one was left behind in the server's temporary directory on every single rating.
 * FIXED: Uninstalling on a multisite network stopped after the first 100 sites, leaving the options and the rating table behind on every site after that.
@@ -204,7 +209,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Upgrade Notice
 
 ### 2.0.0
-Major release. Requires WordPress 6.0 and PHP 7.4. Your settings are migrated automatically. If you have set "Header That Contains The IP", read the changelog before upgrading. Custom CSS or JavaScript targeting the vote images' inline `onmouseover`/`onclick` attributes needs updating.
+Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rating style are migrated automatically. The rating images are replaced by SVG shapes and the markup has changed, so custom CSS targeting `.post-ratings-image`, or JavaScript targeting the old inline `onmouseover`/`onclick` attributes, needs updating. If you have set "Header That Contains The IP", read the changelog before upgrading.
 
 ## Screenshots
 
@@ -216,6 +221,41 @@ Major release. Requires WordPress 6.0 and PHP 7.4. Your settings are migrated au
 6. Ratings Hover
 
 ## Frequently Asked Questions
+
+### How do I change the colour or size of the ratings?
+
+Everything worth changing is a CSS custom property on `.post-ratings`, so this is all it takes in your theme:
+
+```css
+.post-ratings {
+	--postratings-size: 24px;
+	--postratings-gap: 4px;
+	--postratings-color-on: #e5484d;
+	--postratings-color-off: #d4d4d8;
+	--postratings-color-hover: #f7c56b;
+}
+```
+
+Before 2.0.0 a different colour meant a whole extra folder of images, which is why the plugin shipped `stars`, `stars_crystal` and `stars_dark` separately. They are all the same shape now.
+
+### How do I use my own rating shape?
+
+Register it with the `wp_postratings_shapes` filter. It then appears on the Ratings Options screen like any built-in shape, and unlike the old approach of dropping a folder into `wp-content/plugins/wp-postratings/images/`, it survives an update.
+
+```php
+add_filter( 'wp_postratings_shapes', function ( $shapes ) {
+	$shapes['diamond'] = array(
+		'type'  => 'scale',
+		'label' => 'Diamonds',
+		'path'  => 'M12 2l10 10-10 10L2 12z',
+	);
+
+	return $shapes;
+} );
+```
+
+The path is SVG path data drawn in a 24x24 box. For an up/down control use `'type' => 'updown'` and supply `'up'` and `'down'` paths instead of `'path'`.
+
 
 ### Every visitor can rate over and over, or every rating log entry shows the same IP
 

@@ -38,7 +38,7 @@ class Postratings_Options {
 	/**
 	 * Current settings shape.
 	 */
-	const VERSION = 2;
+	const VERSION = 3;
 
 	/**
 	 * The rows consolidated into self::OPTION by the 2.0.0 migration.
@@ -108,7 +108,7 @@ class Postratings_Options {
 		$rated   = __( 'rated', 'wp-postratings' );
 
 		return array(
-			'image'               => 'stars',
+			'image'               => 'star',
 			'max'                 => 5,
 			'customrating'        => 0,
 			'allowtorate'         => 2,
@@ -251,17 +251,13 @@ class Postratings_Options {
 		$clean = $current;
 
 		if ( isset( $options['image'] ) ) {
-			// Deliberately not sanitize_file_name(): that is for files with an
-			// extension, and it mangles a bare directory name whose spelling
-			// happens to be a known extension -- it turns "numbers" into
-			// "unnamed-file.numbers", so that image set saved, reported success
-			// and silently reverted. Membership of the globbed directory list is
-			// the real guard, and it admits no traversal.
-			$image = trim( (string) $options['image'] );
+			// The allow list is the shape registry the settings picker also reads
+			// from, so the screen cannot offer a shape the sanitizer rejects.
+			// A pre-2.0.0 image set name is accepted and mapped, so an install
+			// that has not migrated yet still saves correctly.
+			$image = Postratings_Template::resolve_shape_strict( $options['image'] );
 
-			// The allow list is the same helper that builds the radio buttons,
-			// so the screen cannot offer a style the sanitizer would reject.
-			$clean['image'] = in_array( $image, Postratings_Template::image_folders(), true ) ? $image : $current['image'];
+			$clean['image'] = '' !== $image ? $image : $current['image'];
 		}
 
 		if ( isset( $options['customrating'] ) ) {
@@ -383,6 +379,15 @@ class Postratings_Options {
 			}
 
 			$merged[ $path[0] ][ $path[1] ] = $value;
+		}
+
+		// The 16 image folders became 9 SVG shapes in 2.0.0, and the colour and
+		// finish variants collapsed into CSS custom properties: stars,
+		// stars_crystal, stars_dark, stars_png and stars_flat_png were all one
+		// star. Anything unrecognised -- a folder the site added itself -- lands
+		// on stars rather than rendering nothing.
+		if ( isset( $merged['image'] ) ) {
+			$merged['image'] = Postratings_Template::resolve_shape( $merged['image'] );
 		}
 
 		self::update( self::merge( self::defaults(), $merged ) );

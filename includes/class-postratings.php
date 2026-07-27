@@ -94,8 +94,11 @@ class Postratings {
 	 * @return void
 	 */
 	public function init() {
+		// RATINGS_IMG_EXT and wp_postratings_image_extension are gone with the
+		// image sets: the shapes are SVG masks, so there is no file extension
+		// left to choose. Defined for anything still reading it.
 		if ( ! defined( 'RATINGS_IMG_EXT' ) ) {
-			define( 'RATINGS_IMG_EXT', apply_filters( 'wp_postratings_image_extension', 'gif' ) );
+			define( 'RATINGS_IMG_EXT', 'svg' );
 		}
 	}
 
@@ -116,16 +119,9 @@ class Postratings {
 	public function scripts() {
 		$options = Postratings_Options::get();
 
-		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'postratings-css.css' ), array(), WP_POSTRATINGS_VERSION );
-
-		if ( is_rtl() ) {
-			wp_enqueue_style(
-				'wp-postratings-rtl',
-				$this->stylesheet_url( 'postratings-css-rtl.css' ),
-				array( 'wp-postratings' ),
-				WP_POSTRATINGS_VERSION
-			);
-		}
+		// No separate RTL stylesheet since 2.0.0: the rules use logical
+		// properties, so direction is handled by the browser.
+		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'postratings.css' ), array(), WP_POSTRATINGS_VERSION );
 
 		// No jQuery dependency since 2.0.0.
 		wp_enqueue_script(
@@ -140,15 +136,13 @@ class Postratings {
 			'wp-postratings',
 			'ratingsL10n',
 			array(
-				'pluginUrl'   => untrailingslashit( WP_POSTRATINGS_URL ),
+				// Much smaller than before 2.0.0: hovering is CSS now, so the
+				// script no longer needs the image set, the extension, the
+				// scale or the plugin URL to rewrite <img> sources with.
 				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
 				'textWait'    => __( 'Please rate only 1 item at a time.', 'wp-postratings' ),
-				'image'       => $options['image'],
-				'imageExt'    => RATINGS_IMG_EXT,
-				'max'         => (int) $options['max'],
 				'showLoading' => (int) $options['ajax_style']['loading'],
 				'showFading'  => (int) $options['ajax_style']['fading'],
-				'custom'      => (int) $options['customrating'],
 			)
 		);
 	}

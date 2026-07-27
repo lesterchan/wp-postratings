@@ -11,7 +11,7 @@
  * @covers Postratings::sorting
  * @covers Postratings::query_vars
  * @covers Postratings_WPStats
- * @covers Postratings_Template::folder_info
+ * @covers Postratings_Shapes
  * @covers Postratings_Template::snippet
  */
 class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
@@ -207,54 +207,40 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 		$this->assertStringContainsString( 'WP-PostRatings', Postratings_WPStats::page_general( '' ) );
 	}
 
-	// --- image sets -------------------------------------------------------
+	// --- shapes -----------------------------------------------------------
 
 	/**
-	 * A normal set is described as non-custom.
+	 * The shape registry answers for every shipped shape.
 	 *
 	 * @return void
 	 */
-	public function test_a_normal_image_set_is_described() {
-		$info = Postratings_Template::folder_info( 'stars' );
+	public function test_every_shipped_shape_is_listed() {
+		$names = Postratings_Shapes::names();
 
-		$this->assertSame( 0, $info['custom'] );
-		$this->assertContains( 'rating_on.gif', $info['images'] );
-	}
-
-	/**
-	 * A per-step set is described as custom, with its own scale.
-	 *
-	 * @return void
-	 */
-	public function test_a_custom_image_set_is_described() {
-		$info = Postratings_Template::folder_info( 'thumbs' );
-
-		$this->assertSame( 1, $info['custom'] );
-		$this->assertSame( 2, $info['max'] );
-	}
-
-	/**
-	 * A folder that is not there does not warn.
-	 *
-	 * @return void
-	 */
-	public function test_a_missing_image_set_is_safe() {
-		$info = Postratings_Template::folder_info( 'does-not-exist' );
-
-		$this->assertSame( array(), $info['images'] );
-	}
-
-	/**
-	 * Every shipped set is listed.
-	 *
-	 * @return void
-	 */
-	public function test_every_shipped_set_is_listed() {
-		$folders = Postratings_Template::image_folders();
-
-		foreach ( array( 'stars', 'thumbs', 'numbers', 'bars' ) as $expected ) {
-			$this->assertContains( $expected, $folders );
+		foreach ( array( 'star', 'heart', 'thumb', 'plusminus' ) as $expected ) {
+			$this->assertContains( $expected, $names );
 		}
+	}
+
+	/**
+	 * A scale shape is not an up/down one, and the reverse.
+	 *
+	 * @return void
+	 */
+	public function test_the_two_families_are_distinguished() {
+		$this->assertFalse( Postratings_Shapes::is_updown( 'star' ) );
+		$this->assertTrue( Postratings_Shapes::is_updown( 'thumb' ) );
+	}
+
+	/**
+	 * An unknown shape name answers null rather than warning.
+	 *
+	 * @return void
+	 */
+	public function test_an_unknown_shape_is_safe() {
+		$this->assertNull( Postratings_Shapes::get( 'does-not-exist' ) );
+		$this->assertFalse( Postratings_Shapes::is_updown( 'does-not-exist' ) );
+		$this->assertSame( '', Postratings_Shapes::data_uri( 'does-not-exist' ) );
 	}
 
 	// --- helpers ----------------------------------------------------------

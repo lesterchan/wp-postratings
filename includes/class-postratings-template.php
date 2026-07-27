@@ -17,334 +17,297 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Postratings_Template {
 
 	/**
-	 * Cached list of image folder names.
+	 * Resolve a stored name to a shape.
 	 *
-	 * @var array|null
-	 */
-	private static $folders = null;
-
-	/**
-	 * URL of one rating image.
+	 * Installs that have not run the 2.0.0 migration yet still store an image
+	 * folder name, so both are accepted and anything unrecognised falls back to
+	 * stars. Rendering therefore stays correct at every step of the upgrade
+	 * rather than only once the option has been rewritten.
 	 *
-	 * @param string $set  Image set folder name.
-	 * @param string $file File name without the extension.
+	 * @param string $name Shape name, or a pre-2.0.0 image set name.
 	 *
 	 * @return string
 	 */
-	public static function image_url( $set, $file ) {
-		return WP_POSTRATINGS_URL . 'images/' . $set . '/' . $file . '.' . RATINGS_IMG_EXT;
+	public static function resolve_shape( $name ) {
+		$name = (string) $name;
+
+		return Postratings_Shapes::get( $name ) ? $name : Postratings_Shapes::from_legacy( $name );
 	}
 
 	/**
-	 * Whether one rating image exists on disk.
+	 * Resolve a name only if it is one the plugin recognises.
 	 *
-	 * @param string $set  Image set folder name.
-	 * @param string $file File name without the extension.
+	 * The rendering fallback above is deliberately forgiving, because a page
+	 * should still draw something. Anything that *accepts* a value needs the
+	 * strict answer instead, and both the settings sanitizer and the rating
+	 * fields endpoint use this one so they cannot disagree about what exists --
+	 * which is precisely how the "numbers" set came to be offered by the screen
+	 * and rejected on save.
 	 *
-	 * @return bool
+	 * @param string $name Shape name, or a pre-2.0.0 image set name.
+	 *
+	 * @return string Shape name, or '' when unrecognised.
 	 */
-	public static function image_exists( $set, $file ) {
-		return file_exists( WP_POSTRATINGS_DIR . 'images/' . $set . '/' . $file . '.' . RATINGS_IMG_EXT );
+	public static function resolve_shape_strict( $name ) {
+		$name = trim( (string) $name );
+
+		if ( Postratings_Shapes::get( $name ) ) {
+			return $name;
+		}
+
+		return array_key_exists( $name, Postratings_Shapes::legacy_map() )
+			? Postratings_Shapes::from_legacy( $name )
+			: '';
 	}
 
 	/**
-	 * One <img> tag.
+	 * Inline custom properties carrying the shape's mask.
 	 *
-	 * @param string $set        Image set folder name.
-	 * @param string $file       File name without the extension.
-	 * @param string $alt        Alt and title text, unescaped.
-	 * @param array  $attributes Extra attributes, unescaped.
+	 * The mask travels on the element rather than in the stylesheet so a site
+	 * can register a shape through wp_postratings_shapes without also having to
+	 * enqueue CSS for it.
+	 *
+	 * @param string $shape Shape name.
 	 *
 	 * @return string
 	 */
-	private static function image_tag( $set, $file, $alt = '', $attributes = array() ) {
-		$html = '<img src="' . esc_url( self::image_url( $set, $file ) ) . '" alt="' . esc_attr( $alt ) . '"';
-
-		if ( '' !== $alt ) {
-			$html .= ' title="' . esc_attr( $alt ) . '"';
+	private static function shape_style( $shape ) {
+		if ( Postratings_Shapes::is_updown( $shape ) ) {
+			return '--postratings-shape-up:url(' . Postratings_Shapes::data_uri( $shape, 'up' ) . ');' .
+				'--postratings-shape-down:url(' . Postratings_Shapes::data_uri( $shape, 'down' ) . ')';
 		}
 
-		foreach ( $attributes as $name => $value ) {
-			$html .= ' ' . $name . '="' . esc_attr( $value ) . '"';
-		}
-
-		return $html . ' />';
+		return '--postratings-shape:url(' . Postratings_Shapes::data_uri( $shape ) . ')';
 	}
 
 	/**
-	 * The decorative image that opens a rating strip, if the set has one.
+	 * How much of the strip reads as filled, as a percentage.
 	 *
-	 * @param string $set Image set folder name.
+	 * Replaces the half-image rounding the GIF sets forced: an average of 3.7
+	 * out of 5 renders as 74% rather than being snapped to 3.5.
+	 *
+	 * @param float $rating Rating to display.
+	 * @param int   $max    Top of the scale.
+	 *
+	 * @return float
+	 */
+	public static function fill_percentage( $rating, $max ) {
+		$max = (float) $max;
+
+		if ( $max <= 0 ) {
+			return 0.0;
+		}
+
+		return max( 0.0, min( 100.0, round( ( (float) $rating / $max ) * 100, 2 ) ) );
+	}
+
+	/**
+	 * One row of shapes.
+	 *
+	 * @param int    $count Number of shapes.
+	 * @param string $extra Extra style for each item.
 	 *
 	 * @return string
 	 */
-	private static function start_image( $set ) {
-		if ( is_rtl() && self::image_exists( $set, 'rating_start-rtl' ) ) {
-			return self::image_tag( $set, 'rating_start-rtl', '', array( 'class' => 'post-ratings-image' ) );
-		}
+	private static function row( $count, $extra = '' ) {
+		$style = '' !== $extra ? ' style="' . esc_attr( $extra ) . '"' : '';
+		$item  = '<i class="post-ratings-item"' . $style . '></i>';
 
-		if ( self::image_exists( $set, 'rating_start' ) ) {
-			return self::image_tag( $set, 'rating_start', '', array( 'class' => 'post-ratings-image' ) );
-		}
-
-		return '';
-	}
-
-	/**
-	 * The decorative image that closes a rating strip, if the set has one.
-	 *
-	 * @param string $set Image set folder name.
-	 *
-	 * @return string
-	 */
-	private static function end_image( $set ) {
-		if ( is_rtl() && self::image_exists( $set, 'rating_end-rtl' ) ) {
-			return self::image_tag( $set, 'rating_end-rtl', '', array( 'class' => 'post-ratings-image' ) );
-		}
-
-		if ( self::image_exists( $set, 'rating_end' ) ) {
-			return self::image_tag( $set, 'rating_end', '', array( 'class' => 'post-ratings-image' ) );
-		}
-
-		return '';
-	}
-
-	/**
-	 * Every image set shipped in images/.
-	 *
-	 * The settings sanitizer and the radio buttons on the settings screen are
-	 * both derived from this, so the screen cannot offer a set the sanitizer
-	 * would reject -- which would save, report success and silently revert.
-	 *
-	 * @return array
-	 */
-	public static function image_folders() {
-		if ( null !== self::$folders ) {
-			return self::$folders;
-		}
-
-		self::$folders = array();
-
-		$entries = glob( WP_POSTRATINGS_DIR . 'images/*', GLOB_ONLYDIR );
-
-		if ( is_array( $entries ) ) {
-			foreach ( $entries as $entry ) {
-				self::$folders[] = basename( $entry );
-			}
-		}
-
-		sort( self::$folders );
-
-		return self::$folders;
-	}
-
-	/**
-	 * Describe an image set: how many images, whether it is a custom set.
-	 *
-	 * @param string $folder_name Image set folder name.
-	 *
-	 * @return array
-	 */
-	public static function folder_info( $folder_name ) {
-		$normal_images = array(
-			'rating_over.' . RATINGS_IMG_EXT,
-			'rating_on.' . RATINGS_IMG_EXT,
-			'rating_half.' . RATINGS_IMG_EXT,
-			'rating_off.' . RATINGS_IMG_EXT,
-		);
-
-		$rating = array(
-			'max'    => 0,
-			'custom' => 0,
-			'images' => array(),
-		);
-
-		$count = 0;
-		$path  = WP_POSTRATINGS_DIR . 'images/' . $folder_name;
-
-		if ( is_dir( $path ) ) {
-			$handle = opendir( $path );
-
-			if ( false !== $handle ) {
-				// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Idiomatic readdir() loop.
-				while ( false !== ( $filename = readdir( $handle ) ) ) {
-					if ( '.' === $filename || '..' === $filename || 0 === strpos( $filename, '.' ) ) {
-						continue;
-					}
-
-					if ( substr( $filename, -8 ) === '-rtl.' . RATINGS_IMG_EXT ) {
-						continue;
-					}
-
-					if ( in_array( $filename, $normal_images, true ) ) {
-						++$count;
-					} elseif ( (int) substr( $filename, 7, -7 ) > $rating['max'] ) {
-						$rating['max'] = (int) substr( $filename, 7, -7 );
-					}
-
-					$rating['images'][] = $filename;
-				}
-
-				closedir( $handle );
-			}
-		}
-
-		if ( count( $normal_images ) !== $count ) {
-			$rating['custom'] = 1;
-		}
-
-		if ( 0 === $rating['max'] ) {
-			$rating['max'] = (int) Postratings_Options::get( 'max' );
-		}
-
-		return $rating;
+		return '<span class="post-ratings-row">' . str_repeat( $item, max( 0, (int) $count ) ) . '</span>';
 	}
 
 	/**
 	 * The read-only rating strip.
 	 *
-	 * @param int    $ratings_custom Whether the set is a custom one.
-	 * @param int    $ratings_max    Number of images in the scale.
+	 * @param int    $ratings_custom Unused since 2.0.0; kept for the signature.
+	 * @param int    $ratings_max    Number of points on the scale.
 	 * @param float  $post_rating    Rating to display.
-	 * @param string $ratings_image  Image set folder name.
-	 * @param string $image_alt      Alt text.
-	 * @param int    $insert_half    Position of the half image, or 0.
+	 * @param string $shape          Shape name, or a pre-2.0.0 image set name.
+	 * @param string $image_alt      Text describing the rating.
+	 * @param int    $insert_half    Unused since 2.0.0; the fill is a percentage.
 	 *
 	 * @return string
 	 */
-	public static function ratings_images( $ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half ) {
-		$image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
-		$html      = self::start_image( $ratings_image );
+	public static function ratings_images( $ratings_custom, $ratings_max, $post_rating, $shape, $image_alt, $insert_half = 0 ) {
+		unset( $ratings_custom, $insert_half );
 
-		for ( $i = 1; $i <= $ratings_max; $i++ ) {
-			$prefix = $ratings_custom ? 'rating_' . $i : 'rating';
+		$shape       = self::resolve_shape( $shape );
+		$ratings_max = max( 1, (int) $ratings_max );
+		$image_alt   = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
+		$fill        = self::fill_percentage( $post_rating, $ratings_max );
 
-			if ( $i <= $post_rating ) {
-				$html .= self::image_tag( $ratings_image, $prefix . '_on', $image_alt, array( 'class' => 'post-ratings-image' ) );
-			} elseif ( $i === $insert_half ) {
-				$file = is_rtl() && self::image_exists( $ratings_image, $prefix . '_half-rtl' )
-					? $prefix . '_half-rtl'
-					: $prefix . '_half';
+		$style = self::shape_style( $shape ) . ';--postratings-fill:' . $fill . '%';
 
-				$html .= self::image_tag( $ratings_image, $file, $image_alt, array( 'class' => 'post-ratings-image' ) );
-			} else {
-				$html .= self::image_tag( $ratings_image, $prefix . '_off', $image_alt, array( 'class' => 'post-ratings-image' ) );
-			}
-		}
+		$item_style = Postratings_Shapes::is_updown( $shape )
+			? '--postratings-shape:var(--postratings-shape-up)'
+			: '';
 
-		return $html . self::end_image( $ratings_image );
+		$html  = '<span class="post-ratings-strip post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html .= ' style="' . esc_attr( $style ) . '"';
+		$html .= '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"';
+		$html .= '>';
+		$html .= '<span class="post-ratings-track" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
+		$html .= '<span class="post-ratings-fill" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
+		$html .= '</span>';
+
+		return $html;
 	}
 
 	/**
-	 * The clickable rating strip.
+	 * The clickable rating control.
 	 *
-	 * The hover and click behaviour is carried on data-* attributes and handled
-	 * by one delegated listener. It used to be inline onmouseover/onclick, which
-	 * meant the per-rating text was escaped as esc_js( esc_attr( ... ) ) and
-	 * interpolated into a JS string literal inside an HTML attribute -- two
-	 * layers deep, and the place this plugin's XSS lived.
+	 * A scale is a radio group inside a fieldset, so it announces as one
+	 * control and arrow keys move between the values. Before 2.0.0 each point
+	 * was a separate image carrying role="button", which a screen reader read
+	 * as five unrelated buttons.
+	 *
+	 * An up/down set is a pair of buttons instead, because it is two opposing
+	 * actions rather than one value out of several.
 	 *
 	 * @param int    $post_id        Post being rated.
-	 * @param int    $ratings_custom Whether the set is a custom one.
-	 * @param int    $ratings_max    Number of images in the scale.
-	 * @param float  $post_rating    Current rating.
-	 * @param string $ratings_image  Image set folder name.
-	 * @param string $image_alt      Fallback alt text.
-	 * @param int    $insert_half    Position of the half image, or 0.
-	 * @param array  $ratings_texts  Per-rating labels.
+	 * @param int    $ratings_custom Unused since 2.0.0; kept for the signature.
+	 * @param int    $ratings_max    Number of points on the scale.
+	 * @param float  $post_rating    Unused since 2.0.0; the control is unset.
+	 * @param string $shape          Shape name, or a pre-2.0.0 image set name.
+	 * @param string $image_alt      Unused since 2.0.0; each value labels itself.
+	 * @param int    $insert_half    Unused since 2.0.0.
+	 * @param array  $ratings_texts  Per-value labels.
 	 *
 	 * @return string
 	 */
-	public static function ratings_images_vote( $post_id, $ratings_custom, $ratings_max, $post_rating, $ratings_image, $image_alt, $insert_half, $ratings_texts ) {
-		$html = self::start_image( $ratings_image );
+	public static function ratings_images_vote( $post_id, $ratings_custom, $ratings_max, $post_rating, $shape, $image_alt, $insert_half, $ratings_texts ) {
+		unset( $ratings_custom, $post_rating, $image_alt, $insert_half );
 
-		for ( $i = 1; $i <= $ratings_max; $i++ ) {
-			$prefix = $ratings_custom ? 'rating_' . $i : 'rating';
+		$shape         = self::resolve_shape( $shape );
+		$post_id       = (int) $post_id;
+		$ratings_max   = max( 1, (int) $ratings_max );
+		$ratings_texts = (array) $ratings_texts;
+		$style         = self::shape_style( $shape );
 
-			$half_rtl     = is_rtl() && self::image_exists( $ratings_image, $prefix . '_half-rtl' ) ? 1 : 0;
-			$ratings_text = isset( $ratings_texts[ $i - 1 ] ) ? (string) $ratings_texts[ $i - 1 ] : '';
-			$alt          = apply_filters( 'wp_postratings_ratings_image_alt', $ratings_text );
+		if ( Postratings_Shapes::is_updown( $shape ) ) {
+			return self::updown_control( $post_id, $shape, $style, $ratings_texts );
+		}
 
-			if ( $i <= $post_rating ) {
-				$file = $prefix . '_on';
-			} elseif ( $i === (int) $insert_half ) {
-				$file = $half_rtl ? $prefix . '_half-rtl' : $prefix . '_half';
+		return self::scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts );
+	}
+
+	/**
+	 * A scale, as a radio group.
+	 *
+	 * The values are emitted highest first so a plain sibling combinator can
+	 * light everything below the hovered one, which is what lets the hover
+	 * behaviour be CSS rather than JavaScript rewriting image sources.
+	 *
+	 * @param int    $post_id       Post being rated.
+	 * @param string $shape         Shape name.
+	 * @param string $style         Inline custom properties.
+	 * @param int    $ratings_max   Number of points.
+	 * @param array  $ratings_texts Per-value labels.
+	 *
+	 * @return string
+	 */
+	private static function scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts ) {
+		// A <span>, not a <fieldset>: the [ratings] shortcode wraps its output in
+		// a <span>, which is phrasing content, and the parser hoists any flow
+		// element straight back out of it -- leaving the control outside its own
+		// container. role="radiogroup" with a label is equivalent for assistive
+		// technology and nests legally.
+		$html  = '<span class="post-ratings-vote post-ratings-scale post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
+		$html .= ' role="radiogroup" aria-label="' . esc_attr__( 'Rate this post', 'wp-postratings' ) . '">';
+
+		for ( $i = $ratings_max; $i >= 1; $i-- ) {
+			if ( isset( $ratings_texts[ $i - 1 ] ) && '' !== $ratings_texts[ $i - 1 ] ) {
+				$label = (string) $ratings_texts[ $i - 1 ];
 			} else {
-				$file = $prefix . '_off';
+				/* translators: %s: position on the rating scale. */
+				$label = sprintf( _n( '%s Star', '%s Stars', $i, 'wp-postratings' ), number_format_i18n( $i ) );
 			}
 
-			$html .= self::image_tag(
-				$ratings_image,
-				$file,
-				$alt,
-				array(
-					'id'               => 'rating_' . $post_id . '_' . $i,
-					'class'            => 'post-ratings-image post-ratings-vote',
-					'style'            => 'cursor: pointer; border: 0px;',
-					'data-post-id'     => $post_id,
-					'data-rating'      => $i,
-					'data-rating-text' => $ratings_text,
-					'data-post-rating' => $post_rating,
-					'data-insert-half' => (int) $insert_half,
-					'data-half-rtl'    => $half_rtl,
-					'role'             => 'button',
-					'tabindex'         => '0',
-				)
-			);
+			$id = 'postratings-' . $post_id . '-' . $i;
+
+			$html .= '<input type="radio" id="' . esc_attr( $id ) . '"';
+			$html .= ' name="postratings-' . esc_attr( $post_id ) . '"';
+			$html .= ' value="' . esc_attr( $i ) . '" data-rating="' . esc_attr( $i ) . '" />';
+			$html .= '<label for="' . esc_attr( $id ) . '">';
+			$html .= '<i class="post-ratings-item"></i><span>' . esc_html( $label ) . '</span>';
+			$html .= '</label>';
 		}
 
-		return $html . self::end_image( $ratings_image );
+		return $html . '</span>';
 	}
 
 	/**
-	 * The rating strip shown beside a comment author.
+	 * An up/down pair, as two buttons.
 	 *
-	 * @param int    $ratings_custom        Whether the set is a custom one.
-	 * @param int    $ratings_max           Number of images in the scale.
-	 * @param int    $comment_author_rating Rating the author gave.
-	 * @param string $ratings_image         Image set folder name.
-	 * @param string $image_alt             Alt text.
+	 * @param int    $post_id       Post being rated.
+	 * @param string $shape         Shape name.
+	 * @param string $style         Inline custom properties.
+	 * @param array  $ratings_texts Per-value labels.
 	 *
 	 * @return string
 	 */
-	public static function ratings_images_comment_author( $ratings_custom, $ratings_max, $comment_author_rating, $ratings_image, $image_alt ) {
-		$html = self::start_image( $ratings_image );
+	private static function updown_control( $post_id, $shape, $style, $ratings_texts ) {
+		$down = isset( $ratings_texts[0] ) && '' !== $ratings_texts[0]
+			? (string) $ratings_texts[0]
+			: __( 'Vote Down', 'wp-postratings' );
 
-		if ( $ratings_custom && 2 === (int) $ratings_max ) {
-			$file  = $comment_author_rating > 0 ? 'rating_2_on' : 'rating_1_on';
-			$html .= self::image_tag( $ratings_image, $file, $image_alt, array( 'class' => 'post-ratings-image' ) );
-		} else {
-			for ( $i = 1; $i <= $ratings_max; $i++ ) {
-				$prefix = $ratings_custom ? 'rating_' . $i : 'rating';
-				$state  = $i <= $comment_author_rating ? '_on' : '_off';
+		$up = isset( $ratings_texts[1] ) && '' !== $ratings_texts[1]
+			? (string) $ratings_texts[1]
+			: __( 'Vote Up', 'wp-postratings' );
 
-				$html .= self::image_tag( $ratings_image, $prefix . $state, $image_alt, array( 'class' => 'post-ratings-image' ) );
-			}
+		$html  = '<span class="post-ratings-vote post-ratings-updown post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
+		$html .= ' role="group" aria-label="' . esc_attr__( 'Vote on this post', 'wp-postratings' ) . '">';
+
+		$buttons = array(
+			array( 'up', 2, $up, '--postratings-shape:var(--postratings-shape-up)' ),
+			array( 'down', 1, $down, '--postratings-shape:var(--postratings-shape-down)' ),
+		);
+
+		foreach ( $buttons as $button ) {
+			list( $direction, $value, $label, $item_style ) = $button;
+
+			$html .= '<button type="button" class="post-ratings-' . esc_attr( $direction ) . '"';
+			$html .= ' data-rating="' . esc_attr( $value ) . '">';
+			$html .= '<i class="post-ratings-item" style="' . esc_attr( $item_style ) . '"></i>';
+			$html .= '<span>' . esc_html( $label ) . '</span>';
+			$html .= '</button>';
 		}
 
-		return $html . self::end_image( $ratings_image );
+		return $html . '</span>';
 	}
 
 	/**
-	 * Work out where the half image goes for a given average.
+	 * The rating strip beside a comment author.
 	 *
-	 * @param float $average     Average rating.
-	 * @param float $post_rating Rounded rating.
+	 * @param int    $ratings_custom        Whether the set is an up/down one.
+	 * @param int    $ratings_max           Number of points on the scale.
+	 * @param int    $comment_author_rating Rating the author gave.
+	 * @param string $shape                 Shape name, or a legacy image set.
+	 * @param string $image_alt             Text describing the rating.
 	 *
-	 * @return int
+	 * @return string
 	 */
-	private static function half_position( $average, $post_rating ) {
-		$average_diff = abs( floor( $average ) - $post_rating );
+	public static function ratings_images_comment_author( $ratings_custom, $ratings_max, $comment_author_rating, $shape, $image_alt ) {
+		$shape = self::resolve_shape( $shape );
 
-		if ( $average_diff >= 0.25 && $average_diff <= 0.75 ) {
-			return (int) ceil( $average );
+		// An up/down vote is one glyph, not a strip: the author voted one way
+		// or the other.
+		if ( Postratings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
+			$direction = $comment_author_rating > 0 ? 'up' : 'down';
+			$style     = self::shape_style( $shape ) . ';--postratings-shape:var(--postratings-shape-' . $direction . ')';
+
+			// A single glyph in normal flow, not the track-and-fill overlay: the
+			// fill layer is absolutely positioned, so on its own it leaves the
+			// strip with no intrinsic size and nothing renders.
+			return '<span class="post-ratings-strip post-ratings-single post-ratings-shape-' . esc_attr( $shape ) . '"' .
+				' style="' . esc_attr( $style ) . '" role="img" aria-label="' . esc_attr( $image_alt ) . '">' .
+				self::row( 1 ) .
+				'</span>';
 		}
 
-		if ( $average_diff > 0.75 ) {
-			return (int) ceil( $post_rating );
-		}
-
-		return 0;
+		return self::ratings_images( 0, $ratings_max, $comment_author_rating, $shape, $image_alt );
 	}
 
 	/**
@@ -427,7 +390,9 @@ class Postratings_Template {
 			);
 		}
 
-		$insert_half = self::half_position( $post_ratings_average, $post_ratings );
+		// Retained only to feed the two rendering calls' signatures; the fill
+		// is derived from the rating itself now.
+		$insert_half = 0;
 
 		$value = $template;
 

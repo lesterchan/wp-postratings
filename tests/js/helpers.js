@@ -24,49 +24,68 @@ export function loadScript( name ) {
 /**
  * The localisation object the front end script reads.
  *
- * Values arrive from wp_localize_script() as strings, which is why the script
- * coerces them; the fixtures mirror that.
+ * Much smaller since 2.0.0: hovering is CSS, so the script no longer needs the
+ * image set, the extension, the scale or the plugin URL. Values arrive from
+ * wp_localize_script() as strings, which is why the script coerces them.
  *
  * @return {Object} l10n object.
  */
 export function l10nFixture() {
 	return {
-		pluginUrl: 'https://example.com/wp-content/plugins/wp-postratings',
 		ajaxUrl: 'https://example.com/wp-admin/admin-ajax.php',
 		textWait: 'Please rate only 1 item at a time.',
-		image: 'stars',
-		imageExt: 'gif',
-		max: '5',
 		showLoading: '1',
 		showFading: '1',
-		custom: '0',
 	};
 }
 
 /**
- * Build the markup the PHP side emits for an unrated post.
+ * The markup the PHP side emits for an unrated post on a scale.
+ *
+ * A span carrying role="radiogroup" rather than a fieldset: the [ratings]
+ * shortcode wraps its output in a span, and the parser hoists any flow element
+ * back out of one.
+ *
+ * @param {number} postId Post id.
+ * @param {number} max    Points on the scale.
+ * @return {string} Markup.
+ */
+export function voteMarkup( postId = 4, max = 5 ) {
+	let values = '';
+
+	// Emitted highest first, the way the CSS sibling combinator needs.
+	for ( let i = max; i >= 1; i-- ) {
+		const id = 'postratings-' + postId + '-' + i;
+		values +=
+			'<input type="radio" id="' + id + '" name="postratings-' + postId + '"' +
+			' value="' + i + '" data-rating="' + i + '" />' +
+			'<label for="' + id + '"><i class="post-ratings-item"></i><span>' + i + ' Stars</span></label>';
+	}
+
+	return (
+		'<span id="post-ratings-' + postId + '" class="post-ratings" data-nonce="abc123">' +
+		'<span class="post-ratings-vote post-ratings-scale" data-post-id="' + postId + '"' +
+		' role="radiogroup" aria-label="Rate this post">' + values + '</span>' +
+		'</span>' +
+		'<span id="post-ratings-' + postId + '-loading" class="post-ratings-loading">Loading…</span>'
+	);
+}
+
+/**
+ * The markup the PHP side emits for an up/down control.
  *
  * @param {number} postId Post id.
  * @return {string} Markup.
  */
-export function voteMarkup( postId = 4 ) {
-	let images = '';
-
-	for ( let i = 1; i <= 5; i++ ) {
-		images +=
-			'<img src="https://example.com/wp-content/plugins/wp-postratings/images/stars/rating_off.gif"' +
-			' alt="' + i + ' Stars" id="rating_' + postId + '_' + i + '"' +
-			' class="post-ratings-image post-ratings-vote"' +
-			' data-post-id="' + postId + '" data-rating="' + i + '"' +
-			' data-rating-text="' + i + ' Stars" data-post-rating="0"' +
-			' data-insert-half="0" data-half-rtl="0" role="button" tabindex="0" />';
-	}
-
+export function updownMarkup( postId = 4 ) {
 	return (
-		'<div id="post-ratings-' + postId + '" class="post-ratings" data-nonce="abc123">' +
-		images +
-		'<span class="post-ratings-text" id="ratings_' + postId + '_text"></span>' +
-		'</div>' +
-		'<div id="post-ratings-' + postId + '-loading" class="post-ratings-loading">Loading...</div>'
+		'<span id="post-ratings-' + postId + '" class="post-ratings" data-nonce="abc123">' +
+		'<span class="post-ratings-vote post-ratings-updown" data-post-id="' + postId + '"' +
+		' role="group" aria-label="Vote on this post">' +
+		'<button type="button" class="post-ratings-up" data-rating="2">' +
+		'<i class="post-ratings-item"></i><span>Vote Up</span></button>' +
+		'<button type="button" class="post-ratings-down" data-rating="1">' +
+		'<i class="post-ratings-item"></i><span>Vote Down</span></button>' +
+		'</span></span>'
 	);
 }

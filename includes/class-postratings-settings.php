@@ -345,42 +345,47 @@ class Postratings_Settings {
 	}
 
 	/**
-	 * The radio buttons for the image sets.
+	 * The radio buttons for the rating shapes.
+	 *
+	 * Reads Postratings_Shapes::all(), which is the same registry the sanitizer
+	 * checks against, so the screen cannot offer a shape that would not save --
+	 * and a shape registered through wp_postratings_shapes appears here for
+	 * free.
 	 *
 	 * @param array $options Plugin settings.
 	 *
 	 * @return void
 	 */
 	private static function render_image_choices( $options ) {
-		foreach ( Postratings_Template::image_folders() as $folder ) {
-			$info = Postratings_Template::folder_info( $folder );
+		$selected = Postratings_Template::resolve_shape( $options['image'] );
+		$max      = max( 1, (int) $options['max'] );
 
-			if ( empty( $info['images'][0] ) || false === strpos( $info['images'][0], '.' . RATINGS_IMG_EXT ) ) {
-				continue;
-			}
+		foreach ( Postratings_Shapes::all() as $name => $shape ) {
+			$is_updown = Postratings_Shapes::UPDOWN === $shape['type'];
 
 			echo '<p>';
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="postratings-image-choice" />&nbsp;&nbsp;&nbsp;',
 				esc_attr( self::name( 'image' ) ),
-				esc_attr( $folder ),
-				checked( $options['image'], $folder, false ),
-				(int) $info['custom'],
-				(int) $info['max']
+				esc_attr( $name ),
+				checked( $selected, $name, false ),
+				$is_updown ? 1 : 0,
+				esc_attr( $is_updown ? 2 : $max )
 			);
 
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered image markup, escaped as it is built.
-			echo Postratings_Template::ratings_images(
-				(int) $info['custom'],
-				(int) $info['max'],
-				$info['custom'] ? 0 : 2,
-				$folder,
-				'',
-				$info['custom'] ? 0 : 3
-			);
+			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
+			if ( $is_updown ) {
+				echo Postratings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
+				echo Postratings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
+			} else {
+				// Filled to 60% so the preview shows both states at once.
+				$preview = Postratings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
+
+				echo $preview;
+			}
 			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
-			echo '&nbsp;&nbsp;&nbsp;(' . esc_html( $folder ) . ')';
+			echo '&nbsp;&nbsp;&nbsp;' . esc_html( $shape['label'] );
 			echo '</p>' . "\n";
 		}
 	}
@@ -418,13 +423,13 @@ class Postratings_Settings {
 						<td>
 							<?php
 							// Preview of this step: an up/down set shows the one
-							// image for this position, anything else shows the
+							// glyph for this position, anything else shows the
 							// strip lit up to it.
-							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered image markup, escaped as it is built.
-							if ( $custom && 2 === (int) $max ) {
-								echo Postratings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : 0, $image, '' );
+							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
+							if ( Postratings_Shapes::is_updown( Postratings_Template::resolve_shape( $image ) ) ) {
+								echo Postratings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' );
 							} else {
-								echo Postratings_Template::ratings_images( $custom, $i, $i, $image, '', 0 );
+								echo Postratings_Template::ratings_images( 0, $max, $i, $image, '' );
 							}
 							// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 							?>
@@ -460,13 +465,10 @@ class Postratings_Settings {
 
 		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
 		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
-		// sanitize_text_field() rather than sanitize_file_name(): the latter is
-		// for files with an extension and mangles a bare directory name whose
-		// spelling is also a known extension ("numbers" becomes
-		// "unnamed-file.numbers"). The real guard is the allow list below.
-		$image = isset( $_GET['image'] ) ? trim( sanitize_text_field( wp_unslash( $_GET['image'] ) ) ) : '';
+		$image  = isset( $_GET['image'] ) ? sanitize_text_field( wp_unslash( $_GET['image'] ) ) : '';
+		$image  = Postratings_Template::resolve_shape_strict( $image );
 
-		if ( ! in_array( $image, Postratings_Template::image_folders(), true ) ) {
+		if ( '' === $image ) {
 			wp_die( -1, 400 );
 		}
 

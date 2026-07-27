@@ -1,174 +1,21 @@
 /**
  * WP-PostRatings front end.
  *
- * One delegated listener on document handles hover and click for every rating
- * image on the page. Before 2.0.0 this was inline onmouseover/onclick attributes
- * carrying per-rating text through esc_js( esc_attr( ... ) ), which is where the
- * plugin's escaping bugs lived.
+ * Considerably smaller since 2.0.0. Hovering and filling the scale are CSS --
+ * `label:hover ~ label` on a reversed row -- so this no longer rewrites image
+ * sources on every mouse move. All it does is post the vote and swap in the
+ * result.
+ *
+ * One delegated listener on document covers every rating on the page, whether
+ * it was in the original markup or arrived later.
  */
 ( function() {
 	'use strict';
 
 	const l10n = window.ratingsL10n || {};
 
-	let isBeingRated = false;
-	let currentPostId = 0;
-	let currentRating = 0;
-
-	/**
-	 * URL of one rating image in the configured set.
-	 *
-	 * @param {string} file File name without the extension.
-	 * @return {string} Absolute URL.
-	 */
-	function imageUrl( file ) {
-		return l10n.pluginUrl + '/images/' + l10n.image + '/' + file + '.' + l10n.imageExt;
-	}
-
-	/**
-	 * The base name for one position on the scale.
-	 *
-	 * A custom set has a distinct image per position; a normal set shares one.
-	 *
-	 * @param {number} position Position on the scale.
-	 * @return {string} File name prefix.
-	 */
-	function prefixFor( position ) {
-		return Number( l10n.custom ) ? 'rating_' + position : 'rating';
-	}
-
-	/**
-	 * Every vote image belonging to one post.
-	 *
-	 * @param {number} postId Post id.
-	 * @return {Array} Image elements.
-	 */
-	function imagesFor( postId ) {
-		return Array.prototype.slice.call(
-			document.querySelectorAll( '.post-ratings-vote[data-post-id="' + postId + '"]' ),
-		);
-	}
-
-	/**
-	 * Paint the strip up to the hovered position.
-	 *
-	 * @param {Element} image Image being hovered.
-	 * @return {void}
-	 */
-	function highlight( image ) {
-		if ( isBeingRated ) {
-			return;
-		}
-
-		const postId = Number( image.dataset.postId );
-		const rating = Number( image.dataset.rating );
-
-		currentPostId = postId;
-		currentRating = rating;
-
-		const max = Number( l10n.max );
-
-		imagesFor( postId ).forEach( function( candidate ) {
-			const position = Number( candidate.dataset.rating );
-
-			// An up/down set only ever lights the image under the cursor.
-			if ( Number( l10n.custom ) && 2 === max ) {
-				if ( position === rating ) {
-					candidate.src = imageUrl( prefixFor( position ) + '_over' );
-				}
-				return;
-			}
-
-			if ( position <= rating ) {
-				candidate.src = imageUrl( prefixFor( position ) + '_over' );
-			}
-		} );
-
-		const text = document.getElementById( 'ratings_' + postId + '_text' );
-
-		if ( text ) {
-			text.style.display = '';
-			text.textContent = image.dataset.ratingText || '';
-		}
-	}
-
-	/**
-	 * Put the strip back to the stored rating.
-	 *
-	 * @param {Element} image Image being left.
-	 * @return {void}
-	 */
-	function restore( image ) {
-		if ( isBeingRated ) {
-			return;
-		}
-
-		const postId = Number( image.dataset.postId );
-		const postRating = Number( image.dataset.postRating );
-		const insertHalf = Number( image.dataset.insertHalf );
-		const halfRtl = Number( image.dataset.halfRtl );
-
-		imagesFor( postId ).forEach( function( candidate ) {
-			const position = Number( candidate.dataset.rating );
-			const prefix = prefixFor( position );
-
-			if ( position <= postRating ) {
-				candidate.src = imageUrl( prefix + '_on' );
-			} else if ( position === insertHalf ) {
-				candidate.src = imageUrl( prefix + '_half' + ( halfRtl ? '-rtl' : '' ) );
-			} else {
-				candidate.src = imageUrl( prefix + '_off' );
-			}
-		} );
-
-		const text = document.getElementById( 'ratings_' + postId + '_text' );
-
-		if ( text ) {
-			text.style.display = 'none';
-			text.textContent = '';
-		}
-	}
-
-	/**
-	 * Fade an element by stepping its opacity.
-	 *
-	 * @param {Element} element Element to fade.
-	 * @param {number}  to      Target opacity.
-	 * @return {void}
-	 */
-	function fade( element, to ) {
-		// Purely cosmetic, and deliberately not something the vote waits on:
-		// requestAnimationFrame is paused outright while a tab is hidden, so
-		// anything sequenced behind it would simply never run there.
-		if ( ! element ) {
-			return;
-		}
-
-		if ( ! Number( l10n.showFading ) || document.hidden ) {
-			element.style.opacity = to;
-			return;
-		}
-
-		const from = '' === element.style.opacity ? 1 : parseFloat( element.style.opacity );
-		let startedAt = null;
-		const duration = 400;
-
-		function step( timestamp ) {
-			if ( null === startedAt ) {
-				startedAt = timestamp;
-			}
-
-			const progress = Math.min( ( timestamp - startedAt ) / duration, 1 );
-
-			element.style.opacity = from + ( ( to - from ) * progress );
-
-			if ( progress < 1 ) {
-				window.requestAnimationFrame( step );
-			}
-		}
-
-		window.requestAnimationFrame( step );
-	}
+	/** Posts currently mid-vote, so a second click cannot double-submit. */
+	const inFlight = new Set();
 
 	/**
 	 * Show or hide the loading indicator for a post.
@@ -190,18 +37,25 @@
 	}
 
 	/**
-	 * Post the vote and swap in the response.
+	 * Post a vote and replace the control with whatever comes back.
 	 *
+	 * @param {Element} control The fieldset or button group that was used.
+	 * @param {number}  rating  Value chosen.
 	 * @return {void}
 	 */
-	function ratePost() {
-		if ( isBeingRated ) {
+	function vote( control, rating ) {
+		const postId = Number( control.dataset.postId );
+
+		if ( ! postId || ! rating ) {
+			return;
+		}
+
+		if ( inFlight.has( postId ) ) {
 			// eslint-disable-next-line no-alert -- Long-standing behaviour: warns rather than queueing a second vote.
 			window.alert( l10n.textWait );
 			return;
 		}
 
-		const postId = currentPostId;
 		const container = document.getElementById( 'post-ratings-' + postId );
 
 		if ( ! container ) {
@@ -210,28 +64,36 @@
 
 		const nonce = container.dataset.nonce || container.getAttribute( 'data-nonce' );
 
-		isBeingRated = true;
+		inFlight.add( postId );
 
-		// The request goes out straight away; the fade runs alongside it rather
-		// than in front of it.
-		fade( container, 0 );
+		// aria-busy rather than an opacity tween: it dims the control through
+		// CSS *and* tells assistive technology the region is updating.
+		if ( Number( l10n.showFading ) ) {
+			container.setAttribute( 'aria-busy', 'true' );
+		}
+
 		toggleLoading( postId, true );
 
 		const body = new URLSearchParams();
 
 		body.append( 'action', 'postratings' );
 		body.append( 'pid', postId );
-		body.append( 'rate', currentRating );
+		body.append( 'rate', rating );
 		body.append( 'postratings_' + postId + '_nonce', nonce );
 
+		/**
+		 * Put the control back into a usable state.
+		 *
+		 * @param {string} [html] Replacement markup.
+		 */
 		function finish( html ) {
 			if ( 'string' === typeof html ) {
 				container.innerHTML = html;
 			}
 
 			toggleLoading( postId, false );
-			fade( container, 1 );
-			isBeingRated = false;
+			container.removeAttribute( 'aria-busy' );
+			inFlight.delete( postId );
 		}
 
 		window
@@ -258,51 +120,37 @@
 	 * @return {void}
 	 */
 	function start() {
-		document.addEventListener(
-			'mouseover',
-			function( event ) {
-				const image = event.target.closest( '.post-ratings-vote' );
+		// A scale is radio inputs, so "change" is the right signal: it fires
+		// for a click and for arrow-key navigation alike, which is what makes
+		// the control usable from the keyboard without any extra handling.
+		document.addEventListener( 'change', function( event ) {
+			const input = event.target.closest( '.post-ratings-scale input[type="radio"]' );
 
-				if ( image ) {
-					highlight( image );
-				}
-			},
-			true,
-		);
-
-		document.addEventListener(
-			'mouseout',
-			function( event ) {
-				const image = event.target.closest( '.post-ratings-vote' );
-
-				if ( image ) {
-					restore( image );
-				}
-			},
-			true,
-		);
-
-		document.addEventListener( 'click', function( event ) {
-			const image = event.target.closest( '.post-ratings-vote' );
-
-			if ( image ) {
-				event.preventDefault();
-				highlight( image );
-				ratePost();
-			}
-		} );
-
-		document.addEventListener( 'keydown', function( event ) {
-			if ( 'Enter' !== event.key && ' ' !== event.key ) {
+			if ( ! input ) {
 				return;
 			}
 
-			const image = event.target.closest( '.post-ratings-vote' );
+			const control = input.closest( '.post-ratings-vote' );
 
-			if ( image ) {
-				event.preventDefault();
-				highlight( image );
-				ratePost();
+			if ( control ) {
+				vote( control, Number( input.value ) );
+			}
+		} );
+
+		// An up/down pair is two buttons, not a scale.
+		document.addEventListener( 'click', function( event ) {
+			const button = event.target.closest( '.post-ratings-updown button' );
+
+			if ( ! button ) {
+				return;
+			}
+
+			event.preventDefault();
+
+			const control = button.closest( '.post-ratings-vote' );
+
+			if ( control ) {
+				vote( control, Number( button.dataset.rating ) );
 			}
 		} );
 	}

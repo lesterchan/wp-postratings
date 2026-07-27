@@ -32,7 +32,7 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 		$options = Postratings_Options::get();
 
 		$this->assertSame( 7, $options['max'] );
-		$this->assertSame( 'stars', $options['image'] );
+		$this->assertSame( 'star', $options['image'] );
 		$this->assertArrayHasKey( 'vote', $options['templates'] );
 	}
 
@@ -67,7 +67,7 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 
 		$options = Postratings_Options::get();
 
-		$this->assertSame( 'thumbs', $options['image'] );
+		$this->assertSame( 'thumb', $options['image'], 'the up/down set did not map to its shape' );
 		$this->assertSame( '2', $options['max'] );
 		$this->assertSame( '4', $options['logging_method'] );
 		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'] );
@@ -144,7 +144,7 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 		$second = Postratings_Options::get();
 
 		$this->assertSame( $first, $second );
-		$this->assertSame( 'thumbs', $second['image'], 'the second run reverted to defaults' );
+		$this->assertSame( 'thumb', $second['image'], 'the second run reverted to defaults' );
 	}
 
 	/**
@@ -188,17 +188,31 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_image_allow_list_matches_what_the_screen_offers() {
-		$folders = Postratings_Template::image_folders();
+		$shapes = Postratings_Shapes::names();
 
-		$this->assertContains( 'stars', $folders );
+		$this->assertContains( 'star', $shapes );
 
-		foreach ( $folders as $folder ) {
-			$clean = Postratings_Options::sanitize( array( 'image' => $folder ) );
-			$this->assertSame( $folder, $clean['image'], $folder . ' is offered but rejected' );
+		foreach ( $shapes as $shape ) {
+			$clean = Postratings_Options::sanitize( array( 'image' => $shape ) );
+			$this->assertSame( $shape, $clean['image'], $shape . ' is offered but rejected' );
 		}
 
 		$clean = Postratings_Options::sanitize( array( 'image' => '../../evil' ) );
 		$this->assertNotSame( '../../evil', $clean['image'] );
+	}
+
+	/**
+	 * A pre-2.0.0 image set name still saves, and lands on its shape.
+	 *
+	 * An install that has not migrated yet posts the old value back from its
+	 * own settings screen.
+	 *
+	 * @return void
+	 */
+	public function test_a_legacy_set_name_is_accepted_and_mapped() {
+		$clean = Postratings_Options::sanitize( array( 'image' => 'stars_crystal' ) );
+
+		$this->assertSame( 'star', $clean['image'] );
 	}
 
 	/**

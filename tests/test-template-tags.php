@@ -159,15 +159,20 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 		$this->assertStringNotContainsString( 'onmouseover', $output );
 		$this->assertStringNotContainsString( 'onclick', $output );
 		$this->assertStringContainsString( 'data-post-id="' . $post_id . '"', $output );
-		$this->assertStringContainsString( 'data-rating="1"', $output );
+		$this->assertStringContainsString( 'role="radiogroup"', $output );
+		$this->assertStringContainsString( 'type="radio"', $output );
 	}
 
 	/**
-	 * Rating text with a quote survives into the attribute intact.
+	 * A rating label carrying markup is escaped exactly once.
+	 *
+	 * The labels are visible text in a <span> now rather than being pushed
+	 * through esc_js( esc_attr( ... ) ) into a JS string inside an attribute,
+	 * which is where the double escaping used to happen.
 	 *
 	 * @return void
 	 */
-	public function test_rating_text_with_quotes_is_escaped_once() {
+	public function test_rating_labels_are_escaped_once() {
 		$options                    = Postratings_Options::get();
 		$options['ratings']['text'] = array( "O'Brien & \"co\"", 'b', 'c', 'd', 'e' );
 		Postratings_Options::update( $options );
@@ -175,8 +180,8 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 		$output  = the_ratings_vote( $post_id );
 
-		$this->assertStringContainsString( 'data-rating-text="O&#039;Brien &amp; &quot;co&quot;"', $output );
-		$this->assertStringNotContainsString( '&amp;amp;', $output, 'the text was double encoded' );
+		$this->assertStringContainsString( 'O&#039;Brien &amp; &quot;co&quot;', $output );
+		$this->assertStringNotContainsString( '&amp;amp;', $output, 'the label was double encoded' );
 	}
 
 	/**
@@ -249,19 +254,21 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * Every image URL is built from the plugin directory constant.
+	 * The markup references no image files at all.
 	 *
-	 * Hardcoding the slug meant the plugin 404'd its own images when installed
-	 * under any other directory name.
+	 * Every shape is a CSS mask since 2.0.0, so a plugin installed under any
+	 * directory name cannot 404 its own artwork -- there is none to fetch.
 	 *
 	 * @return void
 	 */
-	public function test_image_urls_use_the_plugin_url_constant() {
+	public function test_the_markup_references_no_images() {
 		$post_id = $this->make_rated_post( 4, 18 );
 
-		$output = expand_ratings_template( '%RATINGS_IMAGES%', $post_id, null, 0, false );
+		$output = expand_ratings_template( '%RATINGS_IMAGES%%RATINGS_IMAGES_VOTE%', $post_id, null, 0, false );
 
-		$this->assertStringContainsString( WP_POSTRATINGS_URL . 'images/', $output );
+		$this->assertStringNotContainsString( '<img', $output );
+		$this->assertStringNotContainsString( '/images/', $output );
+		$this->assertStringContainsString( 'data:image/svg+xml,', $output );
 	}
 
 	// --- stats ------------------------------------------------------------
