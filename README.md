@@ -14,14 +14,18 @@ Adds an AJAX rating system for your WordPress site's content.
 ## Description
 
 ### Usage
-1. Open `wp-content/themes/<YOUR THEME NAME>/index.php`
-2. You may place it in archive.php, single.php, post.php or page.php also.
-3. Find: `<?php while (have_posts()) : the_post(); ?>`
-4. Add Anywhere Below It (The Place You Want The Ratings To Show): `<?php if(function_exists('the_ratings')) { the_ratings(); } ?>`
 
-* If you DO NOT want the ratings to appear in every post/page, DO NOT use the code above. Just type in `[ratings]` into the selected post/page content and it will embed ratings into that post/page only.
-* If you want to embed other post ratings use `[ratings id="1"]`, where 1 is the ID of the post/page ratings that you want to display.
-* If you want to embed other post ratings results, use `[ratings id="1" results="true"]`, where 1 is the ID of the post/page ratings results that you want to display.
+The simplest way, and the only one that works in a block theme without editing template files, is the shortcode. Put it in the post or page you want rated:
+
+* `[ratings]` rates the post it appears in.
+* `[ratings id="1"]` shows the rating for post 1, wherever you put it.
+* `[ratings id="1" results="true"]` shows post 1's result without letting anyone vote from there.
+
+To put ratings on every post automatically, a classic theme can call the template tag from `single.php`, `archive.php` or `index.php`, anywhere inside the loop:
+
+```php
+<?php the_ratings(); ?>
+```
 
 ### Development
 [https://github.com/lesterchan/wp-postratings](https://github.com/lesterchan/wp-postratings "https://github.com/lesterchan/wp-postratings")
@@ -46,7 +50,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: The scripts are vanilla JavaScript; the jQuery dependency is gone, and hovering the stars is pure CSS, so nothing runs on mouse move at all.
 * NEW: Rating colours are a setting. Pick the rated and not-rated colours on the Ratings Options screen; this replaces the old colour variants of the image sets, where changing colour meant choosing a different set of files.
 * NEW: `wp_postratings_shapes` lets you register your own rating shape.
-* NEW: `RATINGS_IMG_EXT` and `wp_postratings_image_extension` are gone; there are no image files left to have an extension.
+* NEW: `RATINGS_IMG_EXT` and `wp_postratings_image_extension` are gone; there are no image files left to have an extension. The `wp_postratings_ratings_image_alt` filter stays, but it now sets the rating's accessible label rather than an image's alt and title text.
 * IMPORTANT: The stylesheet is now `postratings.css`, not `postratings-css.css`, and there is no separate RTL stylesheet. If your theme ships its own `postratings-css.css` override it will no longer be picked up; rename it, or better, use the colour setting and the CSS custom properties instead.
 * FIXED: The plugin requested an admin stylesheet that had been an empty file since 2020.
 * NEW: The fifteen `postratings_*` option rows are consolidated into a single `postratings_options` row. Your settings are migrated automatically.
@@ -216,12 +220,11 @@ Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rati
 
 ## Screenshots
 
-1. Admin - Ratings Log Bottom
-2. Admin - Ratings Log Top
-3. Admin - Ratings Options
-4. Admin - Ratings Templates
-5. Ratings
-6. Ratings Hover
+1. Admin - Manage Ratings
+2. Admin - Ratings Options
+3. Admin - Ratings Templates
+4. Ratings
+5. Ratings Hover
 
 ## Frequently Asked Questions
 
@@ -304,16 +307,17 @@ function wp_postratings_site_logo( $url ) {
 
 By default, the plugin will use your site header image URL as your site logo. If you want to change it, you need to make use of the `wp_postratings_site_logo` filter as shown in the sample code above.
 
-### How To Remove Ratings Image alt and title Text?
+### How To Change The Text Screen Readers Announce?
 
 ```php
-<?php  
-add_filter( 'wp_postratings_ratings_image_alt', 'wp_postratings_ratings_image_alt' );  
-function wp_postratings_ratings_image_alt( $alt_title_text ) {  
-	return '';  
-}  
-?>
+add_filter( 'wp_postratings_ratings_image_alt', function ( $label ) {
+	return $label;
+} );
 ```
+
+This is the description a screen reader reads out for a displayed rating, such as "4 votes, average: 3.70 out of 5". Since 2.0.0 the ratings are drawn with CSS rather than images, so there is no `alt` or `title` attribute involved; the value becomes the `aria-label` on the rating.
+
+Returning an empty string removes it, which is what this filter was usually used for. Be aware that it leaves the rating with no accessible name at all, so anyone using a screen reader is told nothing about it. Prefer rewording it over removing it.
 
 ### How To Display Comment Author Ratings?
 
@@ -322,17 +326,6 @@ add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 ```
 
 By default, the comment author ratings are not displayed. If you want to display the ratings, you need to make use of the `wp_postratings_display_comment_author_ratings` filter as shown in the sample code above.
-
-### How To use PNG images instead of GIF images?
-
-```php
-function custom_rating_image_extension() {
-    return 'png';
-}
-add_filter( 'wp_postratings_image_extension', 'custom_rating_image_extension' );
-```
-
-The default image extension if 'gif', if you want to change it to 'png', you need to make use of the `wp_postratings_image_extension` filter as shown in the sample code above.
 
 ### How To change the cookie expiration time?
 
@@ -586,11 +579,31 @@ Note the filename changed in 2.0.0: it was `postratings-css.css` before. A theme
 * The value 10 will display only the top 10 most rated posts/pages.
 
 ### To Sort Highest/Lowest Rated Posts
-* You can use: `<?php query_posts( array( 'meta_key' => 'ratings_average', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>`
-* Or pass in the variables to the URL: `https://yoursite.com/?r_sortby=highest_rated&amp;r_orderby=desc`
-* You can replace desc with asc if you want the lowest rated posts.
+
+```php
+$query = new WP_Query( array(
+	'meta_key' => 'ratings_average',
+	'orderby'  => 'meta_value_num',
+	'order'    => 'DESC',
+) );
+```
+
+Or pass the variables in the URL: `https://yoursite.com/?r_sortby=highest_rated&r_orderby=desc`
+
+Replace `desc` with `asc` for the lowest rated posts.
 
 ### To Sort Most/Least Rated Posts
-* You can use: `<?php query_posts( array( 'meta_key' => 'ratings_users', 'orderby' => 'meta_value_num', 'order' => 'DESC' ) ); ?>`
-* Or pass in the variables to the URL: `https://yoursite.com/?r_sortby=most_rated&amp;r_orderby=desc`
-* You can replace desc with asc if you want the least rated posts.
+
+```php
+$query = new WP_Query( array(
+	'meta_key' => 'ratings_users',
+	'orderby'  => 'meta_value_num',
+	'order'    => 'DESC',
+) );
+```
+
+Or pass the variables in the URL: `https://yoursite.com/?r_sortby=most_rated&r_orderby=desc`
+
+Replace `desc` with `asc` for the least rated posts.
+
+These examples use `WP_Query` rather than `query_posts()`, which the old ones called: `query_posts()` replaces the main query and WordPress has discouraged it for years. To sort the main query instead, use `pre_get_posts`.
