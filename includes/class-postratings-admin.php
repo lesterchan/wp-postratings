@@ -40,7 +40,6 @@ class Postratings_Admin {
 	 */
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_init', array( 'Postratings_Installer', 'maybe_upgrade' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'scripts' ) );
 
 		add_filter( 'manage_posts_columns', array( __CLASS__, 'column_title' ) );

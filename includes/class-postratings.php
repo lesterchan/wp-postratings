@@ -46,6 +46,14 @@ class Postratings {
 		// where WordPress requires it.
 		register_activation_hook( WP_POSTRATINGS_MAIN_FILE, array( 'Postratings_Installer', 'activate' ) );
 
+		// Deliberately on init rather than admin_init. Activation does not fire
+		// on a plugin *update*, and an automatic background update runs on
+		// cron, which is not an admin request: hooking this to the admin only
+		// would leave such a site serving its front end with default settings
+		// -- default templates, default scale -- while its real ones sat in the
+		// old option rows, until somebody happened to log in. Gated on one
+		// autoloaded option, so an already-migrated install pays a lookup.
+		add_action( 'init', array( 'Postratings_Installer', 'maybe_upgrade' ), 5 );
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
 
