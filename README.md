@@ -44,6 +44,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Settings moved to the WordPress Settings API, with the options and templates screens merged into one tabbed page.
 * NEW: The rating log is now a standard WordPress list table, with sortable columns, bulk delete, a search box and Screen Options.
 * NEW: The scripts are vanilla JavaScript; the jQuery dependency is gone, and hovering the stars is pure CSS, so nothing runs on mouse move at all.
+* NEW: Rating colours are a setting. Pick the rated and not-rated colours on the Ratings Options screen; this replaces the old colour variants of the image sets, where changing colour meant choosing a different set of files.
 * NEW: `wp_postratings_shapes` lets you register your own rating shape.
 * NEW: `RATINGS_IMG_EXT` and `wp_postratings_image_extension` are gone; there are no image files left to have an extension.
 * NEW: The fifteen `postratings_*` option rows are consolidated into a single `postratings_options` row. Your settings are migrated automatically.
@@ -222,16 +223,20 @@ Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rati
 
 ## Frequently Asked Questions
 
-### How do I change the colour or size of the ratings?
+### How do I change the colour of the ratings?
 
-Everything worth changing is a CSS custom property on `.post-ratings`, so this is all it takes in your theme:
+Set them on the Ratings Options screen, under **Ratings Colour**. There is one colour for a rated shape and one for an unrated one, which is what the old `stars_crystal` and `stars_dark` image sets were for.
+
+Hovering uses the rated colour. If you would rather tell "about to pick" apart from "already recorded", set `--postratings-color-hover` in your theme.
+
+### How do I change the size, spacing or hover colour?
+
+Anything beyond the two colours is a CSS custom property on `.post-ratings`, so this is all it takes in your theme:
 
 ```css
 .post-ratings {
 	--postratings-size: 24px;
 	--postratings-gap: 4px;
-	--postratings-color-on: #e5484d;
-	--postratings-color-off: #d4d4d8;
 	--postratings-color-hover: #f7c56b;
 }
 ```

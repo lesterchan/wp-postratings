@@ -227,6 +227,30 @@ class Postratings_Settings {
 				</td>
 			</tr>
 			<tr>
+				<th scope="row"><?php esc_html_e( 'Ratings Colour:', 'wp-postratings' ); ?></th>
+				<td>
+					<p>
+						<label for="postratings_color_on">
+							<?php esc_html_e( 'Rated', 'wp-postratings' ); ?>
+						</label><br />
+						<input type="color" id="postratings_color_on"
+							name="<?php echo esc_attr( self::name( 'colors', 'on' ) ); ?>"
+							value="<?php echo esc_attr( $options['colors']['on'] ); ?>" />
+					</p>
+					<p>
+						<label for="postratings_color_off">
+							<?php esc_html_e( 'Not rated', 'wp-postratings' ); ?>
+						</label><br />
+						<input type="color" id="postratings_color_off"
+							name="<?php echo esc_attr( self::name( 'colors', 'off' ) ); ?>"
+							value="<?php echo esc_attr( $options['colors']['off'] ); ?>" />
+					</p>
+					<p class="description">
+						<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><?php esc_html_e( 'Enable Google Rich Snippets?', 'wp-postratings' ); ?></th>
 				<td>
 					<label><input type="radio" id="postratings_richsnippet_on" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="1" <?php checked( $options['richsnippet'], 1 ); ?> />&nbsp;<?php esc_html_e( 'Yes', 'wp-postratings' ); ?></label>

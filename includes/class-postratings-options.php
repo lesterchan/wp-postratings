@@ -120,6 +120,14 @@ class Postratings_Options {
 				'loading' => 1,
 				'fading'  => 1,
 			),
+			// The colour used to be chosen by picking a whole image set:
+			// stars_crystal and stars_dark were the same star in another
+			// colour. Collapsing those into CSS would have left the choice
+			// only to people who write CSS, so it is a setting instead.
+			'colors'              => array(
+				'on'  => '#f5a623',
+				'off' => '#d4d4d8',
+			),
 			'ratings'             => array(
 				'text'  => array(
 					__( '1 Star', 'wp-postratings' ),
@@ -215,7 +223,7 @@ class Postratings_Options {
 	private static function merge( array $defaults, array $stored ) {
 		$merged = array_merge( $defaults, $stored );
 
-		foreach ( array( 'ajax_style', 'ratings', 'templates' ) as $group ) {
+		foreach ( array( 'ajax_style', 'colors', 'ratings', 'templates' ) as $group ) {
 			if ( isset( $stored[ $group ] ) && is_array( $stored[ $group ] ) ) {
 				$merged[ $group ] = array_merge( $defaults[ $group ], $stored[ $group ] );
 			} else {
@@ -295,6 +303,23 @@ class Postratings_Options {
 			foreach ( array( 'loading', 'fading' ) as $key ) {
 				if ( isset( $options['ajax_style'][ $key ] ) ) {
 					$clean['ajax_style'][ $key ] = empty( $options['ajax_style'][ $key ] ) ? 0 : 1;
+				}
+			}
+		}
+
+		if ( isset( $options['colors'] ) && is_array( $options['colors'] ) ) {
+			foreach ( array( 'on', 'off' ) as $key ) {
+				if ( ! isset( $options['colors'][ $key ] ) ) {
+					continue;
+				}
+
+				// sanitize_hex_color() returns null for anything that is not a
+				// hex colour, which would blank the property and render the
+				// shapes invisible; the stored value stands instead.
+				$color = sanitize_hex_color( trim( (string) $options['colors'][ $key ] ) );
+
+				if ( null !== $color && '' !== $color ) {
+					$clean['colors'][ $key ] = $color;
 				}
 			}
 		}

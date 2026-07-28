@@ -245,6 +245,116 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 		$this->assertNotContains( 'broken', Postratings_Shapes::names() );
 	}
 
+	// --- colour ------------------------------------------------------------
+
+	/*
+	 * The colour used to be chosen by picking an image set: stars_crystal and
+	 * stars_dark were the same star in another colour. Collapsing them into CSS
+	 * would have left the choice only to people who write CSS, so it survives
+	 * as a setting.
+	 */
+
+	/**
+	 * The colours ship as a setting, with sensible defaults.
+	 *
+	 * @return void
+	 */
+	public function test_the_colours_are_a_setting() {
+		$colors = Postratings_Options::get( 'colors' );
+
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['on'] );
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['off'] );
+	}
+
+	/**
+	 * A chosen colour is stored.
+	 *
+	 * @return void
+	 */
+	public function test_a_chosen_colour_is_stored() {
+		$clean = Postratings_Options::sanitize(
+			array(
+				'colors' => array(
+					'on'  => '#e5484d',
+					'off' => '#eeeeee',
+				),
+			)
+		);
+
+		$this->assertSame( '#e5484d', $clean['colors']['on'] );
+		$this->assertSame( '#eeeeee', $clean['colors']['off'] );
+	}
+
+	/**
+	 * Anything that is not a colour leaves the stored value alone.
+	 *
+	 * The sanitize_hex_color() helper answers null for junk, and writing that
+	 * through would blank the property and render every shape invisible.
+	 *
+	 * @return void
+	 */
+	public function test_a_junk_colour_keeps_the_stored_value() {
+		$this->set_option(
+			'colors',
+			array(
+				'on'  => '#123456',
+				'off' => '#abcdef',
+			)
+		);
+
+		$clean = Postratings_Options::sanitize(
+			array(
+				'colors' => array(
+					'on'  => 'javascript:alert(1)',
+					'off' => '',
+				),
+			)
+		);
+
+		$this->assertSame( '#123456', $clean['colors']['on'] );
+		$this->assertSame( '#abcdef', $clean['colors']['off'] );
+	}
+
+	/**
+	 * The chosen colours reach the page as custom properties.
+	 *
+	 * Emitted once as inline CSS rather than on every element, so a page with
+	 * fifty ratings carries one declaration rather than fifty.
+	 *
+	 * @return void
+	 */
+	public function test_the_colours_reach_the_page() {
+		$this->set_option(
+			'colors',
+			array(
+				'on'  => '#e5484d',
+				'off' => '#eeeeee',
+			)
+		);
+
+		$css = Postratings::color_css();
+
+		$this->assertStringContainsString( '--postratings-color-on:#e5484d', $css );
+		$this->assertStringContainsString( '--postratings-color-off:#eeeeee', $css );
+	}
+
+	/**
+	 * Hovering uses the voted colour unless a theme says otherwise.
+	 *
+	 * Nothing is filled on the voting control yet, so a separate hover shade
+	 * would distinguish states that are rarely on screen together.
+	 *
+	 * @return void
+	 */
+	public function test_hover_defaults_to_the_voted_colour() {
+		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/postratings.css' );
+
+		$this->assertStringContainsString(
+			'--postratings-color-hover: var(--postratings-color-on)',
+			$css
+		);
+	}
+
 	// --- fill --------------------------------------------------------------
 
 	/**

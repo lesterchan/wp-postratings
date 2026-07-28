@@ -405,6 +405,8 @@ class Postratings_Admin {
 			WP_POSTRATINGS_VERSION
 		);
 
+		wp_add_inline_style( 'wp-postratings', Postratings::color_css() );
+
 		wp_enqueue_style(
 			'wp-postratings-admin',
 			WP_POSTRATINGS_URL . 'css/postratings-admin-css.css',

@@ -11,20 +11,30 @@
  *     }
  */
 
-.post-ratings,
-.post-ratings-strip,
-.post-ratings-vote {
-	/* Override these; the rest of this file is implementation.
-	   Declared on the control as well as the wrapper so a rating rendered on
-	   its own -- the shape previews on the settings screen, for one -- still
-	   has sizes and colours to work from. */
+/*
+ * Declared on :root, not on .post-ratings, for two reasons: a rating rendered
+ * outside the wrapper (the shape previews on the settings screen) still
+ * inherits them, and the colours chosen on the settings screen are appended
+ * as a :root block by wp_add_inline_style -- against an element-level
+ * declaration those would lose on specificity and never apply.
+ *
+ * A theme overriding .post-ratings still wins over both.
+ */
+:root {
 	--postratings-size: 20px;
 	--postratings-gap: 2px;
 	--postratings-color-on: #f5a623;
 	--postratings-color-off: #d4d4d8;
-	--postratings-color-hover: #f7c56b;
-	--postratings-transition: 120ms ease-in-out;
 
+	/* Defaults to the voted colour: on the voting control nothing is filled
+	   yet, so a separate hover shade mostly distinguishes states that are
+	   never on screen together. Set it to tell "about to pick" apart from
+	   "already recorded". */
+	--postratings-color-hover: var(--postratings-color-on);
+	--postratings-transition: 120ms ease-in-out;
+}
+
+.post-ratings {
 	display: inline-flex;
 	align-items: center;
 	flex-wrap: wrap;
