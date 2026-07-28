@@ -154,6 +154,13 @@ class Postratings {
 	 * Emitted once as inline CSS rather than on every rating element, so a page
 	 * with fifty ratings carries one declaration rather than fifty.
 	 *
+	 * Scoped to the wrapper rather than :root, matching wp-polls. The
+	 * stylesheet carries its defaults as var() fallbacks at each use site, so
+	 * there is nothing here to lose a specificity contest against -- which is
+	 * exactly what went wrong when the defaults sat on .post-ratings and this
+	 * was injected on :root -- and the plugin's properties stay off every other
+	 * element on the page.
+	 *
 	 * @return string
 	 */
 	public static function color_css() {
@@ -166,11 +173,11 @@ class Postratings {
 			return '';
 		}
 
-		$css  = ':root{';
-		$css .= '' !== $on ? '--postratings-color-on:' . $on . ';' : '';
-		$css .= '' !== $off ? '--postratings-color-off:' . $off . ';' : '';
+		$css  = '.post-ratings {' . "\n";
+		$css .= '' !== $on ? "\t" . '--wp-postratings-color-on: ' . $on . ';' . "\n" : '';
+		$css .= '' !== $off ? "\t" . '--wp-postratings-color-off: ' . $off . ';' . "\n" : '';
 
-		return $css . '}';
+		return $css . '}' . "\n";
 	}
 
 	/**

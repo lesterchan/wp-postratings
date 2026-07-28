@@ -246,7 +246,7 @@ class Postratings_Settings {
 							value="<?php echo esc_attr( $options['colors']['off'] ); ?>" />
 					</p>
 					<p class="description">
-						<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
+						<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --wp-postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -387,7 +387,9 @@ class Postratings_Settings {
 		foreach ( Postratings_Shapes::all() as $name => $shape ) {
 			$is_updown = Postratings_Shapes::UPDOWN === $shape['type'];
 
-			echo '<p>';
+			// Wrapped in .post-ratings so the preview inherits the colours the
+			// site has chosen: they are scoped to the wrapper, not to :root.
+			echo '<p class="post-ratings">';
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="postratings-image-choice" />&nbsp;&nbsp;&nbsp;',
 				esc_attr( self::name( 'image' ) ),

@@ -227,7 +227,7 @@ Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rati
 
 Set them on the Ratings Options screen, under **Ratings Colour**. There is one colour for a rated shape and one for an unrated one, which is what the old `stars_crystal` and `stars_dark` image sets were for.
 
-Hovering uses the rated colour. If you would rather tell "about to pick" apart from "already recorded", set `--postratings-color-hover` in your theme.
+Hovering uses the rated colour. If you would rather tell "about to pick" apart from "already recorded", set `--wp-postratings-color-hover` in your theme.
 
 ### How do I change the size, spacing or hover colour?
 
@@ -235,9 +235,9 @@ Anything beyond the two colours is a CSS custom property on `.post-ratings`, so 
 
 ```css
 .post-ratings {
-	--postratings-size: 24px;
-	--postratings-gap: 4px;
-	--postratings-color-hover: #f7c56b;
+	--wp-postratings-size: 24px;
+	--wp-postratings-gap: 4px;
+	--wp-postratings-color-hover: #f7c56b;
 }
 ```
 

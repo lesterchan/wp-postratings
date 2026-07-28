@@ -334,8 +334,12 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 
 		$css = Postratings::color_css();
 
-		$this->assertStringContainsString( '--postratings-color-on:#e5484d', $css );
-		$this->assertStringContainsString( '--postratings-color-off:#eeeeee', $css );
+		$this->assertStringContainsString( '--wp-postratings-color-on: #e5484d', $css );
+		$this->assertStringContainsString( '--wp-postratings-color-off: #eeeeee', $css );
+
+		// Scoped to the wrapper, as wp-polls does, not to :root.
+		$this->assertStringContainsString( '.post-ratings {', $css );
+		$this->assertStringNotContainsString( ':root', $css );
 	}
 
 	/**
@@ -350,9 +354,23 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/postratings.css' );
 
 		$this->assertStringContainsString(
-			'--postratings-color-hover: var(--postratings-color-on)',
+			'var( --wp-postratings-color-hover, var( --wp-postratings-color-on',
 			$css
 		);
+	}
+
+	/**
+	 * The stylesheet declares no defaults block of its own.
+	 *
+	 * Every property carries its default as a var() fallback instead, which is
+	 * what keeps the injected settings from losing a specificity contest.
+	 *
+	 * @return void
+	 */
+	public function test_the_stylesheet_has_no_defaults_block() {
+		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/postratings.css' );
+
+		$this->assertDoesNotMatchRegularExpression( '/^:root\s*\{/m', $css );
 	}
 
 	// --- fill --------------------------------------------------------------
@@ -391,7 +409,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	public function test_the_strip_carries_the_fill() {
 		$html = Postratings_Template::ratings_images( 0, 5, 3.7, 'star', 'Alt' );
 
-		$this->assertStringContainsString( '--postratings-fill:74%', $html );
+		$this->assertStringContainsString( '--wp-postratings-fill:74%', $html );
 		$this->assertStringContainsString( 'role="img"', $html );
 		$this->assertStringContainsString( 'aria-label="Alt"', $html );
 	}

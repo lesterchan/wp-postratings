@@ -6,33 +6,19 @@
  * property on .post-ratings -- restyling needs no PHP and no plugin files.
  *
  *     .post-ratings {
- *         --postratings-size: 24px;
- *         --postratings-color-on: #e5484d;
+ *         --wp-postratings-size: 24px;
+ *         --wp-postratings-color-on: #e5484d;
  *     }
  */
 
 /*
- * Declared on :root, not on .post-ratings, for two reasons: a rating rendered
- * outside the wrapper (the shape previews on the settings screen) still
- * inherits them, and the colours chosen on the settings screen are appended
- * as a :root block by wp_add_inline_style -- against an element-level
- * declaration those would lose on specificity and never apply.
- *
- * A theme overriding .post-ratings still wins over both.
+ * There is no defaults block on purpose. Every custom property carries its
+ * default as a var() fallback at the point it is used, which is how wp-polls
+ * does it, and it means the values injected by the settings screen have
+ * nothing to compete with. Declaring defaults on .post-ratings and injecting
+ * on :root -- the arrangement this replaced -- loses on specificity, so the
+ * chosen colour silently never applied.
  */
-:root {
-	--postratings-size: 20px;
-	--postratings-gap: 2px;
-	--postratings-color-on: #f5a623;
-	--postratings-color-off: #d4d4d8;
-
-	/* Defaults to the voted colour: on the voting control nothing is filled
-	   yet, so a separate hover shade mostly distinguishes states that are
-	   never on screen together. Set it to tell "about to pick" apart from
-	   "already recorded". */
-	--postratings-color-hover: var(--postratings-color-on);
-	--postratings-transition: 120ms ease-in-out;
-}
 
 .post-ratings {
 	display: inline-flex;
@@ -46,14 +32,14 @@
 .post-ratings-item {
 	display: block;
 	flex: none;
-	inline-size: var(--postratings-size);
-	block-size: var(--postratings-size);
+	inline-size: var( --wp-postratings-size, 20px );
+	block-size: var( --wp-postratings-size, 20px );
 	background-color: currentColor;
 
 	/* -webkit- prefix kept: Safari only unprefixed mask-image in 17.4, and the
 	   plugin supports older iOS than that. */
-	-webkit-mask-image: var(--postratings-shape);
-	mask-image: var(--postratings-shape);
+	-webkit-mask-image: var( --wp-postratings-shape );
+	mask-image: var( --wp-postratings-shape );
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
 	-webkit-mask-position: center;
@@ -73,25 +59,25 @@
 
 .post-ratings-row {
 	display: flex;
-	gap: var(--postratings-gap);
+	gap: var( --wp-postratings-gap, 2px );
 	inline-size: max-content;
 }
 
 .post-ratings-track {
-	color: var(--postratings-color-off);
+	color: var( --wp-postratings-color-off, #d4d4d8 );
 }
 
 /* A lone glyph -- an up/down vote, or a settings screen preview -- sits in
    normal flow and is always shown in the "on" colour. */
 .post-ratings-single {
-	color: var(--postratings-color-on);
+	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
 .post-ratings-single.post-ratings-shape-thumb,
 .post-ratings-single.post-ratings-shape-plusminus,
 .post-ratings-single.post-ratings-shape-tickcross,
 .post-ratings-single.post-ratings-shape-updown {
-	color: var(--postratings-color-on);
+	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
 /*
@@ -104,8 +90,8 @@
 	inset-block: 0;
 	inset-inline-start: 0;
 	overflow: hidden;
-	color: var(--postratings-color-on);
-	inline-size: var(--postratings-fill, 0%);
+	color: var( --wp-postratings-color-on, #f5a623 );
+	inline-size: var( --wp-postratings-fill, 0% );
 }
 
 /* --- voting: a scale ----------------------------------------------------- */
@@ -113,7 +99,7 @@
 .post-ratings-vote {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--postratings-gap);
+	gap: var( --wp-postratings-gap, 2px );
 	border: 0;
 	padding: 0;
 	margin: 0;
@@ -145,8 +131,8 @@
 .post-ratings-vote label {
 	display: block;
 	cursor: pointer;
-	color: var(--postratings-color-off);
-	transition: color var(--postratings-transition);
+	color: var( --wp-postratings-color-off, #d4d4d8 );
+	transition: color var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
 .post-ratings-vote label span {
@@ -173,12 +159,12 @@
 .post-ratings-scale label:hover ~ label,
 .post-ratings-scale input:focus-visible + label,
 .post-ratings-scale input:focus-visible + label ~ label {
-	color: var(--postratings-color-hover);
+	color: var( --wp-postratings-color-hover, var( --wp-postratings-color-on, #f5a623 ) );
 }
 
 .post-ratings-scale input:checked + label,
 .post-ratings-scale input:checked + label ~ label {
-	color: var(--postratings-color-on);
+	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
 .post-ratings-scale input:focus-visible + label {
@@ -200,13 +186,13 @@
 	margin: 0;
 	background: none;
 	cursor: pointer;
-	color: var(--postratings-color-off);
-	transition: color var(--postratings-transition);
+	color: var( --wp-postratings-color-off, #d4d4d8 );
+	transition: color var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
 .post-ratings-updown button:hover,
 .post-ratings-updown button:focus-visible {
-	color: var(--postratings-color-hover);
+	color: var( --wp-postratings-color-hover, var( --wp-postratings-color-on, #f5a623 ) );
 }
 
 .post-ratings-updown button:focus-visible {
@@ -216,12 +202,12 @@
 
 .post-ratings-updown .post-ratings-up:hover,
 .post-ratings-updown .post-ratings-up:focus-visible {
-	color: var(--postratings-color-up, #2e9e4f);
+	color: var( --wp-postratings-color-up, #2e9e4f );
 }
 
 .post-ratings-updown .post-ratings-down:hover,
 .post-ratings-updown .post-ratings-down:focus-visible {
-	color: var(--postratings-color-down, #e5484d);
+	color: var( --wp-postratings-color-down, #e5484d );
 }
 
 .post-ratings-updown button span {
@@ -237,7 +223,7 @@
 
 .post-ratings[aria-busy="true"] {
 	opacity: 0.5;
-	transition: opacity var(--postratings-transition);
+	transition: opacity var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
 .post-ratings[aria-busy="true"] label,
@@ -281,6 +267,6 @@
 
 @media (prefers-contrast: more) {
 	.post-ratings {
-		--postratings-color-off: #6b7280;
+		--wp-postratings-color-off: #6b7280;
 	}
 }

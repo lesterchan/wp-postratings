@@ -73,11 +73,11 @@ class Postratings_Template {
 	 */
 	private static function shape_style( $shape ) {
 		if ( Postratings_Shapes::is_updown( $shape ) ) {
-			return '--postratings-shape-up:url(' . Postratings_Shapes::data_uri( $shape, 'up' ) . ');' .
-				'--postratings-shape-down:url(' . Postratings_Shapes::data_uri( $shape, 'down' ) . ')';
+			return '--wp-postratings-shape-up:url(' . Postratings_Shapes::data_uri( $shape, 'up' ) . ');' .
+				'--wp-postratings-shape-down:url(' . Postratings_Shapes::data_uri( $shape, 'down' ) . ')';
 		}
 
-		return '--postratings-shape:url(' . Postratings_Shapes::data_uri( $shape ) . ')';
+		return '--wp-postratings-shape:url(' . Postratings_Shapes::data_uri( $shape ) . ')';
 	}
 
 	/**
@@ -136,10 +136,10 @@ class Postratings_Template {
 		$image_alt   = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
 		$fill        = self::fill_percentage( $post_rating, $ratings_max );
 
-		$style = self::shape_style( $shape ) . ';--postratings-fill:' . $fill . '%';
+		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
 
 		$item_style = Postratings_Shapes::is_updown( $shape )
-			? '--postratings-shape:var(--postratings-shape-up)'
+			? '--wp-postratings-shape:var(--wp-postratings-shape-up)'
 			: '';
 
 		$html  = '<span class="post-ratings-strip post-ratings-shape-' . esc_attr( $shape ) . '"';
@@ -261,8 +261,8 @@ class Postratings_Template {
 		$html .= ' role="group" aria-label="' . esc_attr__( 'Vote on this post', 'wp-postratings' ) . '">';
 
 		$buttons = array(
-			array( 'up', 2, $up, '--postratings-shape:var(--postratings-shape-up)' ),
-			array( 'down', 1, $down, '--postratings-shape:var(--postratings-shape-down)' ),
+			array( 'up', 2, $up, '--wp-postratings-shape:var(--wp-postratings-shape-up)' ),
+			array( 'down', 1, $down, '--wp-postratings-shape:var(--wp-postratings-shape-down)' ),
 		);
 
 		foreach ( $buttons as $button ) {
@@ -296,7 +296,7 @@ class Postratings_Template {
 		// or the other.
 		if ( Postratings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
 			$direction = $comment_author_rating > 0 ? 'up' : 'down';
-			$style     = self::shape_style( $shape ) . ';--postratings-shape:var(--postratings-shape-' . $direction . ')';
+			$style     = self::shape_style( $shape ) . ';--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')';
 
 			// A single glyph in normal flow, not the track-and-fill overlay: the
 			// fill layer is absolutely positioned, so on its own it leaves the
