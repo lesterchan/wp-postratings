@@ -407,12 +407,9 @@ class Postratings_Admin {
 
 		wp_add_inline_style( 'wp-postratings', Postratings::color_css() );
 
-		wp_enqueue_style(
-			'wp-postratings-admin',
-			WP_POSTRATINGS_URL . 'css/postratings-admin-css.css',
-			array( 'wp-postratings' ),
-			WP_POSTRATINGS_VERSION
-		);
+		// There is no separate admin stylesheet: postratings-admin-css.css had
+		// been an empty file since 2020 and was still being requested on every
+		// screen this plugin owns.
 
 		wp_enqueue_script(
 			'wp-postratings-admin',
