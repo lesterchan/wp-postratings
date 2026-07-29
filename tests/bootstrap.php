@@ -40,4 +40,4 @@ require $_tests_dir . '/includes/bootstrap.php';
 
 // After the WordPress bootstrap, which is what declares WP_UnitTestCase -- the
 // fixture base class extends it, so it cannot be loaded any earlier.
-require_once __DIR__ . '/class-wp-postratings-testcase.php';
+require_once __DIR__ . '/helper-testcase.php';

@@ -5,7 +5,7 @@
  * delegated listeners to document, so it is loaded into a page and driven.
  */
 import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { loadScript } from './helpers.js';
+import { loadScript } from './helper-dom.js';
 
 describe( 'wp-postratings settings screen', () => {
 	beforeAll( () => {
@@ -21,7 +21,7 @@ describe( 'wp-postratings settings screen', () => {
 			},
 		};
 
-		loadScript( 'js/postratings-admin.js' );
+		loadScript( 'js/wp-postratings-admin.js' );
 	} );
 
 	beforeEach( () => {

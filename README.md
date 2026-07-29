@@ -51,7 +51,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 * NEW: Rating colours are a setting. Pick the rated and not-rated colours on the Ratings Options screen; this replaces the old colour variants of the image sets, where changing colour meant choosing a different set of files.
 * NEW: `wp_postratings_shapes` lets you register your own rating shape.
 * NEW: `RATINGS_IMG_EXT` and `wp_postratings_image_extension` are gone; there are no image files left to have an extension. The `wp_postratings_ratings_image_alt` filter stays, but it now sets the rating's accessible label rather than an image's alt and title text.
-* IMPORTANT: The stylesheet is now `postratings.css`, not `postratings-css.css`, and there is no separate RTL stylesheet. If your theme ships its own `postratings-css.css` override it will no longer be picked up; rename it, or better, use the colour setting and the CSS custom properties instead.
+* IMPORTANT: The stylesheet is now `wp-postratings.css`, not `postratings-css.css`, and there is no separate RTL stylesheet. If your theme ships its own `postratings-css.css` override it will no longer be picked up; rename it, or better, use the colour setting and the CSS custom properties instead.
 * FIXED: The plugin requested an admin stylesheet that had been an empty file since 2020.
 * NEW: The fifteen `postratings_*` option rows are consolidated into a single `postratings_options` row. Your settings are migrated automatically.
 * FIXED: The per-post lock file was never released, so one was left behind in the server's temporary directory on every single rating.
@@ -342,7 +342,7 @@ The default cookie expiration if 'time() + 30000000', if you want to change the 
 
 Most restyling needs no CSS file at all any more: the colours are a setting, and the size, spacing and hover colour are custom properties. See the two questions above first.
 
-If you do want to replace the stylesheet wholesale, WP-PostRatings loads `postratings.css` from your theme's directory (or its `css/` subdirectory) when that file exists, and its own copy otherwise, so an upgrade will not overwrite your styles.
+If you do want to replace the stylesheet wholesale, WP-PostRatings loads `wp-postratings.css` from your theme's directory (or its `css/` subdirectory) when that file exists, and its own copy otherwise, so an upgrade will not overwrite your styles.
 
 Note the filename changed in 2.0.0: it was `postratings-css.css` before. A theme still shipping the old name is simply ignored, and the plugin's own stylesheet loads instead. There is no separate RTL stylesheet any more either, because the rules use logical properties.
 

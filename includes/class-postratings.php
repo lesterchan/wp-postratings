@@ -129,13 +129,13 @@ class Postratings {
 
 		// No separate RTL stylesheet since 2.0.0: the rules use logical
 		// properties, so direction is handled by the browser.
-		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'postratings.css' ), array(), WP_POSTRATINGS_VERSION );
+		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'wp-postratings.css' ), array(), WP_POSTRATINGS_VERSION );
 		wp_add_inline_style( 'wp-postratings', self::color_css() );
 
 		// No jQuery dependency since 2.0.0.
 		wp_enqueue_script(
 			'wp-postratings',
-			WP_POSTRATINGS_URL . 'js/postratings.js',
+			WP_POSTRATINGS_URL . 'js/wp-postratings.js',
 			array(),
 			WP_POSTRATINGS_VERSION,
 			true

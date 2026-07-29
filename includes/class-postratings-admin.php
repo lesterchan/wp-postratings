@@ -399,7 +399,7 @@ class Postratings_Admin {
 		// it the picker renders as a list of labels with nothing beside them.
 		wp_enqueue_style(
 			'wp-postratings',
-			WP_POSTRATINGS_URL . 'css/postratings.css',
+			WP_POSTRATINGS_URL . 'css/wp-postratings.css',
 			array(),
 			WP_POSTRATINGS_VERSION
 		);
@@ -412,7 +412,7 @@ class Postratings_Admin {
 
 		wp_enqueue_script(
 			'wp-postratings-admin',
-			WP_POSTRATINGS_URL . 'js/postratings-admin.js',
+			WP_POSTRATINGS_URL . 'js/wp-postratings-admin.js',
 			array(),
 			WP_POSTRATINGS_VERSION,
 			true

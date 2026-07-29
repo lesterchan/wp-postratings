@@ -22,4 +22,4 @@ npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratin
 	composer install --no-interaction --no-progress
 
 npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratings \
-	vendor/bin/phpunit -c tests/phpunit-multisite.xml "$@"
+	vendor/bin/phpunit -c phpunit-multisite.xml.dist "$@"

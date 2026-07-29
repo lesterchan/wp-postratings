@@ -351,7 +351,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_hover_defaults_to_the_voted_colour() {
-		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/postratings.css' );
+		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/wp-postratings.css' );
 
 		$this->assertStringContainsString(
 			'var( --wp-postratings-color-hover, var( --wp-postratings-color-on',
@@ -368,7 +368,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_stylesheet_has_no_defaults_block() {
-		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/postratings.css' );
+		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/wp-postratings.css' );
 
 		$this->assertDoesNotMatchRegularExpression( '/^:root\s*\{/m', $css );
 	}

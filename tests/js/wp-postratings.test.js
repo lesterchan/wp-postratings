@@ -7,13 +7,13 @@
  * contract the PHP handler depends on.
  */
 import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helpers.js';
+import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helper-dom.js';
 
 describe( 'wp-postratings front end', () => {
 	beforeAll( () => {
 		// Must exist before the IIFE evaluates: it reads l10n as it runs.
 		window.ratingsL10n = l10nFixture();
-		loadScript( 'js/postratings.js' );
+		loadScript( 'js/wp-postratings.js' );
 	} );
 
 	beforeEach( () => {
