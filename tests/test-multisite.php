@@ -16,7 +16,7 @@
  * @covers WP_PostRatings_Install::activate
  * @covers WP_PostRatings::register_table
  */
-class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
+class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Skip the whole class unless this is a network.

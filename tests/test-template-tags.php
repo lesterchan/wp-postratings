@@ -17,7 +17,7 @@
  * @covers ::expand_ratings_template
  * @covers WP_PostRatings_Template::expand
  */
-class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
+class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Every documented tag still exists and is callable.

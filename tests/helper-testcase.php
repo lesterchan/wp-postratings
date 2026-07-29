@@ -52,10 +52,9 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 			wp_delete_file( $stale );
 		}
 
-		// The comment globals are not part of WP_UnitTestCase's rollback, so a
+		// The comment global is not part of WP_UnitTestCase's rollback, so a
 		// comment left in place leaks into the next test's lookups.
 		unset( $GLOBALS['comment'] );
-		$GLOBALS['comment_authors_ratings'] = array();
 
 		$_GET     = array();
 		$_POST    = array();

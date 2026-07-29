@@ -15,7 +15,7 @@
  * @covers WP_PostRatings_Rating::can_rate
  * @covers WP_PostRatings_Rating::has_rated
  */
-class Test_Postratings_Vote extends WP_PostRatings_TestCase {
+class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Set up an open, unlogged install so each test states its own guard.

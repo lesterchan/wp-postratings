@@ -15,7 +15,7 @@
  * @covers WP_PostRatings_Rating::get_ip
  * @covers WP_PostRatings_Rating::parse_ip_header
  */
-class Test_Postratings_Ip extends WP_PostRatings_TestCase {
+class WP_PostRatings_Ip_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * REMOTE_ADDR passes through unchanged.

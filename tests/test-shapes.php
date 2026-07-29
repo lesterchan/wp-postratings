@@ -16,7 +16,7 @@
  * @covers WP_PostRatings_Template::resolve_shape
  * @covers WP_PostRatings_Template::fill_percentage
  */
-class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
+class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Both interaction families ship.

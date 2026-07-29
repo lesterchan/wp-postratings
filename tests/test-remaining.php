@@ -14,7 +14,7 @@
  * @covers WP_PostRatings_Shapes
  * @covers WP_PostRatings_Template::snippet
  */
-class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
+class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 	// --- query sorting ----------------------------------------------------
 

@@ -10,7 +10,7 @@
  *
  * @covers WP_PostRatings_Options
  */
-class Test_Postratings_Options extends WP_PostRatings_TestCase {
+class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * The settings row and the marker row both take the plugin prefix.

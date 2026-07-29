@@ -17,7 +17,7 @@
  * @covers WP_PostRatings_Options::maybe_migrate
  * @covers WP_PostRatings_Install::maybe_upgrade
  */
-class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
+class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Post carrying ratings from before the upgrade.

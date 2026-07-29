@@ -15,7 +15,7 @@
  * @covers WP_PostRatings_Admin::load_manage
  * @covers WP_PostRatings_Settings::ajax_rating_fields
  */
-class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
+class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Make the endpoints reachable from a test.

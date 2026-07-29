@@ -16,7 +16,7 @@
  * @covers WP_PostRatings_Admin::render_manage
  * @covers WP_PostRatings_Widget
  */
-class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
+class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Always be a user with the capability: these screens wp_die() otherwise,

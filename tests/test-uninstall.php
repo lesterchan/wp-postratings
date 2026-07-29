@@ -10,7 +10,7 @@
  *
  * @covers WP_PostRatings_Install
  */
-class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
+class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * The log table exists after installation.

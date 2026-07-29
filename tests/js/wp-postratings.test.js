@@ -65,7 +65,7 @@ describe( 'wp-postratings front end', () => {
 
 		const body = new URLSearchParams( window.fetch.mock.calls[ 0 ][ 1 ].body );
 
-		// The contract Postratings_Rating::handle_vote() depends on; rename any
+		// The contract WP_PostRatings_Rating::handle_vote() depends on; rename any
 		// of these and votes are dropped silently.
 		expect( body.get( 'action' ) ).toBe( 'wp_postratings' );
 		expect( body.get( 'pid' ) ).toBe( '4' );

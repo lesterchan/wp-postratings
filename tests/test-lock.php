@@ -15,7 +15,7 @@
  * @covers WP_PostRatings_Rating::release_lock
  * @covers WP_PostRatings_Rating::lock_file
  */
-class Test_Postratings_Lock extends WP_PostRatings_TestCase {
+class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * The lock file is named per site and per post.
@@ -107,15 +107,14 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	public function test_a_contending_lock_fails_fast() {
 		$path = WP_PostRatings_Rating::lock_file( 1 );
 
-		$holder = fopen( $path, 'w+' );
-		$this->assertTrue( flock( $holder, LOCK_EX | LOCK_NB ) );
+		$this->assertNotEmpty( $path );
 
-		$contender = fopen( $path, 'w+' );
-		$this->assertFalse( flock( $contender, LOCK_EX | LOCK_NB ), 'the lock was not exclusive' );
+		$holder = WP_PostRatings_Rating::acquire_lock( 1 );
 
-		flock( $holder, LOCK_UN );
-		fclose( $holder );
-		fclose( $contender );
+		$this->assertIsResource( $holder, 'the first attempt should take the lock' );
+		$this->assertFalse( WP_PostRatings_Rating::acquire_lock( 1 ), 'the lock was not exclusive' );
+
+		WP_PostRatings_Rating::release_lock( $holder, 1 );
 	}
 
 	/**
@@ -149,13 +148,11 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 		$this->set_option( 'logging_method', 0 );
 
 		// Hold the lock from a separate handle, as a concurrent request would.
-		$holder = fopen( WP_PostRatings_Rating::lock_file( $post_id ), 'w+' );
-		flock( $holder, LOCK_EX | LOCK_NB );
+		$holder = WP_PostRatings_Rating::acquire_lock( $post_id );
 
 		$output = $this->cast_vote( $post_id, 4 );
 
-		flock( $holder, LOCK_UN );
-		fclose( $holder );
+		WP_PostRatings_Rating::release_lock( $holder, $post_id );
 
 		$this->assertStringContainsString( 'Unable to obtain lock', $output );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );

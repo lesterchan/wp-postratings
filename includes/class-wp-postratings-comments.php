@@ -48,6 +48,7 @@ class WP_PostRatings_Comments {
 			return;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and the map is rebuilt per post per request.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT rating_username, rating_rating, rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d",
@@ -64,10 +65,11 @@ class WP_PostRatings_Comments {
 			self::$ratings[ $row->rating_ip ]                       = $row->rating_rating;
 		}
 
-		// Kept in sync for anything reading the old global directly. The name
-		// predates the prefix rule and is part of the shipped surface.
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
-		$GLOBALS['comment_authors_ratings'] = self::$ratings;
+		// The unprefixed $comment_authors_ratings global this used to keep in
+		// step is gone with 2.0.0. It was an implementation detail of the
+		// procedural version, never a documented one, and a global variable
+		// named after nothing in particular is exactly what §2.4 forbids.
+		// WP_PostRatings_Comments::rating_for() answers the same question.
 	}
 
 	/**

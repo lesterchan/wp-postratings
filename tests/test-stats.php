@@ -15,7 +15,7 @@
  *
  * @covers WP_PostRatings_Stats
  */
-class Test_Postratings_Stats extends WP_PostRatings_TestCase {
+class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Render rankings as a bare list of post ids.

@@ -14,7 +14,7 @@
  *
  * @covers WP_PostRatings_Comments
  */
-class Test_Postratings_Comments extends WP_PostRatings_TestCase {
+class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 
 	/**
 	 * Post being commented on.
@@ -230,16 +230,16 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The legacy global is kept in step for anything reading it directly.
+	 * The unprefixed global the procedural version kept is gone.
 	 *
 	 * @return void
 	 */
-	public function test_the_legacy_global_is_populated() {
+	public function test_the_legacy_global_is_no_longer_written() {
 		$this->log_rating( $this->post_id, 4, 'Alice' );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertIsArray( $GLOBALS['comment_authors_ratings'] );
-		$this->assertArrayHasKey( 'Alice', $GLOBALS['comment_authors_ratings'] );
+		$this->assertArrayNotHasKey( 'comment_authors_ratings', $GLOBALS, 'an unprefixed global survived 2.0.0' );
+		$this->assertSame( 4, WP_PostRatings_Comments::rating_for( 'Alice' ), 'the map itself should still answer' );
 	}
 
 	/**
