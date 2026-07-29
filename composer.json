@@ -2,11 +2,7 @@
 	"name": "lesterchan/wp-postratings",
 	"description": "Adds an AJAX rating system for your WordPress site's content.",
 	"type": "wordpress-plugin",
-	"keywords": [
-		"wordpress",
-		"plugin",
-		"ratings"
-	],
+	"homepage": "https://wordpress.org/plugins/wp-postratings/",
 	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
@@ -15,7 +11,7 @@
 		}
 	],
 	"require": {
-		"php": ">=7.4"
+		"php": ">=8.2"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^9.6",

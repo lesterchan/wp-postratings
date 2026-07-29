@@ -2,5 +2,5 @@
 /**
  * Silence is golden.
  *
- * @package wp-postratings
+ * @package WP-PostRatings
  */

@@ -1,27 +1,32 @@
 #!/usr/bin/env bash
 #
-# Run the PHPUnit suite inside wp-env.
+# Run the PHPUnit suite against a real WordPress install, single site.
 #
-# Requires Docker to be running. First run takes a few minutes while wp-env
-# pulls the WordPress, MySQL and PHPUnit images.
+# Docker is the only prerequisite: wp-env brings up WordPress, MySQL and the
+# WordPress test library. Dev dependencies are installed INSIDE the container,
+# so vendor/ never appears in the repo.
 #
-#   bin/test.sh            run the suite
-#   bin/test.sh --filter X pass extra args straight to phpunit
+#   bash bin/test.sh                 # whole suite
+#   bash bin/test.sh --filter Escaping
+#
+# For the network run use bin/test-multisite.sh. Override the stack with
+# WP_ENV_PHP_VERSION / WP_ENV_CORE, exactly as CI does.
+
 set -euo pipefail
 
-cd "$( dirname "${BASH_SOURCE[0]}" )/.."
+SLUG=wp-postratings
+CONFIG="${PHPUNIT_CONFIG:-phpunit.xml.dist}"
+CWD=wp-content/plugins/$SLUG
 
-if ! docker info >/dev/null 2>&1; then
-	echo "Docker is not running. Start Docker Desktop and try again." >&2
-	exit 1
-fi
+cd "$(dirname "$0")/.."
 
-# Bring the environment up (idempotent).
+echo "==> Starting wp-env (PHP ${WP_ENV_PHP_VERSION:-default}, core ${WP_ENV_CORE:-default})"
 npx --yes @wordpress/env start
 
-# Dev dependencies live inside the container, so nothing lands in the repo.
-npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratings \
+echo "==> Installing dev dependencies inside the tests container"
+npx --yes @wordpress/env run tests-cli --env-cwd="$CWD" \
 	composer install --no-interaction --no-progress
 
-npx --yes @wordpress/env run tests-cli --env-cwd=wp-content/plugins/wp-postratings \
-	vendor/bin/phpunit "$@"
+echo "==> Running PHPUnit ($CONFIG)"
+npx --yes @wordpress/env run tests-cli --env-cwd="$CWD" \
+	vendor/bin/phpunit -c "$CONFIG" "$@"

@@ -4,8 +4,8 @@
  * Plugin URI: https://lesterchan.net/portfolio/programming/php/
  * Description: Adds an AJAX rating system for your WordPress site's content.
  * Version: 2.0.0
- * Requires at least: 6.0
- * Requires PHP: 7.4
+ * Requires at least: 6.8
+ * Requires PHP: 8.2
  * Author: Lester 'GaMerZ' Chan
  * Author URI: https://lesterchan.net
  * License: GPLv2 or later
@@ -17,7 +17,7 @@
  */
 
 /*
-	Copyright 2026 Lester Chan  (email : lesterchan@gmail.com)
+	Copyright 2026  Lester Chan  (email : lesterchan@gmail.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
