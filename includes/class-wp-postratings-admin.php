@@ -77,8 +77,8 @@ class WP_PostRatings_Admin {
 
 		add_submenu_page(
 			self::PAGE,
-			__( 'Ratings Options', 'wp-postratings' ),
-			__( 'Ratings Options', 'wp-postratings' ),
+			__( 'Ratings Settings', 'wp-postratings' ),
+			__( 'Settings', 'wp-postratings' ),
 			WP_PostRatings_Settings::capability(),
 			WP_PostRatings_Settings::page(),
 			array( 'WP_PostRatings_Settings', 'render' )
@@ -174,12 +174,7 @@ class WP_PostRatings_Admin {
 			$ids = wp_parse_id_list( wp_unslash( $_REQUEST['rating_id'] ) );
 
 			if ( ! empty( $ids ) ) {
-				$placeholders = implode( ', ', array_fill( 0, count( $ids ), '%d' ) );
-
-				$deleted = $wpdb->query(
-					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders is a generated run of %d, one per id.
-					$wpdb->prepare( "DELETE FROM {$wpdb->ratings} WHERE rating_id IN ( $placeholders )", $ids )
-				);
+				$deleted = self::delete_log_rows( 'rating_id', $ids );
 
 				/* translators: %s: number of log entries deleted. */
 				$notices[] = sprintf( _n( '%s rating log entry deleted.', '%s rating log entries deleted.', $deleted, 'wp-postratings' ), number_format_i18n( $deleted ) );
@@ -205,9 +200,24 @@ class WP_PostRatings_Admin {
 		}
 
 		if ( ! empty( $notices ) ) {
-			set_transient( 'wp_postratings_admin_notices', $notices, 60 );
+			foreach ( $notices as $notice ) {
+				add_settings_error( self::PAGE, 'wp_postratings_deleted', $notice, 'success' );
+			}
 
-			wp_safe_redirect( add_query_arg( 'page', self::PAGE, admin_url( 'admin.php' ) ) );
+			// Carried across the redirect the way the Settings API carries a
+			// settings screen's own errors, so the notice survives the
+			// post-redirect-get without a transient of our own.
+			set_transient( 'settings_errors', get_settings_errors(), 30 );
+
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'             => self::PAGE,
+						'settings-updated' => 'true',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 	}
@@ -229,14 +239,10 @@ class WP_PostRatings_Admin {
 
 		if ( 1 === $mode || 3 === $mode ) {
 			if ( $is_all ) {
-				$deleted = $wpdb->query( "DELETE FROM {$wpdb->ratings}" );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Emptying the plugin's own table; core has no API for it and there is nothing to cache.
+				$deleted = (int) $wpdb->query( "DELETE FROM {$wpdb->ratings}" );
 			} else {
-				$placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
-
-				$deleted = $wpdb->query(
-					// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders is a generated run of %d, one per id.
-					$wpdb->prepare( "DELETE FROM {$wpdb->ratings} WHERE rating_postid IN ( $placeholders )", $post_ids )
-				);
+				$deleted = self::delete_log_rows( 'rating_postid', $post_ids );
 			}
 
 			/* translators: %s: number of log entries deleted. */
@@ -246,6 +252,7 @@ class WP_PostRatings_Admin {
 		if ( 2 === $mode || 3 === $mode ) {
 			if ( $is_all ) {
 				foreach ( $meta_keys as $meta_key ) {
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- delete_post_meta() wants a post id; this clears the key across every post in one statement.
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $meta_key ) );
 				}
 
@@ -270,6 +277,32 @@ class WP_PostRatings_Admin {
 	}
 
 	/**
+	 * Delete log rows matching a list of ids.
+	 *
+	 * One $wpdb->delete() per id rather than a generated run of %d
+	 * placeholders: an IN () list cannot be expressed with $wpdb->prepare()
+	 * without interpolating the placeholders into the SQL first, and the lists
+	 * here are a page of log rows or a handful of post ids typed into a form.
+	 *
+	 * @param string $column Column to match on.
+	 * @param array  $ids    Ids to delete.
+	 *
+	 * @return int Rows deleted.
+	 */
+	private static function delete_log_rows( $column, $ids ) {
+		global $wpdb;
+
+		$deleted = 0;
+
+		foreach ( $ids as $id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Deleting from the plugin's own table; core has no API for it and there is nothing to cache.
+			$deleted += (int) $wpdb->delete( $wpdb->ratings, array( $column => (int) $id ), array( '%d' ) );
+		}
+
+		return $deleted;
+	}
+
+	/**
 	 * Render the log screen.
 	 *
 	 * @return void
@@ -289,78 +322,74 @@ class WP_PostRatings_Admin {
 
 		self::$table->prepare_items();
 
-		$notices = get_transient( 'wp_postratings_admin_notices' );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Summing a meta key across every post; get_post_meta() cannot aggregate, and the totals are cached below.
+		$total_users = wp_cache_get( 'totals_users', WP_PostRatings_Stats::CACHE_GROUP );
+		$total_score = wp_cache_get( 'totals_score', WP_PostRatings_Stats::CACHE_GROUP );
 
-		if ( ! empty( $notices ) ) {
-			delete_transient( 'wp_postratings_admin_notices' );
+		if ( false === $total_users || false === $total_score ) {
+			$total_users = (int) $wpdb->get_var( "SELECT SUM(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = 'ratings_users'" );
+			$total_score = (int) $wpdb->get_var( "SELECT SUM((meta_value+0.00)) FROM {$wpdb->postmeta} WHERE meta_key = 'ratings_score'" );
 
-			foreach ( (array) $notices as $notice ) {
-				printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $notice ) );
-			}
+			wp_cache_add( 'totals_users', $total_users, WP_PostRatings_Stats::CACHE_GROUP, HOUR_IN_SECONDS );
+			wp_cache_add( 'totals_score', $total_score, WP_PostRatings_Stats::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 
-		$total_users = (int) $wpdb->get_var( "SELECT SUM(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = 'ratings_users'" );
-		$total_score = (int) $wpdb->get_var( "SELECT SUM((meta_value+0.00)) FROM {$wpdb->postmeta} WHERE meta_key = 'ratings_score'" );
+		$total_users = (int) $total_users;
+		$total_score = (int) $total_score;
 		$total_avg   = $total_users > 0 ? $total_score / $total_users : 0;
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Manage Ratings', 'wp-postratings' ); ?></h1>
+			<?php settings_errors( self::PAGE ); ?>
 
 			<h2><?php esc_html_e( 'Rating Logs', 'wp-postratings' ); ?></h2>
 			<form method="get">
 				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>" />
 				<?php
-				self::$table->search_box( __( 'Search Logs', 'wp-postratings' ), 'postratings' );
+				self::$table->search_box( __( 'Search Logs', 'wp-postratings' ), 'wp-postratings' );
 				self::$table->display();
 				?>
 			</form>
 
 			<h2><?php esc_html_e( 'Rating Stats', 'wp-postratings' ); ?></h2>
 			<table class="widefat striped">
-				<tr>
-					<th><?php esc_html_e( 'Total Users Voted:', 'wp-postratings' ); ?></th>
-					<td><?php echo esc_html( number_format_i18n( $total_users ) ); ?></td>
-				</tr>
-				<tr>
-					<th><?php esc_html_e( 'Total Score:', 'wp-postratings' ); ?></th>
-					<td><?php echo esc_html( number_format_i18n( $total_score ) ); ?></td>
-				</tr>
-				<tr>
-					<th><?php esc_html_e( 'Total Average:', 'wp-postratings' ); ?></th>
-					<td><?php echo esc_html( number_format_i18n( $total_avg, 2 ) ); ?></td>
-				</tr>
+				<tbody>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Total Users Voted:', 'wp-postratings' ); ?></th>
+						<td><?php echo esc_html( number_format_i18n( $total_users ) ); ?></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Total Score:', 'wp-postratings' ); ?></th>
+						<td><?php echo esc_html( number_format_i18n( $total_score ) ); ?></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Total Average:', 'wp-postratings' ); ?></th>
+						<td><?php echo esc_html( number_format_i18n( $total_avg, 2 ) ); ?></td>
+					</tr>
+				</tbody>
 			</table>
 
 			<h2><?php esc_html_e( 'Delete Ratings Data/Logs', 'wp-postratings' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( add_query_arg( 'page', self::PAGE, admin_url( 'admin.php' ) ) ); ?>">
 				<?php wp_nonce_field( 'wp_postratings_logs' ); ?>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row">
-							<label for="postratings_delete_datalog"><?php esc_html_e( 'Delete Type:', 'wp-postratings' ); ?></label>
-						</th>
-						<td>
-							<select id="postratings_delete_datalog" name="delete_datalog">
-								<option value="1"><?php esc_html_e( 'Logs Only', 'wp-postratings' ); ?></option>
-								<option value="2"><?php esc_html_e( 'Data Only', 'wp-postratings' ); ?></option>
-								<option value="3"><?php esc_html_e( 'Logs And Data', 'wp-postratings' ); ?></option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="postratings_delete_postid"><?php esc_html_e( 'Post ID(s):', 'wp-postratings' ); ?></label>
-						</th>
-						<td>
-							<input type="text" id="postratings_delete_postid" name="delete_postid" size="20" dir="ltr" class="regular-text" />
-							<p class="description"><?php esc_html_e( 'Separate each Post ID with a comma, for example 2,3,4. Type "all" to clear every post.', 'wp-postratings' ); ?></p>
-						</td>
-					</tr>
-				</table>
+				<p>
+					<label for="wp-postratings-delete-datalog"><?php esc_html_e( 'Delete Type:', 'wp-postratings' ); ?></label><br />
+					<select id="wp-postratings-delete-datalog" name="delete_datalog">
+						<option value="1"><?php esc_html_e( 'Logs Only', 'wp-postratings' ); ?></option>
+						<option value="2"><?php esc_html_e( 'Data Only', 'wp-postratings' ); ?></option>
+						<option value="3"><?php esc_html_e( 'Logs And Data', 'wp-postratings' ); ?></option>
+					</select>
+				</p>
+				<p>
+					<label for="wp-postratings-delete-postid"><?php esc_html_e( 'Post ID(s):', 'wp-postratings' ); ?></label><br />
+					<input type="text" id="wp-postratings-delete-postid" name="delete_postid" dir="ltr" class="regular-text" />
+				</p>
+				<p class="description"><?php esc_html_e( 'Separate each Post ID with a comma, for example 2,3,4. Type "all" to clear every post.', 'wp-postratings' ); ?></p>
 				<p class="submit">
 					<button type="submit" name="wp_postratings_delete" value="1" class="button button-secondary"
 						data-confirm="<?php esc_attr_e( 'You are about to delete post ratings data/logs. This action is not reversible.', 'wp-postratings' ); ?>"
-						id="postratings-delete-data">
+						id="wp-postratings-delete-data">
 						<?php esc_html_e( 'Delete Data/Logs', 'wp-postratings' ); ?>
 					</button>
 				</p>

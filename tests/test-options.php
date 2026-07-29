@@ -13,12 +13,13 @@
 class Test_Postratings_Options extends WP_PostRatings_TestCase {
 
 	/**
-	 * The row the plugin already owned is the one it consolidates into.
+	 * The settings row and the marker row both take the plugin prefix.
 	 *
 	 * @return void
 	 */
-	public function test_the_option_row_is_the_pre_existing_one() {
-		$this->assertSame( 'postratings_options', WP_PostRatings_Options::OPTION );
+	public function test_the_option_rows_are_prefixed_with_the_slug() {
+		$this->assertSame( 'wp_postratings_options', WP_PostRatings_Options::OPTION );
+		$this->assertSame( 'wp_postratings_version', WP_PostRatings_Options::VERSION );
 	}
 
 	/**

@@ -16,7 +16,7 @@
 	 * @return {void}
 	 */
 	function syncRichSnippetRatings() {
-		const parent = document.getElementById( 'postratings_richsnippet_on' );
+		const parent = document.getElementById( 'wp_postratings_richsnippet_on' );
 
 		if ( ! parent ) {
 			return;
@@ -25,7 +25,7 @@
 		const disabled = ! parent.checked;
 
 		Array.prototype.forEach.call(
-			document.querySelectorAll( '.postratings-richsnippet-ratings' ),
+			document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ),
 			function( input ) {
 				input.disabled = disabled;
 			},
@@ -38,17 +38,17 @@
 	 * @return {void}
 	 */
 	function refreshRatingFields() {
-		const button = document.getElementById( 'postratings-refresh-ratings' );
-		const target = document.getElementById( 'postratings-rating-fields' );
+		const button = document.getElementById( 'wp-postratings-refresh-ratings' );
+		const target = document.getElementById( 'wp-postratings-rating-fields' );
 		const image = document.querySelector( 'input[name$="[image]"]:checked' );
 
 		if ( ! button || ! target || ! image ) {
 			return;
 		}
 
-		const spinner = document.getElementById( 'postratings-spinner' );
-		const custom = document.getElementById( 'postratings_customrating' );
-		const max = document.getElementById( 'postratings_max' );
+		const spinner = document.getElementById( 'wp-postratings-spinner' );
+		const custom = document.getElementById( 'wp_postratings_customrating' );
+		const max = document.getElementById( 'wp_postratings_max' );
 
 		if ( spinner ) {
 			spinner.classList.add( 'is-active' );
@@ -92,8 +92,8 @@
 	 * @return {void}
 	 */
 	function applyImageChoice( input ) {
-		const custom = document.getElementById( 'postratings_customrating' );
-		const max = document.getElementById( 'postratings_max' );
+		const custom = document.getElementById( 'wp_postratings_customrating' );
+		const max = document.getElementById( 'wp_postratings_max' );
 
 		if ( custom ) {
 			custom.value = input.dataset.custom;
@@ -106,14 +106,14 @@
 	}
 
 	document.addEventListener( 'click', function( event ) {
-		const restore = event.target.closest( '.postratings-restore-template' );
+		const restore = event.target.closest( '.wp-postratings-restore-template' );
 
 		if ( restore ) {
 			event.preventDefault();
 
 			const name = restore.dataset.template;
 			const set = 'updown' === restore.dataset.variant ? l10n.updownTemplates : l10n.defaultTemplates;
-			const textarea = document.getElementById( 'postratings_template_' + name );
+			const textarea = document.getElementById( 'wp_postratings_template_' + name );
 
 			if ( textarea && set && set[ name ] ) {
 				textarea.value = set[ name ];
@@ -122,20 +122,20 @@
 			return;
 		}
 
-		if ( event.target.closest( '#postratings-refresh-ratings' ) ) {
+		if ( event.target.closest( '#wp-postratings-refresh-ratings' ) ) {
 			event.preventDefault();
 			refreshRatingFields();
 			return;
 		}
 
-		const imageChoice = event.target.closest( '.postratings-image-choice' );
+		const imageChoice = event.target.closest( '.wp-postratings-image-choice' );
 
 		if ( imageChoice ) {
 			applyImageChoice( imageChoice );
 			return;
 		}
 
-		const deleteButton = event.target.closest( '#postratings-delete-data' );
+		const deleteButton = event.target.closest( '#wp-postratings-delete-data' );
 
 		// eslint-disable-next-line no-alert -- Deleting rating data is irreversible.
 		if ( deleteButton && ! window.confirm( deleteButton.dataset.confirm ) ) {

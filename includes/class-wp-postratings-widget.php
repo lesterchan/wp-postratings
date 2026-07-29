@@ -192,7 +192,7 @@ class WP_PostRatings_Widget extends WP_Widget {
 			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'limit' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'limit' ) ); ?>" type="number" min="1" value="<?php echo esc_attr( $instance['limit'] ); ?>" />
 		</p>
 		<p>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'min_votes' ) ); ?>"><?php esc_html_e( 'Minimum Votes:', 'wp-postratings' ); ?> <span style="color: red;">*</span></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'min_votes' ) ); ?>"><?php esc_html_e( 'Minimum Votes:', 'wp-postratings' ); ?> *</label>
 			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'min_votes' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'min_votes' ) ); ?>" type="number" min="0" value="<?php echo esc_attr( $instance['min_votes'] ); ?>" />
 			<span class="description"><?php esc_html_e( 'The minimum number of votes, before the rating displayed.', 'wp-postratings' ); ?></span>
 		</p>
@@ -210,12 +210,12 @@ class WP_PostRatings_Widget extends WP_Widget {
 			</span>
 		</p>
 		<p>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'cat_ids' ) ); ?>"><?php esc_html_e( 'Category IDs:', 'wp-postratings' ); ?> <span style="color: red;">**</span></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'cat_ids' ) ); ?>"><?php esc_html_e( 'Category IDs:', 'wp-postratings' ); ?> **</label>
 			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'cat_ids' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'cat_ids' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['cat_ids'] ); ?>" />
 			<span class="description"><?php esc_html_e( 'Separate multiple categories with commas.', 'wp-postratings' ); ?></span>
 		</p>
 		<p>
-			<label for="<?php echo esc_attr( $this->get_field_id( 'time_range' ) ); ?>"><?php esc_html_e( 'Time Range:', 'wp-postratings' ); ?> <span style="color: red;">**</span></label>
+			<label for="<?php echo esc_attr( $this->get_field_id( 'time_range' ) ); ?>"><?php esc_html_e( 'Time Range:', 'wp-postratings' ); ?> **</label>
 			<input class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'time_range' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'time_range' ) ); ?>" type="text" value="<?php echo esc_attr( $instance['time_range'] ); ?>" />
 			<span class="description">
 				<?php
@@ -229,7 +229,7 @@ class WP_PostRatings_Widget extends WP_Widget {
 				?>
 			</span>
 		</p>
-		<p style="color: red;">
+		<p>
 			<span class="description"><?php esc_html_e( '* Time range statistics do not support the Minimum Votes field, you can ignore it.', 'wp-postratings' ); ?></span><br />
 			<span class="description"><?php esc_html_e( '** If you are not using any category or time range statistics, you can ignore it.', 'wp-postratings' ); ?></span>
 		</p>

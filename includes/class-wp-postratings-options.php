@@ -498,11 +498,11 @@ class WP_PostRatings_Options {
 	/**
 	 * Take this plugin's share of the two rows it used to hold jointly.
 	 *
-	 * stats_display was an array of checkbox keys written by whichever of the
-	 * six contributing plugins saved the WP-Stats screen last, and this plugin
-	 * owned four of those keys. Only one question survives -- does WP-Stats show
-	 * a ratings section at all -- because WP-Stats collects whole sections now
-	 * rather than individual panels.
+	 * The old stats_display row was an array of checkbox keys written by
+	 * whichever of the six contributing plugins saved the WP-Stats screen last,
+	 * and this plugin owned four of those keys. Only one question survives --
+	 * does WP-Stats show a ratings section at all -- because WP-Stats collects
+	 * whole sections now rather than individual panels.
 	 *
 	 * @param array $merged Settings assembled so far.
 	 *

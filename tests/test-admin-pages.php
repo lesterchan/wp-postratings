@@ -33,6 +33,10 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 
 		require_once ABSPATH . 'wp-admin/includes/admin.php';
 		set_current_screen( 'toplevel_page_' . WP_PostRatings_Admin::PAGE );
+
+		// admin_init never runs in the suite, and do_settings_sections() draws
+		// nothing at all without the sections and fields it registers.
+		WP_PostRatings_Settings::register();
 	}
 
 	/**
@@ -50,7 +54,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ), $get );
 
 		$this->assertAdminScreenClean( $html );
-		$this->assertStringContainsString( 'Post Ratings Options', $html );
+		$this->assertStringContainsString( 'Ratings Settings', $html );
 	}
 
 	/**
@@ -149,7 +153,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	public function test_the_screen_only_offers_valid_image_sets() {
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ) );
 
-		preg_match_all( '/name="postratings_options\[image\]" value="([^"]+)"/', $html, $matches );
+		preg_match_all( '/name="wp_postratings_options\[image\]" value="([^"]+)"/', $html, $matches );
 
 		$this->assertNotEmpty( $matches[1], 'the screen offered no image sets at all' );
 

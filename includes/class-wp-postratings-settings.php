@@ -12,9 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The settings screen, built on the Settings API.
  *
- * Replaces the two hand-rolled $_POST forms the plugin used before 2.0.0. Both
- * tabs write the one consolidated option; the sanitizer keeps whatever the
- * submitted tab did not post, so saving one tab cannot blank the other.
+ * Replaces the two hand-rolled $_POST forms the plugin used before 2.0.0, and
+ * the two registered settings groups that came after them: settings never span
+ * more than one page, so the second group is gone and what used to be two menu
+ * entries is one page with two tabs. Both tabs write the one consolidated
+ * option; the sanitizer keeps whatever the submitted tab did not post, so
+ * saving one tab cannot blank the other.
  *
  * @since 2.0.0
  */
@@ -23,9 +26,9 @@ class WP_PostRatings_Settings {
 	/**
 	 * Settings group passed to register_setting() and settings_fields().
 	 *
-	 * One group, not two: the screen is one page with tabs, and a tab is not a
-	 * page. Registering a second group against the same option row was what
-	 * made the two halves of this screen reachable by different URLs.
+	 * One group, not two: a tab is not a page. Registering a second group
+	 * against the same option row was what made the two halves of this screen
+	 * reachable by different URLs.
 	 */
 	const GROUP = 'wp_postratings_options';
 
@@ -33,10 +36,45 @@ class WP_PostRatings_Settings {
 	 * The capability the plugin's screens require.
 	 *
 	 * Deliberately not manage_options: WP-PostRatings has shipped its own
-	 * capability since 1.80 and sites grant it to editors who are trusted with
+	 * capability since 1.80, and sites grant it to editors who are trusted with
 	 * the rating logs but not with the rest of wp-admin.
 	 */
 	const CAPABILITY = 'manage_ratings';
+
+	/**
+	 * How the rating is drawn.
+	 */
+	const SECTION_APPEARANCE = 'wp_postratings_appearance';
+
+	/**
+	 * The per-rating text and value table.
+	 */
+	const SECTION_RATINGS = 'wp_postratings_ratings';
+
+	/**
+	 * What happens while a vote is in flight.
+	 */
+	const SECTION_AJAX = 'wp_postratings_ajax';
+
+	/**
+	 * Who may rate, and how repeat votes are detected.
+	 */
+	const SECTION_VOTING = 'wp_postratings_voting';
+
+	/**
+	 * Google rich snippets.
+	 */
+	const SECTION_SNIPPETS = 'wp_postratings_snippets';
+
+	/**
+	 * What this plugin contributes to WP-Stats.
+	 */
+	const SECTION_STATS = 'wp_postratings_stats';
+
+	/**
+	 * The %TOKEN% templates.
+	 */
+	const SECTION_TEMPLATES = 'wp_postratings_templates';
 
 	/**
 	 * The capability required for a given context.
@@ -80,31 +118,14 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * Register the one group against the one option row.
-	 *
-	 * @return void
-	 */
-	public static function register() {
-		register_setting(
-			self::GROUP,
-			WP_PostRatings_Options::OPTION,
-			array(
-				'type'              => 'array',
-				'sanitize_callback' => array( 'WP_PostRatings_Options', 'sanitize' ),
-				'default'           => WP_PostRatings_Options::defaults(),
-			)
-		);
-	}
-
-	/**
 	 * The tabs on the settings screen.
 	 *
 	 * @return array
 	 */
 	private static function tabs() {
 		return array(
-			'settings'  => __( 'Ratings Settings', 'wp-postratings' ),
-			'templates' => __( 'Ratings Templates', 'wp-postratings' ),
+			'settings'  => __( 'Settings', 'wp-postratings' ),
+			'templates' => __( 'Templates', 'wp-postratings' ),
 		);
 	}
 
@@ -114,11 +135,24 @@ class WP_PostRatings_Settings {
 	 * @return string
 	 */
 	private static function current_tab() {
-		// Reading the request to decide what to render; nothing is written here.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Choosing which tab to draw; nothing is read from the request beyond that and nothing is written.
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'settings';
 
 		return array_key_exists( $tab, self::tabs() ) ? $tab : 'settings';
+	}
+
+	/**
+	 * The Settings API page a tab's sections are registered against.
+	 *
+	 * Each tab is its own settings page as far as do_settings_sections() is
+	 * concerned, which is what stops one tab drawing the other's fields.
+	 *
+	 * @param string $tab Tab slug.
+	 *
+	 * @return string
+	 */
+	private static function tab_page( $tab ) {
+		return self::page() . '-' . $tab;
 	}
 
 	/**
@@ -134,6 +168,523 @@ class WP_PostRatings_Settings {
 
 		return '' !== $subkey ? $name . '[' . $subkey . ']' : $name;
 	}
+
+	/**
+	 * Register the one setting, its sections and its fields.
+	 *
+	 * @return void
+	 */
+	public static function register() {
+		register_setting(
+			self::GROUP,
+			WP_PostRatings_Options::OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( 'WP_PostRatings_Options', 'sanitize' ),
+				'default'           => WP_PostRatings_Options::defaults(),
+			)
+		);
+
+		$settings  = self::tab_page( 'settings' );
+		$templates = self::tab_page( 'templates' );
+
+		$sections = array(
+			array( self::SECTION_APPEARANCE, __( 'Appearance', 'wp-postratings' ), $settings ),
+			array( self::SECTION_RATINGS, __( 'Individual Rating Text and Value', 'wp-postratings' ), $settings ),
+			array( self::SECTION_AJAX, __( 'While A Vote Is In Flight', 'wp-postratings' ), $settings ),
+			array( self::SECTION_VOTING, __( 'Who May Rate', 'wp-postratings' ), $settings ),
+			array( self::SECTION_SNIPPETS, __( 'Google Rich Snippets', 'wp-postratings' ), $settings ),
+			array( self::SECTION_STATS, __( 'WP-Stats', 'wp-postratings' ), $settings ),
+			array( self::SECTION_TEMPLATES, __( 'Ratings Templates', 'wp-postratings' ), $templates ),
+		);
+
+		foreach ( $sections as $section ) {
+			list( $id, $title, $page ) = $section;
+
+			add_settings_section( $id, $title, array( __CLASS__, 'section_' . self::section_suffix( $id ) ), $page );
+		}
+
+		$fields = array(
+			array( 'image', __( 'Ratings Image:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
+			array( 'max', __( 'Max Ratings:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
+			array( 'colors', __( 'Ratings Colour:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
+			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
+			array( 'loading', __( 'Show Loading Text:', 'wp-postratings' ), self::SECTION_AJAX, $settings ),
+			array( 'fading', __( 'Fade The Rating While Voting:', 'wp-postratings' ), self::SECTION_AJAX, $settings ),
+			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
+			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
+			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
+			array( 'richsnippet', __( 'Enable Google Rich Snippets?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
+			array( 'richsnippet_ratings', __( 'Enable Ratings In Rich Snippets?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
+			array( 'stats_display', __( 'Show A Ratings Section On The Stats Page?', 'wp-postratings' ), self::SECTION_STATS, $settings ),
+			array( 'stats_most_limit', __( 'Entries Per Stats List:', 'wp-postratings' ), self::SECTION_STATS, $settings ),
+		);
+
+		foreach ( self::template_fields() as $key => $field ) {
+			$fields[] = array( 'template_' . $key, $field[0], self::SECTION_TEMPLATES, $templates );
+		}
+
+		foreach ( $fields as $field ) {
+			list( $key, $title, $section, $page ) = $field;
+
+			add_settings_field( 'wp_postratings_' . $key, $title, array( __CLASS__, 'field_' . $key ), $page, $section );
+		}
+	}
+
+	/**
+	 * The bare name of a section constant's value.
+	 *
+	 * @param string $id Section id.
+	 *
+	 * @return string
+	 */
+	private static function section_suffix( $id ) {
+		return substr( $id, strlen( 'wp_postratings_' ) );
+	}
+
+	// --- section intros ---------------------------------------------------
+
+	/**
+	 * Intro for the appearance section.
+	 *
+	 * @return void
+	 */
+	public static function section_appearance() {
+		echo '<p>' . esc_html__( 'The shapes are drawn with CSS, so they stay sharp at any size and cost no HTTP requests.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the per-rating section.
+	 *
+	 * @return void
+	 */
+	public static function section_ratings() {
+		echo '<p>' . esc_html__( 'What each step on the scale is called, and what it is worth.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the AJAX section.
+	 *
+	 * @return void
+	 */
+	public static function section_ajax() {
+		echo '<p>' . esc_html__( 'Votes are posted in the background; this is what the visitor sees while that happens.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the voting section.
+	 *
+	 * @return void
+	 */
+	public static function section_voting() {
+		echo '<p>' . esc_html__( 'Who may cast a vote, and how a repeat vote is recognised.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the rich snippets section.
+	 *
+	 * @return void
+	 */
+	public static function section_snippets() {
+		echo '<p>' . esc_html__( 'Structured data describing the post and its rating, for search engines.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the WP-Stats section.
+	 *
+	 * @return void
+	 */
+	public static function section_stats() {
+		echo '<p>' . esc_html__( 'Only used when the WP-Stats plugin is installed. These settings are this plugin\'s own; before 2.0.0 six plugins shared one option row and overwrote each other.', 'wp-postratings' ) . '</p>';
+	}
+
+	/**
+	 * Intro for the templates section.
+	 *
+	 * @return void
+	 */
+	public static function section_templates() {
+		echo '<p>' . esc_html__( 'The markup each rating is rendered with. The allowed variables are listed under each box.', 'wp-postratings' ) . '</p>';
+	}
+
+	// --- fields -----------------------------------------------------------
+
+	/**
+	 * The radio buttons for the rating shapes.
+	 *
+	 * Reads WP_PostRatings_Shapes::all(), which is the same registry the
+	 * sanitizer checks against, so the screen cannot offer a shape that would
+	 * not save -- and a shape registered through wp_postratings_shapes appears
+	 * here for free.
+	 *
+	 * @return void
+	 */
+	public static function field_image() {
+		$options  = WP_PostRatings_Options::get();
+		$selected = WP_PostRatings_Template::resolve_shape( $options['image'] );
+		$max      = max( 1, (int) $options['max'] );
+
+		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
+			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
+
+			// Wrapped in .wp-postratings so the preview inherits the colours the
+			// site has chosen: they are scoped to the wrapper, not to :root.
+			echo '<p class="wp-postratings">';
+			printf(
+				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-image-choice" />&nbsp;&nbsp;&nbsp;',
+				esc_attr( self::name( 'image' ) ),
+				esc_attr( $name ),
+				checked( $selected, $name, false ),
+				$is_updown ? 1 : 0,
+				esc_attr( $is_updown ? 2 : $max )
+			);
+
+			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Shape markup built and escaped attribute by attribute by WP_PostRatings_Template; escaping it again would double-encode the aria-label.
+			if ( $is_updown ) {
+				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
+				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
+			} else {
+				// Filled to 60% so the preview shows both states at once.
+				echo WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
+			}
+			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+
+			echo '&nbsp;&nbsp;&nbsp;' . esc_html( $shape['label'] );
+			echo '</p>' . "\n";
+		}
+	}
+
+	/**
+	 * How many steps the scale has.
+	 *
+	 * @return void
+	 */
+	public static function field_max() {
+		$options = WP_PostRatings_Options::get();
+		?>
+		<input type="number" min="1" id="wp_postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
+			value="<?php echo esc_attr( $options['max'] ); ?>" class="small-text"
+			<?php echo $options['customrating'] ? 'readonly="readonly"' : ''; ?> />
+		<input type="hidden" id="wp_postratings_customrating" name="<?php echo esc_attr( self::name( 'customrating' ) ); ?>"
+			value="<?php echo esc_attr( $options['customrating'] ); ?>" />
+		<p class="description"><?php esc_html_e( 'Fixed at two for an up/down shape, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ); ?></p>
+		<?php
+	}
+
+	/**
+	 * The two rating colours.
+	 *
+	 * @return void
+	 */
+	public static function field_colors() {
+		$colors = (array) WP_PostRatings_Options::get( 'colors' );
+		?>
+		<p>
+			<label for="wp_postratings_color_on"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></label><br />
+			<input type="color" id="wp_postratings_color_on"
+				name="<?php echo esc_attr( self::name( 'colors', 'on' ) ); ?>"
+				value="<?php echo esc_attr( $colors['on'] ); ?>" />
+		</p>
+		<p>
+			<label for="wp_postratings_color_off"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></label><br />
+			<input type="color" id="wp_postratings_color_off"
+				name="<?php echo esc_attr( self::name( 'colors', 'off' ) ); ?>"
+				value="<?php echo esc_attr( $colors['off'] ); ?>" />
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --wp-postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * The per-rating text and value table, plus its refresh button.
+	 *
+	 * @return void
+	 */
+	public static function field_ratings() {
+		$options = WP_PostRatings_Options::get();
+		?>
+		<p>
+			<button type="button" class="button" id="wp-postratings-refresh-ratings"
+				data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
+				<?php esc_html_e( 'Rebuild this table for the chosen shape and scale', 'wp-postratings' ); ?>
+			</button>
+			<span class="spinner" id="wp-postratings-spinner"></span>
+		</p>
+		<div id="wp-postratings-rating-fields">
+			<?php
+			self::render_rating_fields(
+				$options['customrating'],
+				(int) $options['max'],
+				$options['image'],
+				(array) $options['ratings']['text'],
+				(array) $options['ratings']['value']
+			);
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Whether to show the loading text.
+	 *
+	 * @return void
+	 */
+	public static function field_loading() {
+		self::yes_no( 'loading', (array) WP_PostRatings_Options::get( 'ajax_style' ), 'ajax_style' );
+	}
+
+	/**
+	 * Whether to dim the rating while the vote is posted.
+	 *
+	 * @return void
+	 */
+	public static function field_fading() {
+		self::yes_no( 'fading', (array) WP_PostRatings_Options::get( 'ajax_style' ), 'ajax_style' );
+	}
+
+	/**
+	 * A yes/no select for one key of a nested group.
+	 *
+	 * @param string $key    Nested key.
+	 * @param array  $values Stored group.
+	 * @param string $group  Top level key.
+	 *
+	 * @return void
+	 */
+	private static function yes_no( $key, $values, $group ) {
+		$id      = 'wp_postratings_' . $key;
+		$current = isset( $values[ $key ] ) ? (int) $values[ $key ] : 0;
+		?>
+		<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( self::name( $group, $key ) ); ?>">
+			<option value="0" <?php selected( $current, 0 ); ?>><?php esc_html_e( 'No', 'wp-postratings' ); ?></option>
+			<option value="1" <?php selected( $current, 1 ); ?>><?php esc_html_e( 'Yes', 'wp-postratings' ); ?></option>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Who may cast a vote.
+	 *
+	 * @return void
+	 */
+	public static function field_allowtorate() {
+		$current = (int) WP_PostRatings_Options::get( 'allowtorate' );
+		?>
+		<select id="wp_postratings_allowtorate" name="<?php echo esc_attr( self::name( 'allowtorate' ) ); ?>">
+			<option value="0" <?php selected( $current, 0 ); ?>><?php esc_html_e( 'Guests Only', 'wp-postratings' ); ?></option>
+			<option value="1" <?php selected( $current, 1 ); ?>><?php esc_html_e( 'Logged-in Users Only', 'wp-postratings' ); ?></option>
+			<?php if ( is_multisite() ) : ?>
+				<option value="3" <?php selected( $current, 3 ); ?>><?php esc_html_e( 'Users Registered On Blog Only', 'wp-postratings' ); ?></option>
+			<?php endif; ?>
+			<option value="2" <?php selected( $current, 2 ); ?>><?php esc_html_e( 'Logged-in Users And Guests', 'wp-postratings' ); ?></option>
+		</select>
+		<?php
+	}
+
+	/**
+	 * How a repeat vote is recognised.
+	 *
+	 * @return void
+	 */
+	public static function field_logging_method() {
+		$current = (int) WP_PostRatings_Options::get( 'logging_method' );
+		?>
+		<select id="wp_postratings_logging_method" name="<?php echo esc_attr( self::name( 'logging_method' ) ); ?>">
+			<option value="0" <?php selected( $current, 0 ); ?>><?php esc_html_e( 'Do Not Log', 'wp-postratings' ); ?></option>
+			<option value="1" <?php selected( $current, 1 ); ?>><?php esc_html_e( 'Logged By Cookie', 'wp-postratings' ); ?></option>
+			<option value="2" <?php selected( $current, 2 ); ?>><?php esc_html_e( 'Logged By IP', 'wp-postratings' ); ?></option>
+			<option value="3" <?php selected( $current, 3 ); ?>><?php esc_html_e( 'Logged By Cookie And IP', 'wp-postratings' ); ?></option>
+			<option value="4" <?php selected( $current, 4 ); ?>><?php esc_html_e( 'Logged By Username', 'wp-postratings' ); ?></option>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Which request header carries the visitor's address.
+	 *
+	 * @return void
+	 */
+	public static function field_ip_header() {
+		?>
+		<input type="text" id="wp_postratings_ip_header" name="<?php echo esc_attr( self::name( 'ip_header' ) ); ?>"
+			value="<?php echo esc_attr( (string) WP_PostRatings_Options::get( 'ip_header' ) ); ?>" class="regular-text" />
+		<p class="description">
+			<?php esc_html_e( 'Leave this blank unless the site is behind a reverse proxy or CDN. Blank means the address the web server saw is used.', 'wp-postratings' ); ?>
+			<br />
+			<?php
+			printf(
+				/* translators: 1, 2: example header names, wrapped in <code>. */
+				esc_html__( 'Example: %1$s or %2$s.', 'wp-postratings' ),
+				'<code>HTTP_X_FORWARDED_FOR</code>',
+				'<code>HTTP_CF_CONNECTING_IP</code>'
+			);
+			?>
+			<br />
+			<strong><?php esc_html_e( 'Only name a header your proxy sets and overwrites. A visitor can send any header they like, so trusting one your stack does not control lets anyone rate as often as they wish.', 'wp-postratings' ); ?></strong>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Whether to emit rich snippet markup at all.
+	 *
+	 * @return void
+	 */
+	public static function field_richsnippet() {
+		$current = (int) WP_PostRatings_Options::get( 'richsnippet' );
+		?>
+		<label>
+			<input type="radio" id="wp_postratings_richsnippet_on" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="1" <?php checked( $current, 1 ); ?> />
+			<?php esc_html_e( 'Yes', 'wp-postratings' ); ?>
+		</label>
+		&nbsp;&nbsp;
+		<label>
+			<input type="radio" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="0" <?php checked( $current, 0 ); ?> />
+			<?php esc_html_e( 'No', 'wp-postratings' ); ?>
+		</label>
+		<?php
+	}
+
+	/**
+	 * Whether the rich snippet includes the aggregate rating.
+	 *
+	 * @return void
+	 */
+	public static function field_richsnippet_ratings() {
+		$options = WP_PostRatings_Options::get();
+		?>
+		<label>
+			<input type="radio" class="wp-postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="1" <?php checked( $options['richsnippet_ratings'], 1 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />
+			<?php esc_html_e( 'Yes', 'wp-postratings' ); ?>
+		</label>
+		&nbsp;&nbsp;
+		<label>
+			<input type="radio" class="wp-postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="0" <?php checked( $options['richsnippet_ratings'], 0 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />
+			<?php esc_html_e( 'No', 'wp-postratings' ); ?>
+		</label>
+		<?php
+	}
+
+	/**
+	 * Whether to contribute a section to the WP-Stats page.
+	 *
+	 * @return void
+	 */
+	public static function field_stats_display() {
+		?>
+		<label>
+			<input type="checkbox" id="wp_postratings_stats_display" name="<?php echo esc_attr( self::name( 'stats_display' ) ); ?>"
+				value="1" <?php checked( (int) WP_PostRatings_Options::get( 'stats_display' ), 1 ); ?> />
+			<?php esc_html_e( 'Show the vote total and the top rated posts on the WP-Stats page', 'wp-postratings' ); ?>
+		</label>
+		<?php
+	}
+
+	/**
+	 * How many entries each WP-Stats list shows.
+	 *
+	 * @return void
+	 */
+	public static function field_stats_most_limit() {
+		?>
+		<input type="number" min="1" id="wp_postratings_stats_most_limit"
+			name="<?php echo esc_attr( self::name( 'stats_most_limit' ) ); ?>"
+			value="<?php echo esc_attr( (string) WP_PostRatings_Options::get( 'stats_most_limit' ) ); ?>" class="small-text" />
+		<?php
+	}
+
+	/**
+	 * The "vote" template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_vote() {
+		self::render_template_field( 'vote' );
+	}
+
+	/**
+	 * The "already voted" template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_text() {
+		self::render_template_field( 'text' );
+	}
+
+	/**
+	 * The "not allowed to vote" template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_permission() {
+		self::render_template_field( 'permission' );
+	}
+
+	/**
+	 * The "no ratings yet" template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_none() {
+		self::render_template_field( 'none' );
+	}
+
+	/**
+	 * The highest rated list template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_highestrated() {
+		self::render_template_field( 'highestrated' );
+	}
+
+	/**
+	 * The most rated list template.
+	 *
+	 * @return void
+	 */
+	public static function field_template_mostrated() {
+		self::render_template_field( 'mostrated' );
+	}
+
+	/**
+	 * One template textarea, its variable list and its two restore buttons.
+	 *
+	 * @param string $key Template name.
+	 *
+	 * @return void
+	 */
+	private static function render_template_field( $key ) {
+		$fields    = self::template_fields();
+		$templates = (array) WP_PostRatings_Options::get( 'templates' );
+		$tokens    = isset( $fields[ $key ] ) ? $fields[ $key ][1] : array();
+		$value     = isset( $templates[ $key ] ) ? $templates[ $key ] : '';
+		?>
+		<textarea rows="6" class="large-text code"
+			id="wp_postratings_template_<?php echo esc_attr( $key ); ?>"
+			name="<?php echo esc_attr( self::name( 'templates', $key ) ); ?>"><?php echo esc_textarea( $value ); ?></textarea>
+		<p class="description">
+			<?php esc_html_e( 'Allowed variables:', 'wp-postratings' ); ?>
+			<?php foreach ( $tokens as $token ) : ?>
+				<code><?php echo esc_html( $token ); ?></code>
+			<?php endforeach; ?>
+		</p>
+		<p>
+			<button type="button" class="button wp-postratings-restore-template"
+				data-template="<?php echo esc_attr( $key ); ?>" data-variant="default">
+				<?php esc_html_e( 'Restore Default (Normal Rating)', 'wp-postratings' ); ?>
+			</button>
+			<button type="button" class="button wp-postratings-restore-template"
+				data-template="<?php echo esc_attr( $key ); ?>" data-variant="updown">
+				<?php esc_html_e( 'Restore Default (Up/Down Rating)', 'wp-postratings' ); ?>
+			</button>
+		</p>
+		<?php
+	}
+
+	// --- shared data ------------------------------------------------------
 
 	/**
 	 * The default templates for an up/down (two point) scale.
@@ -199,6 +750,8 @@ class WP_PostRatings_Settings {
 		);
 	}
 
+	// --- the screen -------------------------------------------------------
+
 	/**
 	 * Render the settings screen.
 	 *
@@ -212,11 +765,23 @@ class WP_PostRatings_Settings {
 		$tab = self::current_tab();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Post Ratings Options', 'wp-postratings' ); ?></h1>
+			<h1><?php esc_html_e( 'Ratings Settings', 'wp-postratings' ); ?></h1>
 
 			<nav class="nav-tab-wrapper">
 				<?php foreach ( self::tabs() as $slug => $label ) : ?>
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => self::page(), 'tab' => $slug ), admin_url( 'admin.php' ) ) ); ?>"
+					<a href="
+					<?php
+					echo esc_url(
+						add_query_arg(
+							array(
+								'page' => self::page(),
+								'tab'  => $slug,
+							),
+							admin_url( 'admin.php' )
+						)
+					);
+					?>
+								"
 						class="nav-tab<?php echo $slug === $tab ? ' nav-tab-active' : ''; ?>">
 						<?php echo esc_html( $label ); ?>
 					</a>
@@ -225,14 +790,25 @@ class WP_PostRatings_Settings {
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
 				<?php
-				if ( 'templates' === $tab ) {
-					settings_fields( self::GROUP );
-					self::render_templates_tab();
-				} else {
-					settings_fields( self::GROUP );
-					self::render_settings_tab();
-				}
+				settings_fields( self::GROUP );
 
+				// The tab is carried through the save so options.php sends the
+				// browser back to the tab it was submitted from rather than to
+				// the first one.
+				printf(
+					'<input type="hidden" name="_wp_http_referer" value="%s" />',
+					esc_url(
+						add_query_arg(
+							array(
+								'page' => self::page(),
+								'tab'  => $tab,
+							),
+							admin_url( 'admin.php' )
+						)
+					)
+				);
+
+				do_settings_sections( self::tab_page( $tab ) );
 				submit_button();
 				?>
 			</form>
@@ -241,227 +817,15 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * The main settings tab.
-	 *
-	 * @return void
-	 */
-	private static function render_settings_tab() {
-		$options = WP_PostRatings_Options::get();
-		?>
-		<h2><?php esc_html_e( 'Ratings Settings', 'wp-postratings' ); ?></h2>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Ratings Image:', 'wp-postratings' ); ?></th>
-				<td><?php self::render_image_choices( $options ); ?></td>
-			</tr>
-			<tr>
-				<th scope="row">
-					<label for="postratings_max"><?php esc_html_e( 'Max Ratings:', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<input type="number" min="1" id="postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
-						value="<?php echo esc_attr( $options['max'] ); ?>" class="small-text"
-						<?php echo $options['customrating'] ? 'readonly="readonly"' : ''; ?> />
-					<input type="hidden" id="postratings_customrating" name="<?php echo esc_attr( self::name( 'customrating' ) ); ?>"
-						value="<?php echo esc_attr( $options['customrating'] ); ?>" />
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Ratings Colour:', 'wp-postratings' ); ?></th>
-				<td>
-					<p>
-						<label for="postratings_color_on">
-							<?php esc_html_e( 'Rated', 'wp-postratings' ); ?>
-						</label><br />
-						<input type="color" id="postratings_color_on"
-							name="<?php echo esc_attr( self::name( 'colors', 'on' ) ); ?>"
-							value="<?php echo esc_attr( $options['colors']['on'] ); ?>" />
-					</p>
-					<p>
-						<label for="postratings_color_off">
-							<?php esc_html_e( 'Not rated', 'wp-postratings' ); ?>
-						</label><br />
-						<input type="color" id="postratings_color_off"
-							name="<?php echo esc_attr( self::name( 'colors', 'off' ) ); ?>"
-							value="<?php echo esc_attr( $options['colors']['off'] ); ?>" />
-					</p>
-					<p class="description">
-						<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --wp-postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
-					</p>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Enable Google Rich Snippets?', 'wp-postratings' ); ?></th>
-				<td>
-					<label><input type="radio" id="postratings_richsnippet_on" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="1" <?php checked( $options['richsnippet'], 1 ); ?> />&nbsp;<?php esc_html_e( 'Yes', 'wp-postratings' ); ?></label>
-					&nbsp;&nbsp;
-					<label><input type="radio" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="0" <?php checked( $options['richsnippet'], 0 ); ?> />&nbsp;<?php esc_html_e( 'No', 'wp-postratings' ); ?></label>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Enable Ratings in Rich Snippets?', 'wp-postratings' ); ?></th>
-				<td>
-					<label><input type="radio" class="postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="1" <?php checked( $options['richsnippet_ratings'], 1 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />&nbsp;<?php esc_html_e( 'Yes', 'wp-postratings' ); ?></label>
-					&nbsp;&nbsp;
-					<label><input type="radio" class="postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="0" <?php checked( $options['richsnippet_ratings'], 0 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />&nbsp;<?php esc_html_e( 'No', 'wp-postratings' ); ?></label>
-				</td>
-			</tr>
-		</table>
-
-		<h2><?php esc_html_e( 'Individual Rating Text/Value', 'wp-postratings' ); ?></h2>
-		<p>
-			<button type="button" class="button" id="postratings-refresh-ratings"
-				data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
-				<?php esc_html_e( 'Update \'Individual Rating Text/Value\' Display', 'wp-postratings' ); ?>
-			</button>
-			<span class="spinner" id="postratings-spinner"></span>
-		</p>
-		<div id="postratings-rating-fields">
-			<?php self::render_rating_fields( $options['customrating'], (int) $options['max'], $options['image'], (array) $options['ratings']['text'], (array) $options['ratings']['value'] ); ?>
-		</div>
-
-		<h2><?php esc_html_e( 'Ratings AJAX Style', 'wp-postratings' ); ?></h2>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row">
-					<label for="postratings_loading"><?php esc_html_e( 'Show Loading Image With Text', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<select id="postratings_loading" name="<?php echo esc_attr( self::name( 'ajax_style', 'loading' ) ); ?>">
-						<option value="0" <?php selected( $options['ajax_style']['loading'], 0 ); ?>><?php esc_html_e( 'No', 'wp-postratings' ); ?></option>
-						<option value="1" <?php selected( $options['ajax_style']['loading'], 1 ); ?>><?php esc_html_e( 'Yes', 'wp-postratings' ); ?></option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row">
-					<label for="postratings_fading"><?php esc_html_e( 'Show Fading In And Fading Out Of Ratings', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<select id="postratings_fading" name="<?php echo esc_attr( self::name( 'ajax_style', 'fading' ) ); ?>">
-						<option value="0" <?php selected( $options['ajax_style']['fading'], 0 ); ?>><?php esc_html_e( 'No', 'wp-postratings' ); ?></option>
-						<option value="1" <?php selected( $options['ajax_style']['fading'], 1 ); ?>><?php esc_html_e( 'Yes', 'wp-postratings' ); ?></option>
-					</select>
-				</td>
-			</tr>
-		</table>
-
-		<h2><?php esc_html_e( 'Allow To Rate', 'wp-postratings' ); ?></h2>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row">
-					<label for="postratings_allowtorate"><?php esc_html_e( 'Who Is Allowed To Rate?', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<select id="postratings_allowtorate" name="<?php echo esc_attr( self::name( 'allowtorate' ) ); ?>">
-						<option value="0" <?php selected( $options['allowtorate'], 0 ); ?>><?php esc_html_e( 'Guests Only', 'wp-postratings' ); ?></option>
-						<option value="1" <?php selected( $options['allowtorate'], 1 ); ?>><?php esc_html_e( 'Logged-in Users Only', 'wp-postratings' ); ?></option>
-						<?php if ( is_multisite() ) : ?>
-							<option value="3" <?php selected( $options['allowtorate'], 3 ); ?>><?php esc_html_e( 'Users Registered On Blog Only', 'wp-postratings' ); ?></option>
-						<?php endif; ?>
-						<option value="2" <?php selected( $options['allowtorate'], 2 ); ?>><?php esc_html_e( 'Logged-in Users And Guests', 'wp-postratings' ); ?></option>
-					</select>
-				</td>
-			</tr>
-		</table>
-
-		<h2><?php esc_html_e( 'Logging Method', 'wp-postratings' ); ?></h2>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row">
-					<label for="postratings_logging_method"><?php esc_html_e( 'Ratings Logging Method:', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<select id="postratings_logging_method" name="<?php echo esc_attr( self::name( 'logging_method' ) ); ?>">
-						<option value="0" <?php selected( $options['logging_method'], 0 ); ?>><?php esc_html_e( 'Do Not Log', 'wp-postratings' ); ?></option>
-						<option value="1" <?php selected( $options['logging_method'], 1 ); ?>><?php esc_html_e( 'Logged By Cookie', 'wp-postratings' ); ?></option>
-						<option value="2" <?php selected( $options['logging_method'], 2 ); ?>><?php esc_html_e( 'Logged By IP', 'wp-postratings' ); ?></option>
-						<option value="3" <?php selected( $options['logging_method'], 3 ); ?>><?php esc_html_e( 'Logged By Cookie And IP', 'wp-postratings' ); ?></option>
-						<option value="4" <?php selected( $options['logging_method'], 4 ); ?>><?php esc_html_e( 'Logged By Username', 'wp-postratings' ); ?></option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<th scope="row">
-					<label for="postratings_ip_header"><?php esc_html_e( 'Header That Contains The IP:', 'wp-postratings' ); ?></label>
-				</th>
-				<td>
-					<input type="text" id="postratings_ip_header" name="<?php echo esc_attr( self::name( 'ip_header' ) ); ?>"
-						value="<?php echo esc_attr( $options['ip_header'] ); ?>" class="regular-text" />
-					<p class="description">
-						<?php esc_html_e( 'Leave this blank unless the site is behind a reverse proxy or CDN. Blank means the address the web server saw is used.', 'wp-postratings' ); ?>
-						<br />
-						<?php
-						printf(
-							/* translators: 1, 2: example header names, wrapped in <code>. */
-							esc_html__( 'Example: %1$s or %2$s.', 'wp-postratings' ),
-							'<code>HTTP_X_FORWARDED_FOR</code>',
-							'<code>HTTP_CF_CONNECTING_IP</code>'
-						);
-						?>
-						<br />
-						<strong><?php esc_html_e( 'Only name a header your proxy sets and overwrites. A visitor can send any header they like, so trusting one your stack does not control lets anyone rate as often as they wish.', 'wp-postratings' ); ?></strong>
-					</p>
-				</td>
-			</tr>
-		</table>
-		<?php
-	}
-
-	/**
-	 * The radio buttons for the rating shapes.
-	 *
-	 * Reads WP_PostRatings_Shapes::all(), which is the same registry the sanitizer
-	 * checks against, so the screen cannot offer a shape that would not save --
-	 * and a shape registered through wp_postratings_shapes appears here for
-	 * free.
-	 *
-	 * @param array $options Plugin settings.
-	 *
-	 * @return void
-	 */
-	private static function render_image_choices( $options ) {
-		$selected = WP_PostRatings_Template::resolve_shape( $options['image'] );
-		$max      = max( 1, (int) $options['max'] );
-
-		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
-			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
-
-			// Wrapped in .post-ratings so the preview inherits the colours the
-			// site has chosen: they are scoped to the wrapper, not to :root.
-			echo '<p class="post-ratings">';
-			printf(
-				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="postratings-image-choice" />&nbsp;&nbsp;&nbsp;',
-				esc_attr( self::name( 'image' ) ),
-				esc_attr( $name ),
-				checked( $selected, $name, false ),
-				$is_updown ? 1 : 0,
-				esc_attr( $is_updown ? 2 : $max )
-			);
-
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
-			if ( $is_updown ) {
-				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
-				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
-			} else {
-				// Filled to 60% so the preview shows both states at once.
-				$preview = WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
-
-				echo $preview;
-			}
-			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
-
-			echo '&nbsp;&nbsp;&nbsp;' . esc_html( $shape['label'] );
-			echo '</p>' . "\n";
-		}
-	}
-
-	/**
 	 * The per-rating text and value table.
 	 *
-	 * @param int    $custom Whether the set is a custom one.
+	 * A widefat table rather than a form-table: it lists one row per step on
+	 * the scale, so it is a small data table inside a field, not a second
+	 * settings form. do_settings_sections() owns the form-table on this screen.
+	 *
+	 * @param int    $custom Whether the set is an up/down one.
 	 * @param int    $max    Number of steps on the scale.
-	 * @param string $image  Image set folder name.
+	 * @param string $image  Shape name.
 	 * @param array  $texts  Per-rating labels.
 	 * @param array  $values Per-rating scores.
 	 *
@@ -469,12 +833,12 @@ class WP_PostRatings_Settings {
 	 */
 	public static function render_rating_fields( $custom, $max, $image, $texts, $values ) {
 		?>
-		<table class="form-table" role="presentation">
+		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Rating Image', 'wp-postratings' ); ?></th>
-					<th><?php esc_html_e( 'Rating Text', 'wp-postratings' ); ?></th>
-					<th><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Rating', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Rating Text', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -486,12 +850,12 @@ class WP_PostRatings_Settings {
 					$value = isset( $values[ $i - 1 ] ) ? (int) $values[ $i - 1 ] : $i;
 					?>
 					<tr>
-						<td>
+						<td class="wp-postratings">
 							<?php
 							// Preview of this step: an up/down set shows the one
 							// glyph for this position, anything else shows the
 							// strip lit up to it.
-							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
+							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Shape markup built and escaped attribute by attribute by WP_PostRatings_Template.
 							if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $image ) ) ) {
 								echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' );
 							} else {
@@ -501,12 +865,14 @@ class WP_PostRatings_Settings {
 							?>
 						</td>
 						<td>
-							<input type="text" id="postratings_ratingstext_<?php echo esc_attr( $i ); ?>"
+							<label class="screen-reader-text" for="wp_postratings_ratingstext_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Rating Text', 'wp-postratings' ); ?></label>
+							<input type="text" id="wp_postratings_ratingstext_<?php echo esc_attr( $i ); ?>"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[text][]"
-								value="<?php echo esc_attr( $text ); ?>" size="20" maxlength="50" />
+								value="<?php echo esc_attr( $text ); ?>" maxlength="50" class="regular-text" />
 						</td>
 						<td>
-							<input type="number" id="postratings_ratingsvalue_<?php echo esc_attr( $i ); ?>"
+							<label class="screen-reader-text" for="wp_postratings_ratingsvalue_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></label>
+							<input type="number" id="wp_postratings_ratingsvalue_<?php echo esc_attr( $i ); ?>"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[value][]"
 								value="<?php echo esc_attr( $value ); ?>" class="small-text" />
 						</td>
@@ -518,7 +884,7 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * Rebuild the rating text/value table for a different image set.
+	 * Rebuild the rating text/value table for a different shape.
 	 *
 	 * @return void
 	 */
@@ -564,50 +930,5 @@ class WP_PostRatings_Settings {
 		// untestable, because it takes the test runner with it. With no message
 		// the AJAX die handler emits nothing extra.
 		wp_die();
-	}
-
-	/**
-	 * The templates tab.
-	 *
-	 * @return void
-	 */
-	private static function render_templates_tab() {
-		$templates = (array) WP_PostRatings_Options::get( 'templates' );
-		?>
-		<h2><?php esc_html_e( 'Ratings Templates', 'wp-postratings' ); ?></h2>
-		<table class="form-table" role="presentation">
-			<?php foreach ( self::template_fields() as $key => $field ) : ?>
-				<?php list( $label, $tokens ) = $field; ?>
-				<tr>
-					<th scope="row" style="width: 30%;">
-						<label for="postratings_template_<?php echo esc_attr( $key ); ?>"><strong><?php echo esc_html( $label ); ?></strong></label>
-						<p><?php esc_html_e( 'Allowed Variables:', 'wp-postratings' ); ?></p>
-						<p>
-							<?php foreach ( $tokens as $token ) : ?>
-								<code><?php echo esc_html( $token ); ?></code><br />
-							<?php endforeach; ?>
-						</p>
-						<p>
-							<button type="button" class="button postratings-restore-template"
-								data-template="<?php echo esc_attr( $key ); ?>" data-variant="default">
-								<?php esc_html_e( 'Restore Default Template (Normal Rating)', 'wp-postratings' ); ?>
-							</button>
-						</p>
-						<p>
-							<button type="button" class="button postratings-restore-template"
-								data-template="<?php echo esc_attr( $key ); ?>" data-variant="updown">
-								<?php esc_html_e( 'Restore Default Template (Up/Down Rating)', 'wp-postratings' ); ?>
-							</button>
-						</p>
-					</th>
-					<td>
-						<textarea cols="80" rows="12" class="large-text code"
-							id="postratings_template_<?php echo esc_attr( $key ); ?>"
-							name="<?php echo esc_attr( self::name( 'templates', $key ) ); ?>"><?php echo esc_textarea( isset( $templates[ $key ] ) ? $templates[ $key ] : '' ); ?></textarea>
-					</td>
-				</tr>
-			<?php endforeach; ?>
-		</table>
-		<?php
 	}
 }

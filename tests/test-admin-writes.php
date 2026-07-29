@@ -199,9 +199,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '1',
-				'delete_postid'      => (string) $post_id,
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '1',
+				'delete_postid'         => (string) $post_id,
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -222,9 +222,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '2',
-				'delete_postid'      => (string) $post_id,
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '2',
+				'delete_postid'         => (string) $post_id,
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -248,9 +248,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '3',
-				'delete_postid'      => (string) $target,
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '3',
+				'delete_postid'         => (string) $target,
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -275,9 +275,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '3',
-				'delete_postid'      => 'all',
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '3',
+				'delete_postid'         => 'all',
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -304,9 +304,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '2',
-				'delete_postid'      => 'all',
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '2',
+				'delete_postid'         => 'all',
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -328,9 +328,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '3',
-				'delete_postid'      => 'nonsense',
-				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
+				'delete_datalog'        => '3',
+				'delete_postid'         => 'nonsense',
+				'_wpnonce'              => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -351,9 +351,9 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			array(),
 			array(
 				'wp_postratings_delete' => '1',
-				'delete_datalog'     => '3',
-				'delete_postid'      => 'all',
-				'_wpnonce'           => 'not-a-nonce',
+				'delete_datalog'        => '3',
+				'delete_postid'         => 'all',
+				'_wpnonce'              => 'not-a-nonce',
 			)
 		);
 

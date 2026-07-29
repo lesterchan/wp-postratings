@@ -28,36 +28,36 @@ describe( 'wp-postratings settings screen', () => {
 		document.body.innerHTML = `
 			<form>
 				<input type="radio" name="postratings_options[image]" value="stars"
-					class="postratings-image-choice" data-custom="0" data-max="5" checked />
+					class="wp-postratings-image-choice" data-custom="0" data-max="5" checked />
 				<input type="radio" name="postratings_options[image]" value="thumbs"
-					class="postratings-image-choice" data-custom="1" data-max="2" />
+					class="wp-postratings-image-choice" data-custom="1" data-max="2" />
 
-				<input type="number" id="postratings_max" value="5" />
-				<input type="hidden" id="postratings_customrating" value="0" />
+				<input type="number" id="wp_postratings_max" value="5" />
+				<input type="hidden" id="wp_postratings_customrating" value="0" />
 
-				<input type="radio" id="postratings_richsnippet_on"
+				<input type="radio" id="wp_postratings_richsnippet_on"
 					name="postratings_options[richsnippet]" value="1" checked />
 				<input type="radio" id="postratings_richsnippet_off"
 					name="postratings_options[richsnippet]" value="0" />
-				<input type="radio" class="postratings-richsnippet-ratings"
+				<input type="radio" class="wp-postratings-richsnippet-ratings"
 					name="postratings_options[richsnippet_ratings]" value="1" />
-				<input type="radio" class="postratings-richsnippet-ratings"
+				<input type="radio" class="wp-postratings-richsnippet-ratings"
 					name="postratings_options[richsnippet_ratings]" value="0" />
 
-				<button type="button" id="postratings-refresh-ratings" data-nonce="nonce123"></button>
-				<span class="spinner" id="postratings-spinner"></span>
-				<div id="postratings-rating-fields">old rows</div>
+				<button type="button" id="wp-postratings-refresh-ratings" data-nonce="nonce123"></button>
+				<span class="spinner" id="wp-postratings-spinner"></span>
+				<div id="wp-postratings-rating-fields">old rows</div>
 
-				<textarea id="postratings_template_vote">CUSTOM VOTE</textarea>
-				<textarea id="postratings_template_text">CUSTOM TEXT</textarea>
-				<button type="button" class="postratings-restore-template"
+				<textarea id="wp_postratings_template_vote">CUSTOM VOTE</textarea>
+				<textarea id="wp_postratings_template_text">CUSTOM TEXT</textarea>
+				<button type="button" class="wp-postratings-restore-template"
 					data-template="vote" data-variant="default">Default</button>
-				<button type="button" class="postratings-restore-template"
+				<button type="button" class="wp-postratings-restore-template"
 					data-template="vote" data-variant="updown">Up/Down</button>
-				<button type="button" class="postratings-restore-template"
+				<button type="button" class="wp-postratings-restore-template"
 					data-template="text" data-variant="default">Default text</button>
 
-				<button type="submit" id="postratings-delete-data"
+				<button type="submit" id="wp-postratings-delete-data"
 					data-confirm="Are you sure?">Delete</button>
 			</form>
 		`;
@@ -86,30 +86,30 @@ describe( 'wp-postratings settings screen', () => {
 	// --- restoring templates ----------------------------------------------
 
 	it( 'restores the normal default template', () => {
-		click( '.postratings-restore-template[data-template="vote"][data-variant="default"]' );
+		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="default"]' );
 
-		expect( document.getElementById( 'postratings_template_vote' ).value ).toBe(
+		expect( document.getElementById( 'wp_postratings_template_vote' ).value ).toBe(
 			'DEFAULT VOTE %RATINGS_IMAGES_VOTE%',
 		);
 	} );
 
 	it( 'restores the up/down default template', () => {
-		click( '.postratings-restore-template[data-template="vote"][data-variant="updown"]' );
+		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="updown"]' );
 
-		expect( document.getElementById( 'postratings_template_vote' ).value ).toBe(
+		expect( document.getElementById( 'wp_postratings_template_vote' ).value ).toBe(
 			'UPDOWN VOTE %RATINGS_IMAGES_VOTE%',
 		);
 	} );
 
 	it( 'restores only the template the button names', () => {
-		click( '.postratings-restore-template[data-template="vote"][data-variant="default"]' );
+		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="default"]' );
 
-		expect( document.getElementById( 'postratings_template_text' ).value ).toBe( 'CUSTOM TEXT' );
+		expect( document.getElementById( 'wp_postratings_template_text' ).value ).toBe( 'CUSTOM TEXT' );
 	} );
 
 	it( 'does not submit the form when restoring', () => {
 		const button = document.querySelector(
-			'.postratings-restore-template[data-template="vote"][data-variant="default"]',
+			'.wp-postratings-restore-template[data-template="vote"][data-variant="default"]',
 		);
 		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
 
@@ -119,18 +119,18 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'leaves the textarea alone for an unknown template name', () => {
-		const button = document.querySelector( '.postratings-restore-template' );
+		const button = document.querySelector( '.wp-postratings-restore-template' );
 		button.dataset.template = 'nonexistent';
 
-		click( '.postratings-restore-template' );
+		click( '.wp-postratings-restore-template' );
 
-		expect( document.getElementById( 'postratings_template_vote' ).value ).toBe( 'CUSTOM VOTE' );
+		expect( document.getElementById( 'wp_postratings_template_vote' ).value ).toBe( 'CUSTOM VOTE' );
 	} );
 
 	// --- the rating fields refresh ----------------------------------------
 
 	it( 'requests rebuilt rating rows', async () => {
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
@@ -146,10 +146,10 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'swaps the response into the table', async () => {
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		await vi.waitFor( () =>
-			expect( document.getElementById( 'postratings-rating-fields' ).innerHTML ).toBe(
+			expect( document.getElementById( 'wp-postratings-rating-fields' ).innerHTML ).toBe(
 				'<p>new rows</p>',
 			),
 		);
@@ -159,7 +159,7 @@ describe( 'wp-postratings settings screen', () => {
 		document.querySelector( 'input[value="thumbs"]' ).checked = true;
 		document.querySelector( 'input[value="stars"]' ).checked = false;
 
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
@@ -169,9 +169,9 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'shows the spinner while the request is in flight and hides it after', async () => {
-		const spinner = document.getElementById( 'postratings-spinner' );
+		const spinner = document.getElementById( 'wp-postratings-spinner' );
 
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		expect( spinner.classList.contains( 'is-active' ) ).toBe( true );
 
@@ -181,9 +181,9 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'hides the spinner even when the request fails', async () => {
 		window.fetch = vi.fn( () => Promise.reject( new Error( 'offline' ) ) );
 
-		const spinner = document.getElementById( 'postratings-spinner' );
+		const spinner = document.getElementById( 'wp-postratings-spinner' );
 
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		await vi.waitFor( () => expect( spinner.classList.contains( 'is-active' ) ).toBe( false ) );
 	} );
@@ -193,7 +193,7 @@ describe( 'wp-postratings settings screen', () => {
 			input.checked = false;
 		} );
 
-		click( '#postratings-refresh-ratings' );
+		click( '#wp-postratings-refresh-ratings' );
 
 		expect( window.fetch ).not.toHaveBeenCalled();
 	} );
@@ -203,18 +203,18 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'fixes the scale when a custom set is chosen', () => {
 		click( 'input[value="thumbs"]' );
 
-		expect( document.getElementById( 'postratings_customrating' ).value ).toBe( '1' );
-		expect( document.getElementById( 'postratings_max' ).value ).toBe( '2' );
+		expect( document.getElementById( 'wp_postratings_customrating' ).value ).toBe( '1' );
+		expect( document.getElementById( 'wp_postratings_max' ).value ).toBe( '2' );
 		// A custom set defines its own number of steps, so the field is locked.
-		expect( document.getElementById( 'postratings_max' ).readOnly ).toBe( true );
+		expect( document.getElementById( 'wp_postratings_max' ).readOnly ).toBe( true );
 	} );
 
 	it( 'unlocks the scale again for a normal set', () => {
 		click( 'input[value="thumbs"]' );
 		click( 'input[value="stars"]' );
 
-		expect( document.getElementById( 'postratings_customrating' ).value ).toBe( '0' );
-		expect( document.getElementById( 'postratings_max' ).readOnly ).toBe( false );
+		expect( document.getElementById( 'wp_postratings_customrating' ).value ).toBe( '0' );
+		expect( document.getElementById( 'wp_postratings_max' ).readOnly ).toBe( false );
 	} );
 
 	// --- the rich snippet toggle ------------------------------------------
@@ -222,17 +222,17 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'disables the ratings radios when rich snippets are turned off', () => {
 		const off = document.getElementById( 'postratings_richsnippet_off' );
 		off.checked = true;
-		document.getElementById( 'postratings_richsnippet_on' ).checked = false;
+		document.getElementById( 'wp_postratings_richsnippet_on' ).checked = false;
 
 		off.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
 
-		document.querySelectorAll( '.postratings-richsnippet-ratings' ).forEach( ( input ) => {
+		document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ).forEach( ( input ) => {
 			expect( input.disabled ).toBe( true );
 		} );
 	} );
 
 	it( 'enables them again when rich snippets are turned back on', () => {
-		const on = document.getElementById( 'postratings_richsnippet_on' );
+		const on = document.getElementById( 'wp_postratings_richsnippet_on' );
 		const off = document.getElementById( 'postratings_richsnippet_off' );
 
 		off.checked = true;
@@ -243,7 +243,7 @@ describe( 'wp-postratings settings screen', () => {
 		off.checked = false;
 		on.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
 
-		document.querySelectorAll( '.postratings-richsnippet-ratings' ).forEach( ( input ) => {
+		document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ).forEach( ( input ) => {
 			expect( input.disabled ).toBe( false );
 		} );
 	} );
@@ -253,7 +253,7 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'blocks the delete when the confirmation is declined', () => {
 		window.confirm = vi.fn( () => false );
 
-		const button = document.getElementById( 'postratings-delete-data' );
+		const button = document.getElementById( 'wp-postratings-delete-data' );
 		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
 
 		button.dispatchEvent( event );
@@ -265,7 +265,7 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'allows the delete when the confirmation is accepted', () => {
 		window.confirm = vi.fn( () => true );
 
-		const button = document.getElementById( 'postratings-delete-data' );
+		const button = document.getElementById( 'wp-postratings-delete-data' );
 		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
 
 		button.dispatchEvent( event );

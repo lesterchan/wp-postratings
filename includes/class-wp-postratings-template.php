@@ -141,7 +141,7 @@ class WP_PostRatings_Template {
 		 * @param string $image_alt Text such as "4 votes, average: 3.70 out of 5".
 		 */
 		$image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
-		$fill        = self::fill_percentage( $post_rating, $ratings_max );
+		$fill      = self::fill_percentage( $post_rating, $ratings_max );
 
 		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
 
@@ -433,7 +433,7 @@ class WP_PostRatings_Template {
 			 * @param int    $ratings_max  Top of the scale.
 			 */
 			$images = apply_filters( 'wp_postratings_ratings_images_vote', $images, $post_id, $post_ratings, $ratings_max );
-			$value         = str_replace( '%RATINGS_IMAGES_VOTE%', $images, $value );
+			$value  = str_replace( '%RATINGS_IMAGES_VOTE%', $images, $value );
 		}
 
 		$value = str_replace(
