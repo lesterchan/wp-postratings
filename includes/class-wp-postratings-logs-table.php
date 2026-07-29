@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-logs-table.php
+ * WP-PostRatings class-wp-postratings-logs-table.php
  *
  * @package wp-postratings
  */
@@ -22,7 +22,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Logs_Table extends WP_List_Table {
+class WP_PostRatings_Logs_Table extends WP_List_Table {
 
 	/**
 	 * Columns that may be sorted on, mapped to their database column.
@@ -120,7 +120,7 @@ class Postratings_Logs_Table extends WP_List_Table {
 
 		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns() );
 
-		$per_page = $this->get_items_per_page( 'postratings_logs_per_page', 20 );
+		$per_page = $this->get_items_per_page( 'wp_postratings_logs_per_page', 20 );
 		$paged    = $this->get_pagenum();
 
 		$filters = self::current_filters();
@@ -282,7 +282,7 @@ class Postratings_Logs_Table extends WP_List_Table {
 	 * @return string
 	 */
 	public function column_rating_rating( $item ) {
-		$options = Postratings_Options::get();
+		$options = WP_PostRatings_Options::get();
 		$rating  = (int) $item->rating_rating;
 
 		if ( $options['customrating'] && 2 === (int) $options['max'] ) {
@@ -292,7 +292,7 @@ class Postratings_Logs_Table extends WP_List_Table {
 		/* translators: 1: rating given, 2: top of the scale. */
 		$alt = sprintf( __( 'User rated this %1$s out of %2$s', 'wp-postratings' ), $rating, $options['max'] );
 
-		return Postratings_Template::ratings_images(
+		return WP_PostRatings_Template::ratings_images(
 			(int) $options['customrating'],
 			(int) $options['max'],
 			$rating,

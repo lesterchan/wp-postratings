@@ -76,10 +76,10 @@
 
 		const body = new URLSearchParams();
 
-		body.append( 'action', 'postratings' );
+		body.append( 'action', 'wp_postratings' );
 		body.append( 'pid', postId );
 		body.append( 'rate', rating );
-		body.append( 'postratings_' + postId + '_nonce', nonce );
+		body.append( 'wp_postratings_' + postId + '_nonce', nonce );
 
 		/**
 		 * Put the control back into a usable state.

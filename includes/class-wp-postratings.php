@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings.php
+ * WP-PostRatings class-wp-postratings.php
  *
  * @package wp-postratings
  */
@@ -14,19 +14,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings {
+class WP_PostRatings {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var Postratings|null
+	 * @var WP_PostRatings|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get the instance, creating it on first call.
 	 *
-	 * @return Postratings
+	 * @return WP_PostRatings
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -44,7 +44,7 @@ class Postratings {
 
 		// register_activation_hook() has to run at file load time, which is
 		// where WordPress requires it.
-		register_activation_hook( WP_POSTRATINGS_MAIN_FILE, array( 'Postratings_Installer', 'activate' ) );
+		register_activation_hook( WP_POSTRATINGS_MAIN_FILE, array( 'WP_PostRatings_Install', 'activate' ) );
 
 		// Deliberately on init rather than admin_init. Activation does not fire
 		// on a plugin *update*, and an automatic background update runs on
@@ -53,8 +53,7 @@ class Postratings {
 		// -- default templates, default scale -- while its real ones sat in the
 		// old option rows, until somebody happened to log in. Gated on one
 		// autoloaded option, so an already-migrated install pays a lookup.
-		add_action( 'init', array( 'Postratings_Installer', 'maybe_upgrade' ), 5 );
-		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( 'WP_PostRatings_Install', 'maybe_upgrade' ), 5 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
 
 		add_shortcode( 'ratings', array( $this, 'shortcode' ) );
@@ -68,16 +67,16 @@ class Postratings {
 
 		add_action( 'widgets_init', array( $this, 'register_widget' ) );
 
-		Postratings_Rating::init();
-		Postratings_Comments::init();
+		WP_PostRatings_Rating::init();
+		WP_PostRatings_Comments::init();
 
-		add_action( 'plugins_loaded', array( 'Postratings_WPStats', 'init' ) );
+		add_action( 'plugins_loaded', array( 'WP_PostRatings_WPStats', 'init' ) );
 
 		if ( is_admin() ) {
-			Postratings_Admin::init();
-			Postratings_Settings::init();
+			WP_PostRatings_Admin::init();
+			WP_PostRatings_Settings::init();
 
-			add_filter( 'set-screen-option', array( 'Postratings_Admin', 'set_screen_option' ), 10, 3 );
+			add_filter( 'set-screen-option', array( 'WP_PostRatings_Admin', 'set_screen_option' ), 10, 3 );
 		}
 	}
 
@@ -97,26 +96,12 @@ class Postratings {
 	}
 
 	/**
-	 * Late setup that needs the rest of WordPress loaded.
-	 *
-	 * @return void
-	 */
-	public function init() {
-		// RATINGS_IMG_EXT and wp_postratings_image_extension are gone with the
-		// image sets: the shapes are SVG masks, so there is no file extension
-		// left to choose. Defined for anything still reading it.
-		if ( ! defined( 'RATINGS_IMG_EXT' ) ) {
-			define( 'RATINGS_IMG_EXT', 'svg' );
-		}
-	}
-
-	/**
 	 * Register the widget.
 	 *
 	 * @return void
 	 */
 	public function register_widget() {
-		register_widget( 'Postratings_Widget' );
+		register_widget( 'WP_PostRatings_Widget' );
 	}
 
 	/**
@@ -125,7 +110,7 @@ class Postratings {
 	 * @return void
 	 */
 	public function scripts() {
-		$options = Postratings_Options::get();
+		$options = WP_PostRatings_Options::get();
 
 		// No separate RTL stylesheet since 2.0.0: the rules use logical
 		// properties, so direction is handled by the browser.
@@ -172,7 +157,7 @@ class Postratings {
 	 * @return string
 	 */
 	public static function color_css() {
-		$colors = (array) Postratings_Options::get( 'colors' );
+		$colors = (array) WP_PostRatings_Options::get( 'colors' );
 
 		$on  = isset( $colors['on'] ) ? $colors['on'] : '';
 		$off = isset( $colors['off'] ) ? $colors['off'] : '';
@@ -357,7 +342,7 @@ class Postratings {
 	public function highest_join( $content ) {
 		global $wpdb;
 
-		$options  = Postratings_Options::get();
+		$options  = WP_PostRatings_Options::get();
 		$meta_key = ( $options['customrating'] && 2 === (int) $options['max'] ) ? 'ratings_score' : 'ratings_average';
 
 		$content .= " LEFT JOIN $wpdb->postmeta AS t1 ON t1.post_id = $wpdb->posts.ID";

@@ -12,7 +12,7 @@
 /**
  * Collecting, looking up and rendering a commenter's rating.
  *
- * @covers Postratings_Comments
+ * @covers WP_PostRatings_Comments
  */
 class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 
@@ -47,7 +47,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$post = get_post( $post_id );
 		setup_postdata( $post );
 
-		Postratings_Comments::collect();
+		WP_PostRatings_Comments::collect();
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 4, 'Alice' );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 4, Postratings_Comments::rating_for( 'Alice' ) );
+		$this->assertSame( 4, WP_PostRatings_Comments::rating_for( 'Alice' ) );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Someone Else', '203.0.113.50' );
 
-		$this->assertSame( 5, Postratings_Comments::rating_for( 'Someone Else' ) );
+		$this->assertSame( 5, WP_PostRatings_Comments::rating_for( 'Someone Else' ) );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 5, 'Guest', '203.0.113.50' );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 0, Postratings_Comments::rating_for( '203.0.113.50' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( '203.0.113.50' ) );
 	}
 
 	/**
@@ -130,7 +130,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Someone Else', '203.0.113.50' );
 
-		$this->assertSame( 0, Postratings_Comments::rating_for( 'Someone Else' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Someone Else' ) );
 	}
 
 	/**
@@ -141,7 +141,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 	public function test_a_commenter_who_never_rated_gets_nothing() {
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 0, Postratings_Comments::rating_for( 'Nobody' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Nobody' ) );
 	}
 
 	/**
@@ -155,7 +155,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 3, "O\\'Brien" );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 3, Postratings_Comments::rating_for( "O'Brien" ) );
+		$this->assertSame( 3, WP_PostRatings_Comments::rating_for( "O'Brien" ) );
 	}
 
 	/**
@@ -164,7 +164,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_lookup_without_a_loop_is_safe() {
-		$this->assertIsInt( Postratings_Comments::rating_for( 'Anyone' ) );
+		$this->assertIsInt( WP_PostRatings_Comments::rating_for( 'Anyone' ) );
 	}
 
 	/**
@@ -177,7 +177,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Alice' );
 
-		$html = Postratings_Comments::author_ratings();
+		$html = WP_PostRatings_Comments::author_ratings();
 
 		$this->assertStringContainsString( 'post-ratings-item', $html );
 		$this->assertStringContainsString( 'Alice gives a rating of 4', $html );
@@ -192,7 +192,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Nobody' );
 
-		$this->assertSame( '', Postratings_Comments::author_ratings() );
+		$this->assertSame( '', WP_PostRatings_Comments::author_ratings() );
 	}
 
 	/**
@@ -205,11 +205,11 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Alice' );
 
-		$this->assertSame( 'Body.', Postratings_Comments::append_to_comment( 'Body.' ) );
+		$this->assertSame( 'Body.', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
 
 		add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 
-		$this->assertStringContainsString( 'post-ratings-comment-author', Postratings_Comments::append_to_comment( 'Body.' ) );
+		$this->assertStringContainsString( 'post-ratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
 	}
 
 	/**
@@ -223,7 +223,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( '<script>alert(1)</script>' );
 
-		$html = Postratings_Comments::append_to_comment( 'Body.' );
+		$html = WP_PostRatings_Comments::append_to_comment( 'Body.' );
 
 		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html );
 		$this->assertStringContainsString( '&lt;script&gt;', $html );
@@ -256,6 +256,6 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 		$other = $this->make_rated_post( 0, 0 );
 		$this->enter_loop( $other );
 
-		$this->assertSame( 0, Postratings_Comments::rating_for( 'Alice' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Alice' ) );
 	}
 }

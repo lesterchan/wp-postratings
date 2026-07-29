@@ -15,7 +15,7 @@
  * @covers ::the_ratings_results
  * @covers ::the_ratings_vote
  * @covers ::expand_ratings_template
- * @covers Postratings_Template::expand
+ * @covers WP_PostRatings_Template::expand
  */
 class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 
@@ -173,9 +173,9 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_rating_labels_are_escaped_once() {
-		$options                    = Postratings_Options::get();
+		$options                    = WP_PostRatings_Options::get();
 		$options['ratings']['text'] = array( "O'Brien & \"co\"", 'b', 'c', 'd', 'e' );
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 		$output  = the_ratings_vote( $post_id );
@@ -284,10 +284,10 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 		$high = $this->make_rated_post( 2, 10 );
 
 		// %POST_ID% is unambiguous; permalinks vary with the rewrite rules.
-		$options                              = Postratings_Options::get();
+		$options                              = WP_PostRatings_Options::get();
 		$options['templates']['highestrated'] = '<li>[%POST_ID%]</li>';
 		$options['templates']['mostrated']    = '<li>[%POST_ID%]</li>';
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 
 		$this->assertSame(
 			array( $high, $low ),

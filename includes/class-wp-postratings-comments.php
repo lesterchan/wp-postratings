@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-comments.php
+ * WP-PostRatings class-wp-postratings-comments.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Comments {
+class WP_PostRatings_Comments {
 
 	/**
 	 * Ratings for the post currently in the loop, keyed by username and by
@@ -82,7 +82,7 @@ class Postratings_Comments {
 	 * @return int
 	 */
 	public static function rating_for( $comment_author ) {
-		$logging_method = (int) Postratings_Options::get( 'logging_method' );
+		$logging_method = (int) WP_PostRatings_Options::get( 'logging_method' );
 
 		$rating = isset( self::$ratings[ $comment_author ] ) ? (int) self::$ratings[ $comment_author ] : 0;
 
@@ -120,7 +120,7 @@ class Postratings_Comments {
 			return '';
 		}
 
-		$options        = Postratings_Options::get();
+		$options        = WP_PostRatings_Options::get();
 		$ratings_max    = (int) $options['max'];
 		$ratings_custom = (int) $options['customrating'];
 
@@ -140,7 +140,7 @@ class Postratings_Comments {
 		/* translators: 1: comment author, 2: rating they gave. */
 		$image_alt = sprintf( __( '%1$s gives a rating of %2$s', 'wp-postratings' ), $comment_author, $display_rating );
 
-		return Postratings_Template::ratings_images_comment_author( $ratings_custom, $ratings_max, $rating, $options['image'], $image_alt );
+		return WP_PostRatings_Template::ratings_images_comment_author( $ratings_custom, $ratings_max, $rating, $options['image'], $image_alt );
 	}
 
 	/**

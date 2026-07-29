@@ -138,7 +138,7 @@ describe( 'wp-postratings settings screen', () => {
 
 		// The names the PHP endpoint reads; rename one and the table stops
 		// rebuilding, silently.
-		expect( url.searchParams.get( 'action' ) ).toBe( 'postratings_rating_fields' );
+		expect( url.searchParams.get( 'action' ) ).toBe( 'wp_postratings_rating_fields' );
 		expect( url.searchParams.get( '_ajax_nonce' ) ).toBe( 'nonce123' );
 		expect( url.searchParams.get( 'image' ) ).toBe( 'stars' );
 		expect( url.searchParams.get( 'max' ) ).toBe( '5' );

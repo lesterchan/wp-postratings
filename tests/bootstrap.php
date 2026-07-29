@@ -32,7 +32,7 @@ function _postratings_manually_load_plugin() {
 
 	// register_activation_hook() never fires in the test environment, so the
 	// table and the capability have to be created by hand.
-	Postratings_Installer::install();
+	WP_PostRatings_Install::install();
 }
 tests_add_filter( 'muplugins_loaded', '_postratings_manually_load_plugin' );
 

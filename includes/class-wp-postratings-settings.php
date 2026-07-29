@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-settings.php
+ * WP-PostRatings class-wp-postratings-settings.php
  *
  * @package wp-postratings
  */
@@ -18,17 +18,56 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Settings {
+class WP_PostRatings_Settings {
 
 	/**
-	 * Settings group for the main tab.
+	 * Settings group passed to register_setting() and settings_fields().
+	 *
+	 * One group, not two: the screen is one page with tabs, and a tab is not a
+	 * page. Registering a second group against the same option row was what
+	 * made the two halves of this screen reachable by different URLs.
 	 */
-	const GROUP_SETTINGS = 'wp_postratings_settings';
+	const GROUP = 'wp_postratings_options';
 
 	/**
-	 * Settings group for the templates tab.
+	 * The capability the plugin's screens require.
+	 *
+	 * Deliberately not manage_options: WP-PostRatings has shipped its own
+	 * capability since 1.80 and sites grant it to editors who are trusted with
+	 * the rating logs but not with the rest of wp-admin.
 	 */
-	const GROUP_TEMPLATES = 'wp_postratings_templates';
+	const CAPABILITY = 'manage_ratings';
+
+	/**
+	 * The capability required for a given context.
+	 *
+	 * @param string $context What the capability is being checked for.
+	 *
+	 * @return string
+	 */
+	public static function capability( $context = 'settings' ) {
+		/**
+		 * Filters the capability required to manage the plugin.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param string $capability The required capability.
+		 * @param string $context    What the capability is being checked for.
+		 */
+		return (string) apply_filters( 'wp_postratings_capability', self::CAPABILITY, $context );
+	}
+
+	/**
+	 * The settings page slug.
+	 *
+	 * A submenu of the plugin's own menu rather than a page of its own, so it
+	 * hangs off the menu slug rather than repeating it.
+	 *
+	 * @return string
+	 */
+	public static function page() {
+		return WP_PostRatings_Admin::PAGE . '-settings';
+	}
 
 	/**
 	 * Register the settings.
@@ -37,23 +76,24 @@ class Postratings_Settings {
 	 */
 	public static function init() {
 		add_action( 'admin_init', array( __CLASS__, 'register' ) );
-		add_action( 'wp_ajax_postratings_rating_fields', array( __CLASS__, 'ajax_rating_fields' ) );
+		add_action( 'wp_ajax_wp_postratings_rating_fields', array( __CLASS__, 'ajax_rating_fields' ) );
 	}
 
 	/**
-	 * Register both groups against the single option row.
+	 * Register the one group against the one option row.
 	 *
 	 * @return void
 	 */
 	public static function register() {
-		$args = array(
-			'type'              => 'array',
-			'sanitize_callback' => array( 'Postratings_Options', 'sanitize' ),
-			'default'           => Postratings_Options::defaults(),
+		register_setting(
+			self::GROUP,
+			WP_PostRatings_Options::OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( 'WP_PostRatings_Options', 'sanitize' ),
+				'default'           => WP_PostRatings_Options::defaults(),
+			)
 		);
-
-		register_setting( self::GROUP_SETTINGS, Postratings_Options::OPTION, $args );
-		register_setting( self::GROUP_TEMPLATES, Postratings_Options::OPTION, $args );
 	}
 
 	/**
@@ -90,7 +130,7 @@ class Postratings_Settings {
 	 * @return string
 	 */
 	private static function name( $key, $subkey = '' ) {
-		$name = Postratings_Options::OPTION . '[' . $key . ']';
+		$name = WP_PostRatings_Options::OPTION . '[' . $key . ']';
 
 		return '' !== $subkey ? $name . '[' . $subkey . ']' : $name;
 	}
@@ -165,7 +205,7 @@ class Postratings_Settings {
 	 * @return void
 	 */
 	public static function render() {
-		if ( ! current_user_can( Postratings_Installer::CAPABILITY ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_die( esc_html__( 'Access Denied', 'wp-postratings' ) );
 		}
 
@@ -176,7 +216,7 @@ class Postratings_Settings {
 
 			<nav class="nav-tab-wrapper">
 				<?php foreach ( self::tabs() as $slug => $label ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-postratings-options&tab=' . $slug ) ); ?>"
+					<a href="<?php echo esc_url( add_query_arg( array( 'page' => self::page(), 'tab' => $slug ), admin_url( 'admin.php' ) ) ); ?>"
 						class="nav-tab<?php echo $slug === $tab ? ' nav-tab-active' : ''; ?>">
 						<?php echo esc_html( $label ); ?>
 					</a>
@@ -186,10 +226,10 @@ class Postratings_Settings {
 			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
 				<?php
 				if ( 'templates' === $tab ) {
-					settings_fields( self::GROUP_TEMPLATES );
+					settings_fields( self::GROUP );
 					self::render_templates_tab();
 				} else {
-					settings_fields( self::GROUP_SETTINGS );
+					settings_fields( self::GROUP );
 					self::render_settings_tab();
 				}
 
@@ -206,7 +246,7 @@ class Postratings_Settings {
 	 * @return void
 	 */
 	private static function render_settings_tab() {
-		$options = Postratings_Options::get();
+		$options = WP_PostRatings_Options::get();
 		?>
 		<h2><?php esc_html_e( 'Ratings Settings', 'wp-postratings' ); ?></h2>
 		<table class="form-table" role="presentation">
@@ -271,7 +311,7 @@ class Postratings_Settings {
 		<h2><?php esc_html_e( 'Individual Rating Text/Value', 'wp-postratings' ); ?></h2>
 		<p>
 			<button type="button" class="button" id="postratings-refresh-ratings"
-				data-nonce="<?php echo esc_attr( wp_create_nonce( 'postratings_rating_fields' ) ); ?>">
+				data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
 				<?php esc_html_e( 'Update \'Individual Rating Text/Value\' Display', 'wp-postratings' ); ?>
 			</button>
 			<span class="spinner" id="postratings-spinner"></span>
@@ -371,7 +411,7 @@ class Postratings_Settings {
 	/**
 	 * The radio buttons for the rating shapes.
 	 *
-	 * Reads Postratings_Shapes::all(), which is the same registry the sanitizer
+	 * Reads WP_PostRatings_Shapes::all(), which is the same registry the sanitizer
 	 * checks against, so the screen cannot offer a shape that would not save --
 	 * and a shape registered through wp_postratings_shapes appears here for
 	 * free.
@@ -381,11 +421,11 @@ class Postratings_Settings {
 	 * @return void
 	 */
 	private static function render_image_choices( $options ) {
-		$selected = Postratings_Template::resolve_shape( $options['image'] );
+		$selected = WP_PostRatings_Template::resolve_shape( $options['image'] );
 		$max      = max( 1, (int) $options['max'] );
 
-		foreach ( Postratings_Shapes::all() as $name => $shape ) {
-			$is_updown = Postratings_Shapes::UPDOWN === $shape['type'];
+		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
+			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
 
 			// Wrapped in .post-ratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
@@ -401,11 +441,11 @@ class Postratings_Settings {
 
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
 			if ( $is_updown ) {
-				echo Postratings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
-				echo Postratings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
+				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
+				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
 			} else {
 				// Filled to 60% so the preview shows both states at once.
-				$preview = Postratings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
+				$preview = WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
 
 				echo $preview;
 			}
@@ -452,10 +492,10 @@ class Postratings_Settings {
 							// glyph for this position, anything else shows the
 							// strip lit up to it.
 							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered shape markup, escaped as it is built.
-							if ( Postratings_Shapes::is_updown( Postratings_Template::resolve_shape( $image ) ) ) {
-								echo Postratings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' );
+							if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $image ) ) ) {
+								echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' );
 							} else {
-								echo Postratings_Template::ratings_images( 0, $max, $i, $image, '' );
+								echo WP_PostRatings_Template::ratings_images( 0, $max, $i, $image, '' );
 							}
 							// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 							?>
@@ -483,16 +523,16 @@ class Postratings_Settings {
 	 * @return void
 	 */
 	public static function ajax_rating_fields() {
-		check_ajax_referer( 'postratings_rating_fields' );
+		check_ajax_referer( 'wp_postratings_rating_fields' );
 
-		if ( ! current_user_can( Postratings_Installer::CAPABILITY ) ) {
+		if ( ! current_user_can( self::capability() ) ) {
 			wp_die( -1, 403 );
 		}
 
 		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
 		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
 		$image  = isset( $_GET['image'] ) ? sanitize_text_field( wp_unslash( $_GET['image'] ) ) : '';
-		$image  = Postratings_Template::resolve_shape_strict( $image );
+		$image  = WP_PostRatings_Template::resolve_shape_strict( $image );
 
 		if ( '' === $image ) {
 			wp_die( -1, 400 );
@@ -532,7 +572,7 @@ class Postratings_Settings {
 	 * @return void
 	 */
 	private static function render_templates_tab() {
-		$templates = (array) Postratings_Options::get( 'templates' );
+		$templates = (array) WP_PostRatings_Options::get( 'templates' );
 		?>
 		<h2><?php esc_html_e( 'Ratings Templates', 'wp-postratings' ); ?></h2>
 		<table class="form-table" role="presentation">

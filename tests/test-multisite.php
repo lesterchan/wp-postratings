@@ -13,8 +13,8 @@
  *
  * @group ms-required
  *
- * @covers Postratings_Installer::activate
- * @covers Postratings::register_table
+ * @covers WP_PostRatings_Install::activate
+ * @covers WP_PostRatings::register_table
  */
 class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 
@@ -92,7 +92,7 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$other = $this->make_site();
 
 		switch_to_blog( $other );
-		Postratings_Installer::install();
+		WP_PostRatings_Install::install();
 		$other_post = $this->make_rated_post( 0, 0 );
 		$this->log_rating( $other_post, 5, 'Elsewhere' );
 		$other_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" );
@@ -116,14 +116,14 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$other = $this->make_site();
 
 		switch_to_blog( $other );
-		Postratings_Installer::install();
-		$options                   = Postratings_Options::get();
+		WP_PostRatings_Install::install();
+		$options                   = WP_PostRatings_Options::get();
 		$options['allowtorate']    = 2;
 		$options['logging_method'] = 2;
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 
 		$post_id = $this->make_rated_post( 0, 0 );
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( 1, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
 		restore_current_blog();
@@ -142,16 +142,16 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$this->set_option( 'image', 'stars' );
 
 		switch_to_blog( $other );
-		Postratings_Installer::install();
-		$options          = Postratings_Options::get();
+		WP_PostRatings_Install::install();
+		$options          = WP_PostRatings_Options::get();
 		$options['image'] = 'thumbs';
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 		restore_current_blog();
 
-		$this->assertSame( 'stars', Postratings_Options::get( 'image' ) );
+		$this->assertSame( 'stars', WP_PostRatings_Options::get( 'image' ) );
 
 		switch_to_blog( $other );
-		$this->assertSame( 'thumbs', Postratings_Options::get( 'image' ) );
+		$this->assertSame( 'thumbs', WP_PostRatings_Options::get( 'image' ) );
 		restore_current_blog();
 	}
 
@@ -166,10 +166,10 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 	public function test_the_lock_file_is_named_per_site() {
 		$other = $this->make_site();
 
-		$here = Postratings_Rating::lock_file( 1 );
+		$here = WP_PostRatings_Rating::lock_file( 1 );
 
 		switch_to_blog( $other );
-		$there = Postratings_Rating::lock_file( 1 );
+		$there = WP_PostRatings_Rating::lock_file( 1 );
 		restore_current_blog();
 
 		$this->assertNotSame( $here, $there );
@@ -193,11 +193,11 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		foreach ( array( $first, $second ) as $blog_id ) {
 			switch_to_blog( $blog_id );
 			$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->ratings}" );
-			delete_option( Postratings_Installer::DB_VERSION_OPTION );
+			delete_option( WP_PostRatings_Install::DB_VERSION_OPTION );
 			restore_current_blog();
 		}
 
-		Postratings_Installer::activate( true );
+		WP_PostRatings_Install::activate( true );
 
 		foreach ( array( $first, $second ) as $blog_id ) {
 			switch_to_blog( $blog_id );
@@ -223,10 +223,10 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 
 		switch_to_blog( $other );
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->ratings}" );
-		delete_option( Postratings_Installer::DB_VERSION_OPTION );
+		delete_option( WP_PostRatings_Install::DB_VERSION_OPTION );
 		restore_current_blog();
 
-		Postratings_Installer::activate( false );
+		WP_PostRatings_Install::activate( false );
 
 		switch_to_blog( $other );
 		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) );
@@ -253,7 +253,7 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$before = get_current_blog_id();
 		$depth  = count( $GLOBALS['_wp_switched_stack'] );
 
-		Postratings_Installer::activate( true );
+		WP_PostRatings_Install::activate( true );
 
 		$this->assertSame( $before, get_current_blog_id(), 'activation left the wrong site current' );
 		$this->assertCount( $depth, $GLOBALS['_wp_switched_stack'], 'the switch stack was left unbalanced' );
@@ -272,13 +272,13 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$other = $this->make_site();
 
 		switch_to_blog( $other );
-		get_role( 'administrator' )->remove_cap( Postratings_Installer::CAPABILITY );
+		get_role( 'administrator' )->remove_cap( WP_PostRatings_Settings::capability() );
 		restore_current_blog();
 
-		Postratings_Installer::activate( true );
+		WP_PostRatings_Install::activate( true );
 
 		switch_to_blog( $other );
-		$granted = get_role( 'administrator' )->has_cap( Postratings_Installer::CAPABILITY );
+		$granted = get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() );
 		restore_current_blog();
 
 		$this->assertTrue( $granted );
@@ -296,14 +296,14 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		$other  = $this->make_site();
 
 		wp_set_current_user( $member );
-		$this->assertTrue( Postratings_Rating::can_rate(), 'a member of this site was refused' );
+		$this->assertTrue( WP_PostRatings_Rating::can_rate(), 'a member of this site was refused' );
 
 		switch_to_blog( $other );
-		$options                = Postratings_Options::get();
+		$options                = WP_PostRatings_Options::get();
 		$options['allowtorate'] = 3;
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 
-		$this->assertFalse( Postratings_Rating::can_rate(), 'a non-member of the switched site was allowed' );
+		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'a non-member of the switched site was allowed' );
 		restore_current_blog();
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-stats.php
+ * WP-PostRatings class-wp-postratings-stats.php
  *
  * @package wp-postratings
  */
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Stats {
+class WP_PostRatings_Stats {
 
 	/**
 	 * Cache group for the query results.
@@ -34,7 +34,7 @@ class Postratings_Stats {
 	 * @return string
 	 */
 	private static function order_by( $order_type ) {
-		$options = Postratings_Options::get();
+		$options = WP_PostRatings_Options::get();
 
 		// An up/down scale has no meaningful average, so it ranks on the score.
 		$column = ( $options['customrating'] && 2 === (int) $options['max'] ) ? 'ratings_score' : 'ratings_average';
@@ -197,13 +197,13 @@ class Postratings_Stats {
 
 		_prime_post_caches( wp_list_pluck( $results, 'ID' ) );
 
-		$temp   = Postratings_Options::template( $template );
+		$temp   = WP_PostRatings_Options::template( $template );
 		$output = '';
 
 		foreach ( $results as $row ) {
 			$post = (object) array_merge( $row, (array) get_post( $row['ID'] ) );
 
-			$output .= Postratings_Template::expand( $temp, $post, null, $chars, false ) . "\n";
+			$output .= WP_PostRatings_Template::expand( $temp, $post, null, $chars, false ) . "\n";
 		}
 
 		return $output;

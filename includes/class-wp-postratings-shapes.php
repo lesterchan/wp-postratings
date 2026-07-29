@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-shapes.php
+ * WP-PostRatings class-wp-postratings-shapes.php
  *
  * @package wp-postratings
  */
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Shapes {
+class WP_PostRatings_Shapes {
 
 	/**
 	 * Scale shapes: repeated once per point on the scale.
@@ -59,7 +59,7 @@ class Postratings_Shapes {
 		 * into the plugin directory, which did not survive an update. A shape
 		 * is an array of:
 		 *
-		 *     'type'  => Postratings_Shapes::SCALE or ::UPDOWN
+		 *     'type'  => WP_PostRatings_Shapes::SCALE or ::UPDOWN
 		 *     'label' => Name shown on the settings screen
 		 *     'path'  => SVG path data in a 24x24 viewBox   (SCALE)
 		 *     'up'    => SVG path data for the positive glyph (UPDOWN)

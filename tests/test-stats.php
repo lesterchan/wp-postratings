@@ -13,7 +13,7 @@
 /**
  * The meta and range query shapes, orderings and filters.
  *
- * @covers Postratings_Stats
+ * @covers WP_PostRatings_Stats
  */
 class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 
@@ -28,10 +28,10 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$options                              = Postratings_Options::get();
+		$options                              = WP_PostRatings_Options::get();
 		$options['templates']['highestrated'] = '<li>[%POST_ID%]</li>';
 		$options['templates']['mostrated']    = '<li>[%POST_ID%]</li>';
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 	}
 
 	/**
@@ -92,10 +92,10 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$few_high  = $this->make_rated_post( 2, 10 );   // average 5, score 10.
 		$mid_score = $this->make_rated_post( 4, 16 );   // average 4, score 16.
 
-		$highest = $this->ids( Postratings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false ) );
-		$lowest  = $this->ids( Postratings_Stats::output( array( 'order' => 'lowest' ), 'highestrated', 0, false ) );
-		$most    = $this->ids( Postratings_Stats::output( array( 'order' => 'most' ), 'mostrated', 0, false ) );
-		$score   = $this->ids( Postratings_Stats::output( array( 'order' => 'score' ), 'highestrated', 0, false ) );
+		$highest = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false ) );
+		$lowest  = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'lowest' ), 'highestrated', 0, false ) );
+		$most    = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'most' ), 'mostrated', 0, false ) );
+		$score   = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'score' ), 'highestrated', 0, false ) );
 
 		$this->assertSame( $few_high, $highest[0], 'highest did not lead with the best average' );
 		$this->assertSame( $many_low, $lowest[0], 'lowest did not lead with the worst average' );
@@ -115,7 +115,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$low  = $this->make_rated_post( 10, 2 );
 		$high = $this->make_rated_post( 10, 40 );
 
-		$ids = $this->ids( Postratings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false ) );
+		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false ) );
 
 		$this->assertSame( $high, $ids[0] );
 		$this->assertContains( $low, $ids );
@@ -130,7 +130,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$thin  = $this->make_rated_post( 1, 5 );
 		$solid = $this->make_rated_post( 20, 80 );
 
-		$ids = $this->ids( Postratings_Stats::output( array( 'min_votes' => 5 ), 'highestrated', 0, false ) );
+		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'min_votes' => 5 ), 'highestrated', 0, false ) );
 
 		$this->assertContains( $solid, $ids );
 		$this->assertNotContains( $thin, $ids );
@@ -146,7 +146,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->make_rated_post( 6, 20 );
 		$this->make_rated_post( 8, 24 );
 
-		$ids = $this->ids( Postratings_Stats::output( array( 'limit' => 2 ), 'highestrated', 0, false ) );
+		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'limit' => 2 ), 'highestrated', 0, false ) );
 
 		$this->assertCount( 2, $ids );
 	}
@@ -160,8 +160,8 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$post = $this->make_rated_post( 4, 18, 'post' );
 		$page = $this->make_rated_post( 4, 18, 'page' );
 
-		$posts = $this->ids( Postratings_Stats::output( array( 'mode' => 'post' ), 'highestrated', 0, false ) );
-		$pages = $this->ids( Postratings_Stats::output( array( 'mode' => 'page' ), 'highestrated', 0, false ) );
+		$posts = $this->ids( WP_PostRatings_Stats::output( array( 'mode' => 'post' ), 'highestrated', 0, false ) );
+		$pages = $this->ids( WP_PostRatings_Stats::output( array( 'mode' => 'page' ), 'highestrated', 0, false ) );
 
 		$this->assertContains( $post, $posts );
 		$this->assertNotContains( $page, $posts );
@@ -203,7 +203,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		update_post_meta( $future, 'ratings_score', 45 );
 		update_post_meta( $future, 'ratings_average', 5 );
 
-		$ids = $this->ids( Postratings_Stats::output( array(), 'highestrated', 0, false ) );
+		$ids = $this->ids( WP_PostRatings_Stats::output( array(), 'highestrated', 0, false ) );
 
 		$this->assertContains( $published, $ids );
 		$this->assertNotContains( $draft, $ids );
@@ -227,7 +227,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		wp_set_post_categories( $inside, array( $category ) );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'taxonomy' => 'category',
 					'terms'    => $category,
@@ -258,7 +258,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		wp_set_post_categories( $b, array( $second ) );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'taxonomy' => 'category',
 					'terms'    => array( $first, $second ),
@@ -289,7 +289,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		wp_set_post_categories( $categorised, array( $category ) );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'taxonomy' => 'post_tag',
 					'terms'    => $tag,
@@ -317,7 +317,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 
 		$suppress = $wpdb->suppress_errors( true );
 
-		$output = Postratings_Stats::output(
+		$output = WP_PostRatings_Stats::output(
 			array(
 				'taxonomy' => 'category',
 				'terms'    => array(),
@@ -344,7 +344,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 	public function test_a_term_list_of_zeroes_is_treated_as_empty() {
 		$this->make_rated_post( 4, 18 );
 
-		$output = Postratings_Stats::output(
+		$output = WP_PostRatings_Stats::output(
 			array(
 				'taxonomy' => 'category',
 				'terms'    => array( 0, 0 ),
@@ -372,7 +372,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->log_vote_at( $stale, 5, 90 );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source' => 'range',
 					'time'   => '7 days',
@@ -400,7 +400,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->log_vote_at( $stale, 5, 90 );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source' => 'range',
 					'time'   => '1 year',
@@ -433,7 +433,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		}
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source' => 'range',
 					'time'   => '7 days',
@@ -467,7 +467,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->log_vote_at( $outside, 5, 1 );
 
 		$ids = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source'   => 'range',
 					'time'     => '7 days',
@@ -496,7 +496,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->log_vote_at( $high, 5, 1 );
 
 		$highest = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source' => 'range',
 					'order'  => 'highest',
@@ -508,7 +508,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 			)
 		);
 		$lowest  = $this->ids(
-			Postratings_Stats::output(
+			WP_PostRatings_Stats::output(
 				array(
 					'source' => 'range',
 					'order'  => 'lowest',
@@ -538,8 +538,8 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$this->make_rated_post( 10, 10 );
 		$this->make_rated_post( 2, 10 );
 
-		$highest = Postratings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false );
-		$lowest  = Postratings_Stats::output( array( 'order' => 'lowest' ), 'highestrated', 0, false );
+		$highest = WP_PostRatings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false );
+		$lowest  = WP_PostRatings_Stats::output( array( 'order' => 'lowest' ), 'highestrated', 0, false );
 
 		$this->assertNotSame( $highest, $lowest );
 	}
@@ -550,7 +550,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_empty_ranking_says_so() {
-		$this->assertStringContainsString( 'N/A', Postratings_Stats::output( array( 'mode' => 'nonexistent' ), 'highestrated', 0, false ) );
+		$this->assertStringContainsString( 'N/A', WP_PostRatings_Stats::output( array( 'mode' => 'nonexistent' ), 'highestrated', 0, false ) );
 	}
 
 	/**
@@ -562,7 +562,7 @@ class Test_Postratings_Stats extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 4, 18 );
 
 		ob_start();
-		Postratings_Stats::output( array(), 'highestrated', 0, true );
+		WP_PostRatings_Stats::output( array(), 'highestrated', 0, true );
 		$echoed = ob_get_clean();
 
 		$this->assertStringContainsString( '[' . $post_id . ']', $echoed );

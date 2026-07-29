@@ -55,7 +55,7 @@
 		}
 
 		const query = new URLSearchParams( {
-			action: 'postratings_rating_fields',
+			action: 'wp_postratings_rating_fields',
 			_ajax_nonce: button.dataset.nonce,
 			custom: custom ? custom.value : '0',
 			max: max ? max.value : '0',

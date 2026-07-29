@@ -67,10 +67,10 @@ describe( 'wp-postratings front end', () => {
 
 		// The contract Postratings_Rating::handle_vote() depends on; rename any
 		// of these and votes are dropped silently.
-		expect( body.get( 'action' ) ).toBe( 'postratings' );
+		expect( body.get( 'action' ) ).toBe( 'wp_postratings' );
 		expect( body.get( 'pid' ) ).toBe( '4' );
 		expect( body.get( 'rate' ) ).toBe( '4' );
-		expect( body.get( 'postratings_4_nonce' ) ).toBe( 'abc123' );
+		expect( body.get( 'wp_postratings_4_nonce' ) ).toBe( 'abc123' );
 	} );
 
 	it( 'sends the value that was chosen', async () => {

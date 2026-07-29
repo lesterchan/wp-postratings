@@ -14,8 +14,8 @@
 /**
  * The upgrade path from 1.91.3.
  *
- * @covers Postratings_Options::maybe_migrate
- * @covers Postratings_Installer::maybe_upgrade
+ * @covers WP_PostRatings_Options::maybe_migrate
+ * @covers WP_PostRatings_Install::maybe_upgrade
  */
 class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 
@@ -41,10 +41,10 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 4, "O\\'Brien", '203.0.113.7' );
 
 		// The consolidated row as 1.x knew it: three keys, nothing else.
-		delete_option( Postratings_Options::OPTION );
-		delete_option( Postratings_Options::VERSION_OPTION );
+		delete_option( WP_PostRatings_Options::OPTION );
+		delete_option( WP_PostRatings_Options::VERSION_OPTION );
 		update_option(
-			Postratings_Options::OPTION,
+			WP_PostRatings_Options::OPTION,
 			array(
 				'ip_header'           => 'HTTP_CF_CONNECTING_IP',
 				'richsnippet'         => 1,
@@ -83,9 +83,9 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_settings_survive() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$options = Postratings_Options::get();
+		$options = WP_PostRatings_Options::get();
 
 		$this->assertSame( '5', $options['max'] );
 		$this->assertSame( '1', $options['allowtorate'] );
@@ -102,9 +102,9 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_chosen_style_carries_over() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( 'star', Postratings_Options::get( 'image' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'image' ) );
 	}
 
 	/**
@@ -113,10 +113,10 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_customised_templates_survive() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( "Rate: %RATINGS_IMAGES_VOTE% O'Brien", Postratings_Options::template( 'vote' ) );
-		$this->assertSame( 'Voted: %RATINGS_IMAGES% %RATINGS_AVERAGE%', Postratings_Options::template( 'text' ) );
+		$this->assertSame( "Rate: %RATINGS_IMAGES_VOTE% O'Brien", WP_PostRatings_Options::template( 'vote' ) );
+		$this->assertSame( 'Voted: %RATINGS_IMAGES% %RATINGS_AVERAGE%', WP_PostRatings_Options::template( 'text' ) );
 	}
 
 	// --- the data survives -------------------------------------------------
@@ -130,7 +130,7 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_existing_ratings_are_untouched() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertSame( 4, (int) get_post_meta( $this->post_id, 'ratings_users', true ) );
 		$this->assertSame( 18, (int) get_post_meta( $this->post_id, 'ratings_score', true ) );
@@ -144,7 +144,7 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	public function test_the_rating_log_is_untouched() {
 		global $wpdb;
 
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$row = $wpdb->get_row( "SELECT * FROM {$wpdb->ratings}" );
 
@@ -161,12 +161,12 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_previous_voter_is_still_recognised() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.7';
 		unset( $_SERVER['HTTP_CF_CONNECTING_IP'] );
 
-		$this->assertTrue( Postratings_Rating::has_rated( $this->post_id ) );
+		$this->assertTrue( WP_PostRatings_Rating::has_rated( $this->post_id ) );
 	}
 
 	// --- the front end keeps working ---------------------------------------
@@ -177,7 +177,7 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_front_end_uses_the_sites_own_templates() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertStringContainsString( "O'Brien", the_ratings_vote( $this->post_id ) );
 		$this->assertStringContainsString( 'Voted:', the_ratings_results( $this->post_id ) );
@@ -189,7 +189,7 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_configured_labels_are_used() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertStringContainsString( 'Superb', the_ratings_vote( $this->post_id ) );
 	}
@@ -203,9 +203,9 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_configured_widget_still_works() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$this->assertSame( 'ratings-widget', $widget->id_base, 'stored widget instances would be orphaned' );
 
@@ -251,12 +251,12 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 
 		$this->assertSame(
 			"Rate: %RATINGS_IMAGES_VOTE% O'Brien",
-			Postratings_Options::template( 'vote' ),
+			WP_PostRatings_Options::template( 'vote' ),
 			'the front end served default templates instead of the site\'s own'
 		);
 
-		$this->assertSame( 'star', Postratings_Options::get( 'image' ) );
-		$this->assertSame( '1', Postratings_Options::get( 'allowtorate' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'image' ) );
+		$this->assertSame( '1', WP_PostRatings_Options::get( 'allowtorate' ) );
 	}
 
 	/**
@@ -268,13 +268,13 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_already_migrated_install_writes_nothing() {
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$before = Postratings_Options::get();
+		$before = WP_PostRatings_Options::get();
 		$writes = 0;
 
 		add_filter(
-			'pre_update_option_' . Postratings_Options::OPTION,
+			'pre_update_option_' . WP_PostRatings_Options::OPTION,
 			static function ( $value ) use ( &$writes ) {
 				++$writes;
 				return $value;
@@ -282,9 +282,9 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 		);
 
 		do_action( 'init' );
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertSame( 0, $writes, 'the migration rewrote an already-migrated install' );
-		$this->assertSame( $before, Postratings_Options::get() );
+		$this->assertSame( $before, WP_PostRatings_Options::get() );
 	}
 }

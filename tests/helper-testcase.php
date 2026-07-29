@@ -31,10 +31,10 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 		global $wpdb;
 		$wpdb->query( "DELETE FROM {$wpdb->ratings}" );
 
-		delete_option( Postratings_Options::OPTION );
-		delete_option( Postratings_Options::VERSION_OPTION );
-		Postratings_Options::update( Postratings_Options::defaults() );
-		update_option( Postratings_Options::VERSION_OPTION, Postratings_Options::VERSION );
+		delete_option( WP_PostRatings_Options::OPTION );
+		delete_option( WP_PostRatings_Options::VERSION_OPTION );
+		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
+		update_option( WP_PostRatings_Options::VERSION_OPTION, WP_PostRatings_Options::VERSION );
 
 		$_SERVER['REMOTE_ADDR']     = '203.0.113.1';
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (phpunit)';
@@ -73,9 +73,9 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 	 * @return void
 	 */
 	protected function set_option( $key, $value ) {
-		$options         = Postratings_Options::get();
+		$options         = WP_PostRatings_Options::get();
 		$options[ $key ] = $value;
-		Postratings_Options::update( $options );
+		WP_PostRatings_Options::update( $options );
 	}
 
 	/**

@@ -12,8 +12,8 @@
 /**
  * Bulk delete, the delete data/logs form, and the rating-fields endpoint.
  *
- * @covers Postratings_Admin::load_manage
- * @covers Postratings_Settings::ajax_rating_fields
+ * @covers WP_PostRatings_Admin::load_manage
+ * @covers WP_PostRatings_Settings::ajax_rating_fields
  */
 class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 
@@ -31,7 +31,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		parent::set_up();
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
-		wp_get_current_user()->add_cap( Postratings_Installer::CAPABILITY );
+		wp_get_current_user()->add_cap( WP_PostRatings_Settings::capability() );
 
 		require_once ABSPATH . 'wp-admin/includes/admin.php';
 
@@ -106,7 +106,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->redirected_to = '';
 
 		try {
-			Postratings_Admin::load_manage();
+			WP_PostRatings_Admin::load_manage();
 		} catch ( WPDieException $e ) {
 			unset( $e );
 		}
@@ -198,10 +198,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '1',
 				'delete_postid'      => (string) $post_id,
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -221,10 +221,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '2',
 				'delete_postid'      => (string) $post_id,
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -247,10 +247,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '3',
 				'delete_postid'      => (string) $target,
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -274,10 +274,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '3',
 				'delete_postid'      => 'all',
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -303,10 +303,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '2',
 				'delete_postid'      => 'all',
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -327,10 +327,10 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '3',
 				'delete_postid'      => 'nonsense',
-				'_wpnonce'           => wp_create_nonce( 'wp-postratings_logs' ),
+				'_wpnonce'           => wp_create_nonce( 'wp_postratings_logs' ),
 			)
 		);
 
@@ -350,7 +350,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 		$this->handle(
 			array(),
 			array(
-				'postratings_delete' => '1',
+				'wp_postratings_delete' => '1',
 				'delete_datalog'     => '3',
 				'delete_postid'      => 'all',
 				'_wpnonce'           => 'not-a-nonce',
@@ -378,7 +378,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 
 		try {
 			ob_start();
-			Postratings_Settings::ajax_rating_fields();
+			WP_PostRatings_Settings::ajax_rating_fields();
 		} catch ( WPDieException $e ) {
 			unset( $e );
 		} finally {
@@ -398,8 +398,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_the_endpoint_builds_the_rating_rows() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '3',
 				'image'       => 'star',
@@ -419,8 +419,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_an_up_down_scale_gets_its_own_labels() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '1',
 				'max'         => '2',
 				'image'       => 'thumb',
@@ -439,8 +439,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_an_unknown_image_set_is_refused() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
 				'image'       => 'not-a-shape',
@@ -461,8 +461,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_a_legacy_set_name_is_accepted() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
 				'image'       => 'stars_crystal',
@@ -482,8 +482,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
 				'image'       => 'star',
@@ -501,7 +501,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_the_endpoint_requires_a_nonce() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
+				'action'      => 'wp_postratings_rating_fields',
 				'_ajax_nonce' => 'not-a-nonce',
 				'custom'      => '0',
 				'max'         => '5',
@@ -520,8 +520,8 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 	public function test_an_absurd_scale_is_clamped() {
 		$html = $this->call_rating_fields(
 			array(
-				'action'      => 'postratings_rating_fields',
-				'_ajax_nonce' => wp_create_nonce( 'postratings_rating_fields' ),
+				'action'      => 'wp_postratings_rating_fields',
+				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '100000',
 				'image'       => 'star',

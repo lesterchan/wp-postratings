@@ -11,9 +11,9 @@
 /**
  * Vote validation, recording and the logging methods.
  *
- * @covers Postratings_Rating::process_vote
- * @covers Postratings_Rating::can_rate
- * @covers Postratings_Rating::has_rated
+ * @covers WP_PostRatings_Rating::process_vote
+ * @covers WP_PostRatings_Rating::can_rate
+ * @covers WP_PostRatings_Rating::has_rated
  */
 class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
@@ -37,7 +37,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	public function test_a_vote_is_recorded() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_score', true ) );
@@ -52,7 +52,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	public function test_votes_accumulate() {
 		$post_id = $this->make_rated_post( 4, 18 );
 
-		Postratings_Rating::process_vote( $post_id, 2 );
+		WP_PostRatings_Rating::process_vote( $post_id, 2 );
 
 		$this->assertSame( 5, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 		$this->assertSame( 20, (int) get_post_meta( $post_id, 'ratings_score', true ) );
@@ -70,7 +70,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	public function test_an_out_of_range_rating_is_refused() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$output = Postratings_Rating::process_vote( $post_id, 99 );
+		$output = WP_PostRatings_Rating::process_vote( $post_id, 99 );
 
 		$this->assertStringContainsString( 'Invalid Rating', $output );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
@@ -84,8 +84,8 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	public function test_a_non_positive_rating_writes_nothing() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertSame( '', Postratings_Rating::process_vote( $post_id, 0 ) );
-		$this->assertSame( '', Postratings_Rating::process_vote( $post_id, -3 ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 0 ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, -3 ) );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
 
@@ -95,7 +95,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_post_is_refused() {
-		$this->assertStringContainsString( 'Invalid Post ID', Postratings_Rating::process_vote( 999999, 3 ) );
+		$this->assertStringContainsString( 'Invalid Post ID', WP_PostRatings_Rating::process_vote( 999999, 3 ) );
 	}
 
 	/**
@@ -108,7 +108,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1)';
 
-		$this->assertSame( '', Postratings_Rating::process_vote( $post_id, 4 ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ) );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
 
@@ -122,7 +122,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
@@ -140,8 +140,8 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertFalse( Postratings_Rating::can_rate() );
-		$this->assertSame( '', Postratings_Rating::process_vote( $post_id, 4 ) );
+		$this->assertFalse( WP_PostRatings_Rating::can_rate() );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ) );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
 
@@ -154,7 +154,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 		$this->set_option( 'allowtorate', 0 );
 		wp_set_current_user( self::factory()->user->create() );
 
-		$this->assertFalse( Postratings_Rating::can_rate() );
+		$this->assertFalse( WP_PostRatings_Rating::can_rate() );
 	}
 
 	// --- logging methods --------------------------------------------------
@@ -169,10 +169,10 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 
-		$output = Postratings_Rating::process_vote( $post_id, 5 );
+		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
 		$this->assertStringContainsString( 'Already Rated', $output );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
@@ -188,10 +188,10 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.99';
-		Postratings_Rating::process_vote( $post_id, 5 );
+		WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
 		$this->assertSame( 2, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
@@ -207,7 +207,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 		$this->set_option( 'logging_method', 2 );
 
 		$post_id = $this->make_rated_post( 0, 0 );
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$stored = $wpdb->get_var( "SELECT rating_ip FROM {$wpdb->ratings}" );
 
@@ -225,7 +225,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
 	}
@@ -241,8 +241,8 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		Postratings_Rating::process_vote( $post_id, 4 );
-		$output = Postratings_Rating::process_vote( $post_id, 5 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
+		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
 		$this->assertStringContainsString( 'Already Rated', $output );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
@@ -268,7 +268,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 			)
 		);
 
-		Postratings_Rating::process_vote( $post_id, 4 );
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( "O'Brien's post", $wpdb->get_var( "SELECT rating_posttitle FROM {$wpdb->ratings}" ) );
 	}
@@ -291,7 +291,7 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 		);
 
 		$post_id = $this->make_rated_post( 0, 0 );
-		Postratings_Rating::process_vote( $post_id, 3 );
+		WP_PostRatings_Rating::process_vote( $post_id, 3 );
 
 		$this->assertSame( array( 0, $post_id, 3 ), $seen );
 	}

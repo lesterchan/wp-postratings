@@ -11,9 +11,9 @@
 /**
  * Address resolution, proxy header parsing and hashing.
  *
- * @covers Postratings_Rating::get_raw_ip
- * @covers Postratings_Rating::get_ip
- * @covers Postratings_Rating::parse_ip_header
+ * @covers WP_PostRatings_Rating::get_raw_ip
+ * @covers WP_PostRatings_Rating::get_ip
+ * @covers WP_PostRatings_Rating::parse_ip_header
  */
 class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 
@@ -27,8 +27,8 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	public function test_remote_addr_is_unchanged() {
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.7';
 
-		$this->assertSame( '198.51.100.7', Postratings_Rating::get_raw_ip() );
-		$this->assertSame( wp_hash( '198.51.100.7' ), Postratings_Rating::get_ip() );
+		$this->assertSame( '198.51.100.7', WP_PostRatings_Rating::get_raw_ip() );
+		$this->assertSame( wp_hash( '198.51.100.7' ), WP_PostRatings_Rating::get_ip() );
 	}
 
 	/**
@@ -39,7 +39,7 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	public function test_ipv6_remote_addr_is_unchanged() {
 		$_SERVER['REMOTE_ADDR'] = '2001:db8::1';
 
-		$this->assertSame( '2001:db8::1', Postratings_Rating::get_raw_ip() );
+		$this->assertSame( '2001:db8::1', WP_PostRatings_Rating::get_raw_ip() );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR']          = '198.51.100.7';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.9';
 
-		$this->assertSame( '198.51.100.7', Postratings_Rating::get_raw_ip() );
+		$this->assertSame( '198.51.100.7', WP_PostRatings_Rating::get_raw_ip() );
 	}
 
 	/**
@@ -65,7 +65,7 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR']          = '198.51.100.7';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.9';
 
-		$this->assertSame( '203.0.113.9', Postratings_Rating::get_raw_ip() );
+		$this->assertSame( '203.0.113.9', WP_PostRatings_Rating::get_raw_ip() );
 	}
 
 	/**
@@ -84,11 +84,11 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.7';
 
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.9, 10.0.0.1, 10.0.0.2';
-		$first                           = Postratings_Rating::get_ip();
+		$first                           = WP_PostRatings_Rating::get_ip();
 
 		// The visitor appends another hop, which used to yield a new identity.
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.9, 10.0.0.1, 10.0.0.2, 10.0.0.3';
-		$second                          = Postratings_Rating::get_ip();
+		$second                          = WP_PostRatings_Rating::get_ip();
 
 		$this->assertSame( $first, $second, 'appending a hop changed the identity' );
 		$this->assertSame( wp_hash( '203.0.113.9' ), $first );
@@ -105,7 +105,7 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR']          = '198.51.100.7';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = 'not-an-address, <script>alert(1)</script>';
 
-		$this->assertSame( '198.51.100.7', Postratings_Rating::get_raw_ip() );
+		$this->assertSame( '198.51.100.7', WP_PostRatings_Rating::get_raw_ip() );
 	}
 
 	/**
@@ -114,8 +114,8 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_first_valid_address_wins() {
-		$this->assertSame( '203.0.113.9', Postratings_Rating::parse_ip_header( 'garbage, 203.0.113.9, 10.0.0.1' ) );
-		$this->assertSame( '', Postratings_Rating::parse_ip_header( 'garbage, more garbage' ) );
+		$this->assertSame( '203.0.113.9', WP_PostRatings_Rating::parse_ip_header( 'garbage, 203.0.113.9, 10.0.0.1' ) );
+		$this->assertSame( '', WP_PostRatings_Rating::parse_ip_header( 'garbage, more garbage' ) );
 	}
 
 	/**
@@ -126,8 +126,8 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	public function test_a_missing_remote_addr_is_empty() {
 		unset( $_SERVER['REMOTE_ADDR'] );
 
-		$this->assertSame( '', Postratings_Rating::get_raw_ip() );
-		$this->assertSame( '', Postratings_Rating::get_hostname() );
+		$this->assertSame( '', WP_PostRatings_Rating::get_raw_ip() );
+		$this->assertSame( '', WP_PostRatings_Rating::get_hostname() );
 	}
 
 	/**
@@ -138,7 +138,7 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	public function test_the_address_is_filterable() {
 		add_filter( 'wp_postratings_ipaddress', static fn() => 'filtered' );
 
-		$this->assertSame( 'filtered', Postratings_Rating::get_ip() );
+		$this->assertSame( 'filtered', WP_PostRatings_Rating::get_ip() );
 	}
 
 	/**
@@ -147,10 +147,10 @@ class Test_Postratings_Ip extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_header_setting_is_sanitized() {
-		$clean = Postratings_Options::sanitize( array( 'ip_header' => 'http-x-forwarded-for' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'ip_header' => 'http-x-forwarded-for' ) );
 		$this->assertSame( '', $clean['ip_header'], 'a hyphenated header cannot match a $_SERVER key' );
 
-		$clean = Postratings_Options::sanitize( array( 'ip_header' => 'http_cf_connecting_ip' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'ip_header' => 'http_cf_connecting_ip' ) );
 		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $clean['ip_header'] );
 	}
 }

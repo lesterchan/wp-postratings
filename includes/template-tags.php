@@ -40,7 +40,7 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 
 	$ratings_id = (int) $ratings_id;
 
-	$ajax_style = (array) Postratings_Options::get( 'ajax_style' );
+	$ajax_style = (array) WP_PostRatings_Options::get( 'ajax_style' );
 	$loading    = '';
 
 	if ( ! empty( $ajax_style['loading'] ) ) {
@@ -58,7 +58,7 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 
-	if ( ! $disable_richsnippet && is_singular() && Postratings_Options::get( 'richsnippet' ) ) {
+	if ( ! $disable_richsnippet && is_singular() && WP_PostRatings_Options::get( 'richsnippet' ) ) {
 		$itemtype    = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
 		$attributes .= ' ' . $itemtype;
 	}
@@ -68,7 +68,7 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 	} elseif ( ! check_allowtorate() ) {
 		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id, 0, 0, 0, 1 ) . '</' . $start_tag . '>' . $loading;
 	} else {
-		$nonce  = wp_create_nonce( 'postratings_' . $ratings_id . '-nonce' );
+		$nonce  = wp_create_nonce( 'wp_postratings_' . $ratings_id . '-nonce' );
 		$output = "<$start_tag $attributes data-nonce=\"" . esc_attr( $nonce ) . '">' . the_ratings_vote( $ratings_id ) . '</' . $start_tag . '>' . $loading;
 	}
 
@@ -101,7 +101,7 @@ function the_ratings_results( $post_id, $new_user = 0, $new_score = 0, $new_aver
 		$post_ratings_data->ratings_average = $new_average;
 	}
 
-	$template = 1 === $type ? Postratings_Options::template( 'permission' ) : Postratings_Options::template( 'text' );
+	$template = 1 === $type ? WP_PostRatings_Options::template( 'permission' ) : WP_PostRatings_Options::template( 'text' );
 
 	return expand_ratings_template( $template, $post_id, $post_ratings_data );
 }
@@ -127,8 +127,8 @@ function the_ratings_vote( $post_id, $new_user = 0, $new_score = 0, $new_average
 	}
 
 	$template = 0 === (int) get_post_meta( $post_id, 'ratings_users', true )
-		? Postratings_Options::template( 'none' )
-		: Postratings_Options::template( 'vote' );
+		? WP_PostRatings_Options::template( 'none' )
+		: WP_PostRatings_Options::template( 'vote' );
 
 	return expand_ratings_template( $template, $post_id, $post_ratings_data );
 }
@@ -139,7 +139,7 @@ function the_ratings_vote( $post_id, $new_user = 0, $new_score = 0, $new_average
  * @return bool
  */
 function check_allowtorate() {
-	return Postratings_Rating::can_rate();
+	return WP_PostRatings_Rating::can_rate();
 }
 
 /**
@@ -150,7 +150,7 @@ function check_allowtorate() {
  * @return bool
  */
 function check_rated( $post_id ) {
-	return Postratings_Rating::has_rated( $post_id );
+	return WP_PostRatings_Rating::has_rated( $post_id );
 }
 
 /**
@@ -165,7 +165,7 @@ function check_rated( $post_id ) {
  * @return string
  */
 function expand_ratings_template( $template, $post_data, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true ) {
-	return Postratings_Template::expand( $template, $post_data, $post_ratings_data, $max_post_title_chars, $is_main_loop );
+	return WP_PostRatings_Template::expand( $template, $post_data, $post_ratings_data, $max_post_title_chars, $is_main_loop );
 }
 
 /**
@@ -179,7 +179,7 @@ function expand_ratings_template( $template, $post_data, $post_ratings_data = nu
 function comment_author_ratings( $comment_author_specific = '', $display = true ) {
 	unset( $display );
 
-	return Postratings_Comments::author_ratings( $comment_author_specific );
+	return WP_PostRatings_Comments::author_ratings( $comment_author_specific );
 }
 
 /**
@@ -195,13 +195,13 @@ function comment_author_ratings( $comment_author_specific = '', $display = true 
  * @return array
  */
 function ratings_images_folder( $folder_name ) {
-	_deprecated_function( __FUNCTION__, '2.0.0', 'Postratings_Shapes::get()' );
+	_deprecated_function( __FUNCTION__, '2.0.0', 'WP_PostRatings_Shapes::get()' );
 
-	$shape = Postratings_Template::resolve_shape( $folder_name );
+	$shape = WP_PostRatings_Template::resolve_shape( $folder_name );
 
 	return array(
-		'max'    => Postratings_Shapes::is_updown( $shape ) ? 2 : (int) Postratings_Options::get( 'max' ),
-		'custom' => Postratings_Shapes::is_updown( $shape ) ? 1 : 0,
+		'max'    => WP_PostRatings_Shapes::is_updown( $shape ) ? 2 : (int) WP_PostRatings_Options::get( 'max' ),
+		'custom' => WP_PostRatings_Shapes::is_updown( $shape ) ? 1 : 0,
 		'images' => array(),
 	);
 }
@@ -215,7 +215,7 @@ if ( ! function_exists( 'get_ratings_users' ) ) {
 	 * @return string|void
 	 */
 	function get_ratings_users( $display = true ) {
-		return Postratings_Stats::ratings_users( $display );
+		return WP_PostRatings_Stats::ratings_users( $display );
 	}
 }
 
@@ -232,7 +232,7 @@ if ( ! function_exists( 'get_most_rated' ) ) {
 	 * @return string|void
 	 */
 	function get_most_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'most',
 				'mode'      => $mode,
@@ -260,7 +260,7 @@ if ( ! function_exists( 'get_most_rated_category' ) ) {
 	 * @return string|void
 	 */
 	function get_most_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'most',
 				'mode'      => $mode,
@@ -289,7 +289,7 @@ if ( ! function_exists( 'get_most_rated_range' ) ) {
 	 * @return string|void
 	 */
 	function get_most_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source' => 'range',
 				'order'  => 'most',
@@ -318,7 +318,7 @@ if ( ! function_exists( 'get_most_rated_range_category' ) ) {
 	 * @return string|void
 	 */
 	function get_most_rated_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source'   => 'range',
 				'order'    => 'most',
@@ -348,7 +348,7 @@ if ( ! function_exists( 'get_highest_rated' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'highest',
 				'mode'      => $mode,
@@ -376,7 +376,7 @@ if ( ! function_exists( 'get_highest_rated_category' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'highest',
 				'mode'      => $mode,
@@ -405,7 +405,7 @@ if ( ! function_exists( 'get_highest_rated_range' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source' => 'range',
 				'order'  => 'highest',
@@ -434,7 +434,7 @@ if ( ! function_exists( 'get_highest_rated_range_category' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_rated_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source'   => 'range',
 				'order'    => 'highest',
@@ -464,7 +464,7 @@ if ( ! function_exists( 'get_lowest_rated' ) ) {
 	 * @return string|void
 	 */
 	function get_lowest_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'lowest',
 				'mode'      => $mode,
@@ -492,7 +492,7 @@ if ( ! function_exists( 'get_lowest_rated_category' ) ) {
 	 * @return string|void
 	 */
 	function get_lowest_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'lowest',
 				'mode'      => $mode,
@@ -521,7 +521,7 @@ if ( ! function_exists( 'get_lowest_rated_range' ) ) {
 	 * @return string|void
 	 */
 	function get_lowest_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source' => 'range',
 				'order'  => 'lowest',
@@ -549,7 +549,7 @@ if ( ! function_exists( 'get_highest_score' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_score( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'score',
 				'mode'      => $mode,
@@ -577,7 +577,7 @@ if ( ! function_exists( 'get_highest_score_category' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_score_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'score',
 				'mode'      => $mode,
@@ -606,7 +606,7 @@ if ( ! function_exists( 'get_highest_score_range' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_score_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source' => 'range',
 				'order'  => 'score',
@@ -635,7 +635,7 @@ if ( ! function_exists( 'get_highest_score_range_category' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_score_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'source'   => 'range',
 				'order'    => 'score',
@@ -666,7 +666,7 @@ if ( ! function_exists( 'get_highest_rated_tag' ) ) {
 	 * @return string|void
 	 */
 	function get_highest_rated_tag( $tag_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'highest',
 				'mode'      => $mode,
@@ -696,7 +696,7 @@ if ( ! function_exists( 'get_lowest_rated_tag' ) ) {
 	 * @return string|void
 	 */
 	function get_lowest_rated_tag( $tag_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
-		return Postratings_Stats::output(
+		return WP_PostRatings_Stats::output(
 			array(
 				'order'     => 'lowest',
 				'mode'      => $mode,

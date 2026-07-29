@@ -8,11 +8,11 @@
 /**
  * Query sorting, WP-Stats panels, the deprecated shims and the small helpers.
  *
- * @covers Postratings::sorting
- * @covers Postratings::query_vars
- * @covers Postratings_WPStats
- * @covers Postratings_Shapes
- * @covers Postratings_Template::snippet
+ * @covers WP_PostRatings::sorting
+ * @covers WP_PostRatings::query_vars
+ * @covers WP_PostRatings_WPStats
+ * @covers WP_PostRatings_Shapes
+ * @covers WP_PostRatings_Template::snippet
  */
 class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 
@@ -151,7 +151,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_wp_stats_toggles_are_declared() {
-		$defaults = Postratings_WPStats::display_defaults( array() );
+		$defaults = WP_PostRatings_WPStats::display_defaults( array() );
 
 		$this->assertSame( 1, $defaults['ratings'] );
 		$this->assertArrayHasKey( 'rated_highest_post', $defaults );
@@ -164,7 +164,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_wp_stats_own_defaults_win() {
-		$defaults = Postratings_WPStats::display_defaults( array( 'ratings' => 0 ) );
+		$defaults = WP_PostRatings_WPStats::display_defaults( array( 'ratings' => 0 ) );
 
 		$this->assertSame( 0, $defaults['ratings'] );
 	}
@@ -175,7 +175,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_wp_stats_options_offer_every_panel() {
-		$html = Postratings_WPStats::admin_most( '' );
+		$html = WP_PostRatings_WPStats::admin_most( '' );
 
 		foreach ( array( 'rated_highest_post', 'rated_highest_page', 'rated_most_post', 'rated_most_page' ) as $key ) {
 			$this->assertStringContainsString( $key, $html );
@@ -190,7 +190,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	public function test_a_disabled_wp_stats_panel_is_skipped() {
 		update_option( 'stats_display', array( 'ratings' => 0 ) );
 
-		$this->assertSame( '', Postratings_WPStats::page_general( '' ) );
+		$this->assertSame( '', WP_PostRatings_WPStats::page_general( '' ) );
 	}
 
 	/**
@@ -204,7 +204,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 		$this->make_rated_post( 4, 18 );
 		wp_cache_flush();
 
-		$this->assertStringContainsString( 'WP-PostRatings', Postratings_WPStats::page_general( '' ) );
+		$this->assertStringContainsString( 'WP-PostRatings', WP_PostRatings_WPStats::page_general( '' ) );
 	}
 
 	// --- shapes -----------------------------------------------------------
@@ -215,7 +215,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_every_shipped_shape_is_listed() {
-		$names = Postratings_Shapes::names();
+		$names = WP_PostRatings_Shapes::names();
 
 		foreach ( array( 'star', 'heart', 'thumb', 'plusminus' ) as $expected ) {
 			$this->assertContains( $expected, $names );
@@ -228,8 +228,8 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_two_families_are_distinguished() {
-		$this->assertFalse( Postratings_Shapes::is_updown( 'star' ) );
-		$this->assertTrue( Postratings_Shapes::is_updown( 'thumb' ) );
+		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'star' ) );
+		$this->assertTrue( WP_PostRatings_Shapes::is_updown( 'thumb' ) );
 	}
 
 	/**
@@ -238,9 +238,9 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_shape_is_safe() {
-		$this->assertNull( Postratings_Shapes::get( 'does-not-exist' ) );
-		$this->assertFalse( Postratings_Shapes::is_updown( 'does-not-exist' ) );
-		$this->assertSame( '', Postratings_Shapes::data_uri( 'does-not-exist' ) );
+		$this->assertNull( WP_PostRatings_Shapes::get( 'does-not-exist' ) );
+		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'does-not-exist' ) );
+		$this->assertSame( '', WP_PostRatings_Shapes::data_uri( 'does-not-exist' ) );
 	}
 
 	// --- helpers ----------------------------------------------------------
@@ -251,8 +251,8 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_snippet_helper_truncates() {
-		$this->assertSame( 'abcde...', Postratings_Template::snippet( 'abcdefghij', 5 ) );
-		$this->assertSame( 'abc', Postratings_Template::snippet( 'abc', 10 ) );
+		$this->assertSame( 'abcde...', WP_PostRatings_Template::snippet( 'abcdefghij', 5 ) );
+		$this->assertSame( 'abc', WP_PostRatings_Template::snippet( 'abc', 10 ) );
 	}
 
 	/**
@@ -269,7 +269,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$excerpt = Postratings_Template::post_excerpt( $post_id, '', 'Confidential body copy.' );
+		$excerpt = WP_PostRatings_Template::post_excerpt( $post_id, '', 'Confidential body copy.' );
 
 		$this->assertStringNotContainsString( 'Confidential', $excerpt );
 		$this->assertStringContainsString( 'protected post', $excerpt );
@@ -283,7 +283,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_shortcodes_are_stripped_from_the_excerpt() {
-		$excerpt = Postratings_Template::post_excerpt( 0, '', 'Before [ratings] after.' );
+		$excerpt = WP_PostRatings_Template::post_excerpt( 0, '', 'Before [ratings] after.' );
 
 		$this->assertStringNotContainsString( '[ratings]', $excerpt );
 	}
@@ -316,10 +316,10 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 		$this->setExpectedDeprecated( 'ratings_lock_file' );
 		$this->setExpectedDeprecated( 'snippet_text' );
 
-		$this->assertSame( Postratings_Rating::get_raw_ip(), ratings_get_raw_ipaddress() );
-		$this->assertSame( Postratings_Rating::get_ip(), ratings_get_ipaddress() );
-		$this->assertSame( Postratings_Rating::lock_file( 7 ), ratings_lock_file( 7 ) );
-		$this->assertSame( Postratings_Template::snippet( 'abc', 10 ), snippet_text( 'abc', 10 ) );
+		$this->assertSame( WP_PostRatings_Rating::get_raw_ip(), ratings_get_raw_ipaddress() );
+		$this->assertSame( WP_PostRatings_Rating::get_ip(), ratings_get_ipaddress() );
+		$this->assertSame( WP_PostRatings_Rating::lock_file( 7 ), ratings_lock_file( 7 ) );
+		$this->assertSame( WP_PostRatings_Template::snippet( 'abc', 10 ), snippet_text( 'abc', 10 ) );
 	}
 
 	/**
@@ -330,7 +330,7 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	public function test_the_deprecated_image_builders_forward() {
 		$this->setExpectedDeprecated( 'get_ratings_images' );
 
-		$expected = Postratings_Template::ratings_images( 0, 5, 3, 'stars', 'Alt', 0 );
+		$expected = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'stars', 'Alt', 0 );
 
 		$this->assertSame( $expected, get_ratings_images( 0, 5, 3, 'stars', 'Alt', 0 ) );
 	}

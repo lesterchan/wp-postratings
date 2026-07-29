@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-rating.php
+ * WP-PostRatings class-wp-postratings-rating.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Rating {
+class WP_PostRatings_Rating {
 
 	/**
 	 * User agents treated as crawlers rather than voters.
@@ -54,8 +54,8 @@ class Postratings_Rating {
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'wp_ajax_postratings', array( __CLASS__, 'handle_vote' ) );
-		add_action( 'wp_ajax_nopriv_postratings', array( __CLASS__, 'handle_vote' ) );
+		add_action( 'wp_ajax_wp_postratings', array( __CLASS__, 'handle_vote' ) );
+		add_action( 'wp_ajax_nopriv_wp_postratings', array( __CLASS__, 'handle_vote' ) );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class Postratings_Rating {
 	 * @return bool
 	 */
 	public static function can_rate() {
-		switch ( (int) Postratings_Options::get( 'allowtorate' ) ) {
+		switch ( (int) WP_PostRatings_Options::get( 'allowtorate' ) ) {
 			case 0:
 				// Guests only.
 				return ! is_user_logged_in();
@@ -90,7 +90,7 @@ class Postratings_Rating {
 	public static function has_rated( $post_id ) {
 		$rated = false;
 
-		switch ( (int) Postratings_Options::get( 'logging_method' ) ) {
+		switch ( (int) WP_PostRatings_Options::get( 'logging_method' ) ) {
 			case 0:
 				// Do not log.
 				$rated = false;
@@ -205,7 +205,7 @@ class Postratings_Rating {
 		$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$ip          = (string) filter_var( $remote_addr, FILTER_VALIDATE_IP );
 
-		$ip_header = (string) Postratings_Options::get( 'ip_header' );
+		$ip_header = (string) WP_PostRatings_Options::get( 'ip_header' );
 
 		if ( '' !== $ip_header && ! empty( $_SERVER[ $ip_header ] ) ) {
 			$forwarded = self::parse_ip_header( sanitize_text_field( wp_unslash( $_SERVER[ $ip_header ] ) ) );
@@ -350,7 +350,7 @@ class Postratings_Rating {
 		$rate    = isset( $_REQUEST['rate'] ) ? (int) $_REQUEST['rate'] : 0;
 		$post_id = isset( $_REQUEST['pid'] ) ? (int) $_REQUEST['pid'] : 0;
 
-		if ( ! check_ajax_referer( 'postratings_' . $post_id . '-nonce', 'postratings_' . $post_id . '_nonce', false ) ) {
+		if ( ! check_ajax_referer( 'wp_postratings_' . $post_id . '-nonce', 'wp_postratings_' . $post_id . '_nonce', false ) ) {
 			esc_html_e( 'Failed To Verify Referrer', 'wp-postratings' );
 			exit;
 		}
@@ -387,8 +387,8 @@ class Postratings_Rating {
 			return '';
 		}
 
-		$ratings_max    = (int) Postratings_Options::get( 'max' );
-		$ratings_values = (array) Postratings_Options::get_nested( 'ratings', 'value' );
+		$ratings_max    = (int) WP_PostRatings_Options::get( 'max' );
+		$ratings_values = (array) WP_PostRatings_Options::get_nested( 'ratings', 'value' );
 
 		// Validated before the write, not clamped after it. Out of range used to
 		// become $ratings_values[-1]: a warning, and a vote worth nothing.
@@ -421,8 +421,8 @@ class Postratings_Rating {
 
 			$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
 
-			return Postratings_Template::expand(
-				Postratings_Options::template( 'text' ),
+			return WP_PostRatings_Template::expand(
+				WP_PostRatings_Options::template( 'text' ),
 				$post_id,
 				(object) $totals
 			);
@@ -471,7 +471,7 @@ class Postratings_Rating {
 		$rate_user   = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
 		$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', get_current_user_id() );
 
-		$logging_method = (int) Postratings_Options::get( 'logging_method' );
+		$logging_method = (int) WP_PostRatings_Options::get( 'logging_method' );
 
 		if ( 1 === $logging_method || 3 === $logging_method ) {
 			setcookie(

@@ -9,7 +9,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-require_once __DIR__ . '/includes/class-postratings-options.php';
+require_once __DIR__ . '/includes/class-wp-postratings-options.php';
 
 /**
  * Remove the plugin's options, table, capability and post meta for one site.
@@ -19,7 +19,7 @@ require_once __DIR__ . '/includes/class-postratings-options.php';
 function postratings_uninstall_site() {
 	global $wpdb;
 
-	foreach ( Postratings_Options::all_option_names() as $option_name ) {
+	foreach ( WP_PostRatings_Options::all_option_names() as $option_name ) {
 		delete_option( $option_name );
 	}
 

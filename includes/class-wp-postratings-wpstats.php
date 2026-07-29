@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-wpstats.php
+ * WP-PostRatings class-wp-postratings-wpstats.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_WPStats {
+class WP_PostRatings_WPStats {
 
 	/**
 	 * Hook into WP-Stats.

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-template.php
+ * WP-PostRatings class-wp-postratings-template.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Template {
+class WP_PostRatings_Template {
 
 	/**
 	 * Resolve a stored name to a shape.
@@ -31,7 +31,7 @@ class Postratings_Template {
 	public static function resolve_shape( $name ) {
 		$name = (string) $name;
 
-		return Postratings_Shapes::get( $name ) ? $name : Postratings_Shapes::from_legacy( $name );
+		return WP_PostRatings_Shapes::get( $name ) ? $name : WP_PostRatings_Shapes::from_legacy( $name );
 	}
 
 	/**
@@ -51,12 +51,12 @@ class Postratings_Template {
 	public static function resolve_shape_strict( $name ) {
 		$name = trim( (string) $name );
 
-		if ( Postratings_Shapes::get( $name ) ) {
+		if ( WP_PostRatings_Shapes::get( $name ) ) {
 			return $name;
 		}
 
-		return array_key_exists( $name, Postratings_Shapes::legacy_map() )
-			? Postratings_Shapes::from_legacy( $name )
+		return array_key_exists( $name, WP_PostRatings_Shapes::legacy_map() )
+			? WP_PostRatings_Shapes::from_legacy( $name )
 			: '';
 	}
 
@@ -72,12 +72,12 @@ class Postratings_Template {
 	 * @return string
 	 */
 	private static function shape_style( $shape ) {
-		if ( Postratings_Shapes::is_updown( $shape ) ) {
-			return '--wp-postratings-shape-up:url(' . Postratings_Shapes::data_uri( $shape, 'up' ) . ');' .
-				'--wp-postratings-shape-down:url(' . Postratings_Shapes::data_uri( $shape, 'down' ) . ')';
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return '--wp-postratings-shape-up:url(' . WP_PostRatings_Shapes::data_uri( $shape, 'up' ) . ');' .
+				'--wp-postratings-shape-down:url(' . WP_PostRatings_Shapes::data_uri( $shape, 'down' ) . ')';
 		}
 
-		return '--wp-postratings-shape:url(' . Postratings_Shapes::data_uri( $shape ) . ')';
+		return '--wp-postratings-shape:url(' . WP_PostRatings_Shapes::data_uri( $shape ) . ')';
 	}
 
 	/**
@@ -138,7 +138,7 @@ class Postratings_Template {
 
 		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
 
-		$item_style = Postratings_Shapes::is_updown( $shape )
+		$item_style = WP_PostRatings_Shapes::is_updown( $shape )
 			? '--wp-postratings-shape:var(--wp-postratings-shape-up)'
 			: '';
 
@@ -184,7 +184,7 @@ class Postratings_Template {
 		$ratings_texts = (array) $ratings_texts;
 		$style         = self::shape_style( $shape );
 
-		if ( Postratings_Shapes::is_updown( $shape ) ) {
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
 			return self::updown_control( $post_id, $shape, $style, $ratings_texts );
 		}
 
@@ -294,7 +294,7 @@ class Postratings_Template {
 
 		// An up/down vote is one glyph, not a strip: the author voted one way
 		// or the other.
-		if ( Postratings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
 			$direction = $comment_author_rating > 0 ? 'up' : 'down';
 			$style     = self::shape_style( $shape ) . ';--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')';
 
@@ -330,7 +330,7 @@ class Postratings_Template {
 		// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited -- Reassigned to read another post's excerpt/content, and restored below.
 		$original_post = $post;
 
-		$options        = Postratings_Options::get();
+		$options        = WP_PostRatings_Options::get();
 		$ratings_image  = $options['image'];
 		$ratings_max    = (int) $options['max'];
 		$ratings_custom = (int) $options['customrating'];
@@ -403,7 +403,7 @@ class Postratings_Template {
 		}
 
 		if ( false !== strpos( $template, '%RATINGS_IMAGES_VOTE%' ) ) {
-			$ratings_texts = Postratings_Options::get_nested( 'ratings', 'text' );
+			$ratings_texts = WP_PostRatings_Options::get_nested( 'ratings', 'text' );
 			$images        = self::ratings_images_vote( $post_id, $ratings_custom, $ratings_max, $post_ratings, $ratings_image, $post_ratings_alt_text, $insert_half, (array) $ratings_texts );
 			$images        = apply_filters( 'wp_postratings_ratings_images_vote', $images, $post_id, $post_ratings, $ratings_max );
 			$value         = str_replace( '%RATINGS_IMAGES_VOTE%', $images, $value );

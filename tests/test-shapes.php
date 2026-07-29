@@ -12,9 +12,9 @@
 /**
  * Shape definitions, the legacy mapping and the rendered markup.
  *
- * @covers Postratings_Shapes
- * @covers Postratings_Template::resolve_shape
- * @covers Postratings_Template::fill_percentage
+ * @covers WP_PostRatings_Shapes
+ * @covers WP_PostRatings_Template::resolve_shape
+ * @covers WP_PostRatings_Template::fill_percentage
  */
 class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 
@@ -27,10 +27,10 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_both_families_ship() {
-		$shapes = Postratings_Shapes::all();
+		$shapes = WP_PostRatings_Shapes::all();
 
-		$scale  = array_filter( $shapes, static fn( $s ) => Postratings_Shapes::SCALE === $s['type'] );
-		$updown = array_filter( $shapes, static fn( $s ) => Postratings_Shapes::UPDOWN === $s['type'] );
+		$scale  = array_filter( $shapes, static fn( $s ) => WP_PostRatings_Shapes::SCALE === $s['type'] );
+		$updown = array_filter( $shapes, static fn( $s ) => WP_PostRatings_Shapes::UPDOWN === $s['type'] );
 
 		$this->assertNotEmpty( $scale );
 		$this->assertNotEmpty( $updown );
@@ -42,8 +42,8 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_every_shape_is_valid() {
-		foreach ( Postratings_Shapes::all() as $name => $shape ) {
-			$this->assertTrue( Postratings_Shapes::is_valid( $shape ), $name . ' is malformed' );
+		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
+			$this->assertTrue( WP_PostRatings_Shapes::is_valid( $shape ), $name . ' is malformed' );
 			$this->assertNotEmpty( $shape['label'], $name . ' has no label' );
 		}
 	}
@@ -54,11 +54,11 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_every_shape_produces_a_data_uri() {
-		foreach ( Postratings_Shapes::names() as $name ) {
-			$variants = Postratings_Shapes::is_updown( $name ) ? array( 'up', 'down' ) : array( '' );
+		foreach ( WP_PostRatings_Shapes::names() as $name ) {
+			$variants = WP_PostRatings_Shapes::is_updown( $name ) ? array( 'up', 'down' ) : array( '' );
 
 			foreach ( $variants as $variant ) {
-				$uri = Postratings_Shapes::data_uri( $name, $variant );
+				$uri = WP_PostRatings_Shapes::data_uri( $name, $variant );
 
 				$this->assertStringStartsWith( 'data:image/svg+xml,', $uri, $name );
 				$this->assertStringContainsString( '%3Cpath', $uri, $name . ' has no path' );
@@ -76,10 +76,10 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_data_uri_contains_no_quotes() {
-		foreach ( Postratings_Shapes::names() as $name ) {
+		foreach ( WP_PostRatings_Shapes::names() as $name ) {
 			$this->assertDoesNotMatchRegularExpression(
 				'/[\'"]/',
-				Postratings_Shapes::data_uri( $name ),
+				WP_PostRatings_Shapes::data_uri( $name ),
 				$name . ' would break the url() token'
 			);
 		}
@@ -91,14 +91,14 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_up_and_down_glyphs_differ() {
-		foreach ( Postratings_Shapes::names() as $name ) {
-			if ( ! Postratings_Shapes::is_updown( $name ) ) {
+		foreach ( WP_PostRatings_Shapes::names() as $name ) {
+			if ( ! WP_PostRatings_Shapes::is_updown( $name ) ) {
 				continue;
 			}
 
 			$this->assertNotSame(
-				Postratings_Shapes::data_uri( $name, 'up' ),
-				Postratings_Shapes::data_uri( $name, 'down' ),
+				WP_PostRatings_Shapes::data_uri( $name, 'up' ),
+				WP_PostRatings_Shapes::data_uri( $name, 'down' ),
 				$name . ' uses one glyph for both directions'
 			);
 		}
@@ -112,12 +112,12 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_every_legacy_set_maps_to_a_real_shape() {
-		$map = Postratings_Shapes::legacy_map();
+		$map = WP_PostRatings_Shapes::legacy_map();
 
 		$this->assertCount( 16, $map );
 
 		foreach ( $map as $legacy => $shape ) {
-			$this->assertNotNull( Postratings_Shapes::get( $shape ), $legacy . ' maps to nothing' );
+			$this->assertNotNull( WP_PostRatings_Shapes::get( $shape ), $legacy . ' maps to nothing' );
 		}
 	}
 
@@ -131,11 +131,11 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 */
 	public function test_the_finish_variants_collapse() {
 		foreach ( array( 'stars', 'stars_crystal', 'stars_dark', 'stars_png', 'stars_flat_png' ) as $legacy ) {
-			$this->assertSame( 'star', Postratings_Shapes::from_legacy( $legacy ), $legacy );
+			$this->assertSame( 'star', WP_PostRatings_Shapes::from_legacy( $legacy ), $legacy );
 		}
 
-		$this->assertSame( 'plusminus', Postratings_Shapes::from_legacy( 'plusminus_crystal' ) );
-		$this->assertSame( 'heart', Postratings_Shapes::from_legacy( 'heart_crystal' ) );
+		$this->assertSame( 'plusminus', WP_PostRatings_Shapes::from_legacy( 'plusminus_crystal' ) );
+		$this->assertSame( 'heart', WP_PostRatings_Shapes::from_legacy( 'heart_crystal' ) );
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	public function test_up_down_sets_stay_up_down() {
 		foreach ( array( 'thumbs', 'plusminus', 'tickcross', 'updown_crystal' ) as $legacy ) {
 			$this->assertTrue(
-				Postratings_Shapes::is_updown( Postratings_Shapes::from_legacy( $legacy ) ),
+				WP_PostRatings_Shapes::is_updown( WP_PostRatings_Shapes::from_legacy( $legacy ) ),
 				$legacy . ' stopped being an up/down control'
 			);
 		}
@@ -161,8 +161,8 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_set_falls_back_to_stars() {
-		$this->assertSame( 'star', Postratings_Shapes::from_legacy( 'my_custom_folder' ) );
-		$this->assertSame( 'star', Postratings_Template::resolve_shape( 'my_custom_folder' ) );
+		$this->assertSame( 'star', WP_PostRatings_Shapes::from_legacy( 'my_custom_folder' ) );
+		$this->assertSame( 'star', WP_PostRatings_Template::resolve_shape( 'my_custom_folder' ) );
 	}
 
 	/**
@@ -171,7 +171,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_shape_name_resolves_to_itself() {
-		$this->assertSame( 'heart', Postratings_Template::resolve_shape( 'heart' ) );
+		$this->assertSame( 'heart', WP_PostRatings_Template::resolve_shape( 'heart' ) );
 	}
 
 	// --- registering a shape ----------------------------------------------
@@ -189,7 +189,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			'wp_postratings_shapes',
 			static function ( $shapes ) {
 				$shapes['diamond'] = array(
-					'type'  => Postratings_Shapes::SCALE,
+					'type'  => WP_PostRatings_Shapes::SCALE,
 					'label' => 'Diamonds',
 					'path'  => 'M12 2l10 10-10 10L2 12z',
 				);
@@ -197,8 +197,8 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$this->assertContains( 'diamond', Postratings_Shapes::names() );
-		$this->assertStringContainsString( 'data:image/svg+xml,', Postratings_Shapes::data_uri( 'diamond' ) );
+		$this->assertContains( 'diamond', WP_PostRatings_Shapes::names() );
+		$this->assertStringContainsString( 'data:image/svg+xml,', WP_PostRatings_Shapes::data_uri( 'diamond' ) );
 	}
 
 	/**
@@ -215,7 +215,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			'wp_postratings_shapes',
 			static function ( $shapes ) {
 				$shapes['diamond'] = array(
-					'type'  => Postratings_Shapes::SCALE,
+					'type'  => WP_PostRatings_Shapes::SCALE,
 					'label' => 'Diamonds',
 					'path'  => 'M12 2l10 10-10 10L2 12z',
 				);
@@ -223,7 +223,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$clean = Postratings_Options::sanitize( array( 'image' => 'diamond' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'image' => 'diamond' ) );
 
 		$this->assertSame( 'diamond', $clean['image'] );
 	}
@@ -237,12 +237,12 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 		add_filter(
 			'wp_postratings_shapes',
 			static function ( $shapes ) {
-				$shapes['broken'] = array( 'type' => Postratings_Shapes::SCALE );
+				$shapes['broken'] = array( 'type' => WP_PostRatings_Shapes::SCALE );
 				return $shapes;
 			}
 		);
 
-		$this->assertNotContains( 'broken', Postratings_Shapes::names() );
+		$this->assertNotContains( 'broken', WP_PostRatings_Shapes::names() );
 	}
 
 	// --- colour ------------------------------------------------------------
@@ -260,7 +260,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_colours_are_a_setting() {
-		$colors = Postratings_Options::get( 'colors' );
+		$colors = WP_PostRatings_Options::get( 'colors' );
 
 		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['on'] );
 		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['off'] );
@@ -272,7 +272,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_chosen_colour_is_stored() {
-		$clean = Postratings_Options::sanitize(
+		$clean = WP_PostRatings_Options::sanitize(
 			array(
 				'colors' => array(
 					'on'  => '#e5484d',
@@ -302,7 +302,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$clean = Postratings_Options::sanitize(
+		$clean = WP_PostRatings_Options::sanitize(
 			array(
 				'colors' => array(
 					'on'  => 'javascript:alert(1)',
@@ -332,7 +332,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$css = Postratings::color_css();
+		$css = WP_PostRatings::color_css();
 
 		$this->assertStringContainsString( '--wp-postratings-color-on: #e5484d', $css );
 		$this->assertStringContainsString( '--wp-postratings-color-off: #eeeeee', $css );
@@ -384,10 +384,10 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_fill_is_a_true_percentage() {
-		$this->assertSame( 74.0, Postratings_Template::fill_percentage( 3.7, 5 ) );
-		$this->assertSame( 80.0, Postratings_Template::fill_percentage( 4, 5 ) );
-		$this->assertSame( 0.0, Postratings_Template::fill_percentage( 0, 5 ) );
-		$this->assertSame( 100.0, Postratings_Template::fill_percentage( 5, 5 ) );
+		$this->assertSame( 74.0, WP_PostRatings_Template::fill_percentage( 3.7, 5 ) );
+		$this->assertSame( 80.0, WP_PostRatings_Template::fill_percentage( 4, 5 ) );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 0, 5 ) );
+		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 5, 5 ) );
 	}
 
 	/**
@@ -396,9 +396,9 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_fill_is_clamped() {
-		$this->assertSame( 100.0, Postratings_Template::fill_percentage( 99, 5 ) );
-		$this->assertSame( 0.0, Postratings_Template::fill_percentage( -3, 5 ) );
-		$this->assertSame( 0.0, Postratings_Template::fill_percentage( 3, 0 ) );
+		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 99, 5 ) );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( -3, 5 ) );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 3, 0 ) );
 	}
 
 	/**
@@ -407,7 +407,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_strip_carries_the_fill() {
-		$html = Postratings_Template::ratings_images( 0, 5, 3.7, 'star', 'Alt' );
+		$html = WP_PostRatings_Template::ratings_images( 0, 5, 3.7, 'star', 'Alt' );
 
 		$this->assertStringContainsString( '--wp-postratings-fill:74%', $html );
 		$this->assertStringContainsString( 'role="img"', $html );
@@ -420,8 +420,8 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_markup_carries_no_images() {
-		$html  = Postratings_Template::ratings_images( 0, 5, 3, 'star', 'Alt' );
-		$html .= Postratings_Template::ratings_images_vote( 1, 0, 5, 0, 'star', '', 0, array() );
+		$html  = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'star', 'Alt' );
+		$html .= WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 0, 'star', '', 0, array() );
 
 		$this->assertStringNotContainsString( '<img', $html );
 		$this->assertStringNotContainsString( '.gif', $html );

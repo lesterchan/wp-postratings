@@ -12,9 +12,9 @@
 /**
  * The settings screen, the log screen and the widget form.
  *
- * @covers Postratings_Settings::render
- * @covers Postratings_Admin::render_manage
- * @covers Postratings_Widget
+ * @covers WP_PostRatings_Settings::render
+ * @covers WP_PostRatings_Admin::render_manage
+ * @covers WP_PostRatings_Widget
  */
 class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 
@@ -29,10 +29,10 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 
 		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		wp_set_current_user( $user );
-		wp_get_current_user()->add_cap( Postratings_Installer::CAPABILITY );
+		wp_get_current_user()->add_cap( WP_PostRatings_Settings::capability() );
 
 		require_once ABSPATH . 'wp-admin/includes/admin.php';
-		set_current_screen( 'toplevel_page_' . Postratings_Admin::PAGE_MANAGE );
+		set_current_screen( 'toplevel_page_' . WP_PostRatings_Admin::PAGE );
 	}
 
 	/**
@@ -47,7 +47,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	public function test_the_settings_screen_renders_clean( $get ) {
 		$this->make_rated_post();
 
-		$html = $this->render_admin_screen( array( 'Postratings_Settings', 'render' ), $get );
+		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ), $get );
 
 		$this->assertAdminScreenClean( $html );
 		$this->assertStringContainsString( 'Post Ratings Options', $html );
@@ -81,7 +81,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 		$this->log_rating( $post_id, 4, "O'Brien & <em>co</em>" );
 		$this->log_rating( $post_id, 2, 'Guest' );
 
-		$html = $this->render_admin_screen( array( 'Postratings_Admin', 'render_manage' ), $get );
+		$html = $this->render_admin_screen( array( 'WP_PostRatings_Admin', 'render_manage' ), $get );
 
 		$this->assertAdminScreenClean( $html );
 		$this->assertStringContainsString( 'Manage Ratings', $html );
@@ -117,7 +117,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post();
 		$this->log_rating( $post_id, 4, '<script>alert(1)</script>' );
 
-		$html = $this->render_admin_screen( array( 'Postratings_Admin', 'render_manage' ) );
+		$html = $this->render_admin_screen( array( 'WP_PostRatings_Admin', 'render_manage' ) );
 
 		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html );
 		$this->assertStringContainsString( '&lt;script&gt;', $html );
@@ -133,7 +133,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 		$this->log_rating( $post_id );
 
 		$html = $this->render_admin_screen(
-			array( 'Postratings_Admin', 'render_manage' ),
+			array( 'WP_PostRatings_Admin', 'render_manage' ),
 			array( 'orderby' => 'rating_id; DROP TABLE wp_ratings' )
 		);
 
@@ -147,14 +147,14 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_screen_only_offers_valid_image_sets() {
-		$html = $this->render_admin_screen( array( 'Postratings_Settings', 'render' ) );
+		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ) );
 
 		preg_match_all( '/name="postratings_options\[image\]" value="([^"]+)"/', $html, $matches );
 
 		$this->assertNotEmpty( $matches[1], 'the screen offered no image sets at all' );
 
 		foreach ( $matches[1] as $offered ) {
-			$clean = Postratings_Options::sanitize( array( 'image' => $offered ) );
+			$clean = WP_PostRatings_Options::sanitize( array( 'image' => $offered ) );
 			$this->assertSame( $offered, $clean['image'], $offered . ' is offered but would not save' );
 		}
 	}
@@ -165,7 +165,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_widget_form_renders_clean() {
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$html = $this->render_admin_screen(
 			static function () use ( $widget ) {
@@ -185,7 +185,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	public function test_the_widget_renders_every_type() {
 		$this->make_rated_post( 4, 18 );
 
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$args = array(
 			'before_widget' => '<aside>',
@@ -238,7 +238,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unconfigured_widget_does_not_warn() {
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$this->render_admin_screen(
 			static function () use ( $widget ) {
@@ -266,7 +266,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_widget_saves_without_a_submit_field() {
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$instance = $widget->update(
 			array(
@@ -293,7 +293,7 @@ class Test_Postratings_Admin_Pages extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_widget_type_falls_back() {
-		$widget = new Postratings_Widget();
+		$widget = new WP_PostRatings_Widget();
 
 		$instance = $widget->update( array( 'type' => 'nonsense' ), array() );
 

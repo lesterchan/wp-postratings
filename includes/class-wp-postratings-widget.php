@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-widget.php
+ * WP-PostRatings class-wp-postratings-widget.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Widget extends WP_Widget {
+class WP_PostRatings_Widget extends WP_Widget {
 
 	/**
 	 * Register the widget.
@@ -98,7 +98,7 @@ class Postratings_Widget extends WP_Widget {
 		echo '<ul>' . "\n";
 
 		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered list markup, escaped as it is built.
-		echo Postratings_Stats::output(
+		echo WP_PostRatings_Stats::output(
 			array(
 				'source'    => $source,
 				'order'     => $order,

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-options.php
+ * WP-PostRatings class-wp-postratings-options.php
  *
  * @package wp-postratings
  */
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Options {
+class WP_PostRatings_Options {
 
 	/**
 	 * Option holding the plugin settings.
@@ -263,7 +263,7 @@ class Postratings_Options {
 			// from, so the screen cannot offer a shape the sanitizer rejects.
 			// A pre-2.0.0 image set name is accepted and mapped, so an install
 			// that has not migrated yet still saves correctly.
-			$image = Postratings_Template::resolve_shape_strict( $options['image'] );
+			$image = WP_PostRatings_Template::resolve_shape_strict( $options['image'] );
 
 			$clean['image'] = '' !== $image ? $image : $current['image'];
 		}
@@ -412,7 +412,7 @@ class Postratings_Options {
 		// star. Anything unrecognised -- a folder the site added itself -- lands
 		// on stars rather than rendering nothing.
 		if ( isset( $merged['image'] ) ) {
-			$merged['image'] = Postratings_Template::resolve_shape( $merged['image'] );
+			$merged['image'] = WP_PostRatings_Template::resolve_shape( $merged['image'] );
 		}
 
 		self::update( self::merge( self::defaults(), $merged ) );

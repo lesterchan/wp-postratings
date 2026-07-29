@@ -11,9 +11,9 @@
 /**
  * The per-post advisory lock around a rating.
  *
- * @covers Postratings_Rating::acquire_lock
- * @covers Postratings_Rating::release_lock
- * @covers Postratings_Rating::lock_file
+ * @covers WP_PostRatings_Rating::acquire_lock
+ * @covers WP_PostRatings_Rating::release_lock
+ * @covers WP_PostRatings_Rating::lock_file
  */
 class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 
@@ -26,8 +26,8 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_lock_files_are_named_per_site_and_post() {
-		$first  = Postratings_Rating::lock_file( 1 );
-		$second = Postratings_Rating::lock_file( 2 );
+		$first  = WP_PostRatings_Rating::lock_file( 1 );
+		$second = WP_PostRatings_Rating::lock_file( 2 );
 
 		$this->assertNotSame( $first, $second );
 		$this->assertStringContainsString( 'wp-blog-' . get_current_blog_id() . '-', $first );
@@ -51,7 +51,7 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 			2
 		);
 
-		$this->assertSame( get_temp_dir() . '/custom-9.lock', Postratings_Rating::lock_file( 9 ) );
+		$this->assertSame( get_temp_dir() . '/custom-9.lock', WP_PostRatings_Rating::lock_file( 9 ) );
 	}
 
 	/**
@@ -60,12 +60,12 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_acquiring_the_lock_creates_the_file() {
-		$handle = Postratings_Rating::acquire_lock( 1 );
+		$handle = WP_PostRatings_Rating::acquire_lock( 1 );
 
 		$this->assertIsResource( $handle );
-		$this->assertFileExists( Postratings_Rating::lock_file( 1 ) );
+		$this->assertFileExists( WP_PostRatings_Rating::lock_file( 1 ) );
 
-		Postratings_Rating::release_lock( $handle, 1 );
+		WP_PostRatings_Rating::release_lock( $handle, 1 );
 	}
 
 	/**
@@ -77,10 +77,10 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_releasing_the_lock_removes_the_file() {
-		$handle = Postratings_Rating::acquire_lock( 1 );
-		$path   = Postratings_Rating::lock_file( 1 );
+		$handle = WP_PostRatings_Rating::acquire_lock( 1 );
+		$path   = WP_PostRatings_Rating::lock_file( 1 );
 
-		$this->assertTrue( Postratings_Rating::release_lock( $handle, 1 ) );
+		$this->assertTrue( WP_PostRatings_Rating::release_lock( $handle, 1 ) );
 		$this->assertFileDoesNotExist( $path );
 	}
 
@@ -90,8 +90,8 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_releasing_a_non_handle_is_refused() {
-		$this->assertFalse( Postratings_Rating::release_lock( false, 1 ) );
-		$this->assertFalse( Postratings_Rating::release_lock( null, 1 ) );
+		$this->assertFalse( WP_PostRatings_Rating::release_lock( false, 1 ) );
+		$this->assertFalse( WP_PostRatings_Rating::release_lock( null, 1 ) );
 	}
 
 	/**
@@ -105,7 +105,7 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_contending_lock_fails_fast() {
-		$path = Postratings_Rating::lock_file( 1 );
+		$path = WP_PostRatings_Rating::lock_file( 1 );
 
 		$holder = fopen( $path, 'w+' );
 		$this->assertTrue( flock( $holder, LOCK_EX | LOCK_NB ) );
@@ -134,7 +134,7 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 
 		$this->cast_vote( $post_id, 4 );
 
-		$this->assertFileDoesNotExist( Postratings_Rating::lock_file( $post_id ) );
+		$this->assertFileDoesNotExist( WP_PostRatings_Rating::lock_file( $post_id ) );
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 		$this->set_option( 'logging_method', 0 );
 
 		// Hold the lock from a separate handle, as a concurrent request would.
-		$holder = fopen( Postratings_Rating::lock_file( $post_id ), 'w+' );
+		$holder = fopen( WP_PostRatings_Rating::lock_file( $post_id ), 'w+' );
 		flock( $holder, LOCK_EX | LOCK_NB );
 
 		$output = $this->cast_vote( $post_id, 4 );
@@ -170,6 +170,6 @@ class Test_Postratings_Lock extends WP_PostRatings_TestCase {
 	 * @return string
 	 */
 	private function cast_vote( $post_id, $rate ) {
-		return Postratings_Rating::process_vote( $post_id, $rate );
+		return WP_PostRatings_Rating::process_vote( $post_id, $rate );
 	}
 }

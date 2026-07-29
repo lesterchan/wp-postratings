@@ -8,7 +8,7 @@
 /**
  * Table installation, the capability, and the uninstall routine.
  *
- * @covers Postratings_Installer
+ * @covers WP_PostRatings_Install
  */
 class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 
@@ -43,7 +43,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_capability_is_granted() {
-		$this->assertTrue( get_role( 'administrator' )->has_cap( Postratings_Installer::CAPABILITY ) );
+		$this->assertTrue( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() ) );
 	}
 
 	/**
@@ -59,8 +59,8 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 
 		$before = $wpdb->get_var( "SHOW CREATE TABLE {$wpdb->ratings}", 1 );
 
-		Postratings_Installer::install();
-		Postratings_Installer::maybe_upgrade();
+		WP_PostRatings_Install::install();
+		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertSame( $before, $wpdb->get_var( "SHOW CREATE TABLE {$wpdb->ratings}", 1 ) );
 	}
@@ -72,8 +72,8 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	 */
 	public function test_the_schema_version_is_recorded() {
 		$this->assertSame(
-			Postratings_Installer::DB_VERSION,
-			(string) get_option( Postratings_Installer::DB_VERSION_OPTION )
+			WP_POSTRATINGS_DB_VERSION,
+			(string) get_option( WP_PostRatings_Install::DB_VERSION_OPTION )
 		);
 	}
 
@@ -128,11 +128,11 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_uninstall_list_covers_every_option() {
-		$names = Postratings_Options::all_option_names();
+		$names = WP_PostRatings_Options::all_option_names();
 
-		$this->assertContains( Postratings_Options::OPTION, $names );
-		$this->assertContains( Postratings_Options::VERSION_OPTION, $names );
-		$this->assertContains( Postratings_Installer::DB_VERSION_OPTION, $names );
+		$this->assertContains( WP_PostRatings_Options::OPTION, $names );
+		$this->assertContains( WP_PostRatings_Options::VERSION_OPTION, $names );
+		$this->assertContains( WP_PostRatings_Install::DB_VERSION_OPTION, $names );
 		$this->assertContains( 'postratings_template_vote', $names, 'a legacy row would be orphaned' );
 		$this->assertContains( 'widget_ratings-widget', $names );
 	}

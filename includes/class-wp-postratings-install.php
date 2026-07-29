@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-installer.php
+ * WP-PostRatings class-wp-postratings-install.php
  *
  * @package wp-postratings
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Installer {
+class WP_PostRatings_Install {
 
 	/**
 	 * Option holding the installed schema version.
@@ -23,16 +23,6 @@ class Postratings_Installer {
 	 * need migrating, so it cannot live inside the thing being migrated.
 	 */
 	const DB_VERSION_OPTION = 'postratings_db_version';
-
-	/**
-	 * Bumped when the table definition changes.
-	 */
-	const DB_VERSION = '2';
-
-	/**
-	 * Capability the admin screens require.
-	 */
-	const CAPABILITY = 'manage_ratings';
 
 	/**
 	 * Run on activation, for one site or every site on the network.
@@ -73,7 +63,7 @@ class Postratings_Installer {
 		self::maybe_create_table();
 		self::add_capability();
 
-		Postratings_Options::maybe_migrate();
+		WP_PostRatings_Options::maybe_migrate();
 	}
 
 	/**
@@ -85,12 +75,12 @@ class Postratings_Installer {
 	 * @return void
 	 */
 	public static function maybe_upgrade() {
-		if ( (string) get_option( self::DB_VERSION_OPTION, '' ) !== self::DB_VERSION ) {
+		if ( (string) get_option( self::DB_VERSION_OPTION, '' ) !== WP_POSTRATINGS_DB_VERSION ) {
 			self::maybe_create_table();
 			self::add_capability();
 		}
 
-		Postratings_Options::maybe_migrate();
+		WP_PostRatings_Options::maybe_migrate();
 	}
 
 	/**
@@ -109,7 +99,7 @@ class Postratings_Installer {
 
 		if ( $exists === $wpdb->ratings ) {
 			self::maybe_add_indexes();
-			update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+			update_option( self::DB_VERSION_OPTION, WP_POSTRATINGS_DB_VERSION );
 
 			return;
 		}
@@ -134,7 +124,7 @@ class Postratings_Installer {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+		update_option( self::DB_VERSION_OPTION, WP_POSTRATINGS_DB_VERSION );
 	}
 
 	/**
@@ -145,15 +135,11 @@ class Postratings_Installer {
 	private static function maybe_add_indexes() {
 		global $wpdb;
 
-		// $row->Key_name is MySQL's column name from SHOW INDEX, not ours.
-		$indexes   = $wpdb->get_results( "SHOW INDEX FROM $wpdb->ratings" );
-		$key_names = array();
-
-		if ( is_array( $indexes ) ) {
-			foreach ( $indexes as $index ) {
-				$key_names[] = $index->Key_name;
-			}
-		}
+		// Column 2 of SHOW INDEX is Key_name. Taken by position rather than by
+		// name because the name is MySQL's, and reading $row->Key_name off the
+		// object is a coding-standard violation this plugin would then have to
+		// suppress in order to spell someone else's column correctly.
+		$key_names = (array) $wpdb->get_col( "SHOW INDEX FROM $wpdb->ratings", 2 );
 
 		if ( ! in_array( 'rating_userid', $key_names, true ) ) {
 			$wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_userid (rating_userid)" );
@@ -175,7 +161,7 @@ class Postratings_Installer {
 		// Null when the role has been removed, which is a fatal rather than a
 		// missing capability if it is not checked.
 		if ( $role instanceof WP_Role ) {
-			$role->add_cap( self::CAPABILITY );
+			$role->add_cap( WP_PostRatings_Settings::capability() );
 		}
 	}
 }

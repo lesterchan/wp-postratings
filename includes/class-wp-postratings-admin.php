@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-PostRatings class-postratings-admin.php
+ * WP-PostRatings class-wp-postratings-admin.php
  *
  * @package wp-postratings
  */
@@ -14,22 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.0.0
  */
-class Postratings_Admin {
+class WP_PostRatings_Admin {
 
 	/**
-	 * Menu slug of the log screen.
+	 * Menu slug of the plugin's own menu, and of the log screen it opens on.
 	 */
-	const PAGE_MANAGE = 'wp-postratings';
-
-	/**
-	 * Menu slug of the settings screen.
-	 */
-	const PAGE_OPTIONS = 'wp-postratings-options';
+	const PAGE = 'wp-postratings';
 
 	/**
 	 * The list table, built on load so Screen Options can register.
 	 *
-	 * @var Postratings_Logs_Table|null
+	 * @var WP_PostRatings_Logs_Table|null
 	 */
 	private static $table = null;
 
@@ -65,28 +60,28 @@ class Postratings_Admin {
 		$hook = add_menu_page(
 			__( 'Ratings', 'wp-postratings' ),
 			__( 'Ratings', 'wp-postratings' ),
-			Postratings_Installer::CAPABILITY,
-			self::PAGE_MANAGE,
+			WP_PostRatings_Settings::capability(),
+			self::PAGE,
 			array( __CLASS__, 'render_manage' ),
 			'dashicons-star-filled'
 		);
 
 		add_submenu_page(
-			self::PAGE_MANAGE,
+			self::PAGE,
 			__( 'Manage Ratings', 'wp-postratings' ),
 			__( 'Manage Ratings', 'wp-postratings' ),
-			Postratings_Installer::CAPABILITY,
-			self::PAGE_MANAGE,
+			WP_PostRatings_Settings::capability(),
+			self::PAGE,
 			array( __CLASS__, 'render_manage' )
 		);
 
 		add_submenu_page(
-			self::PAGE_MANAGE,
+			self::PAGE,
 			__( 'Ratings Options', 'wp-postratings' ),
 			__( 'Ratings Options', 'wp-postratings' ),
-			Postratings_Installer::CAPABILITY,
-			self::PAGE_OPTIONS,
-			array( 'Postratings_Settings', 'render' )
+			WP_PostRatings_Settings::capability(),
+			WP_PostRatings_Settings::page(),
+			array( 'WP_PostRatings_Settings', 'render' )
 		);
 
 		add_action( 'load-' . $hook, array( __CLASS__, 'load_manage' ) );
@@ -102,9 +97,9 @@ class Postratings_Admin {
 	 */
 	public static function screen_hooks() {
 		return array(
-			'toplevel_page_' . self::PAGE_MANAGE,
-			'ratings_page_' . self::PAGE_MANAGE,
-			'ratings_page_' . self::PAGE_OPTIONS,
+			'toplevel_page_' . self::PAGE,
+			'ratings_page_' . self::PAGE,
+			'ratings_page_' . WP_PostRatings_Settings::page(),
 		);
 	}
 
@@ -117,8 +112,8 @@ class Postratings_Admin {
 	 * @return void
 	 */
 	private static function require_list_table() {
-		if ( ! class_exists( 'Postratings_Logs_Table' ) ) {
-			require_once WP_POSTRATINGS_DIR . 'includes/class-postratings-logs-table.php';
+		if ( ! class_exists( 'WP_PostRatings_Logs_Table' ) ) {
+			require_once WP_POSTRATINGS_DIR . 'includes/class-wp-postratings-logs-table.php';
 		}
 	}
 
@@ -136,11 +131,11 @@ class Postratings_Admin {
 			array(
 				'label'   => __( 'Ratings per page', 'wp-postratings' ),
 				'default' => 20,
-				'option'  => 'postratings_logs_per_page',
+				'option'  => 'wp_postratings_logs_per_page',
 			)
 		);
 
-		self::$table = new Postratings_Logs_Table();
+		self::$table = new WP_PostRatings_Logs_Table();
 	}
 
 	/**
@@ -153,7 +148,7 @@ class Postratings_Admin {
 	 * @return mixed
 	 */
 	public static function set_screen_option( $status, $option, $value ) {
-		return 'postratings_logs_per_page' === $option ? (int) $value : $status;
+		return 'wp_postratings_logs_per_page' === $option ? (int) $value : $status;
 	}
 
 	/**
@@ -164,7 +159,7 @@ class Postratings_Admin {
 	private static function handle_actions() {
 		global $wpdb;
 
-		if ( ! current_user_can( Postratings_Installer::CAPABILITY ) ) {
+		if ( ! current_user_can( WP_PostRatings_Settings::capability() ) ) {
 			return;
 		}
 
@@ -192,8 +187,8 @@ class Postratings_Admin {
 		}
 
 		// The "Delete Ratings Data/Logs" form.
-		if ( ! empty( $_POST['postratings_delete'] ) ) {
-			check_admin_referer( 'wp-postratings_logs' );
+		if ( ! empty( $_POST['wp_postratings_delete'] ) ) {
+			check_admin_referer( 'wp_postratings_logs' );
 
 			$mode     = isset( $_POST['delete_datalog'] ) ? (int) $_POST['delete_datalog'] : 1;
 			$raw_ids  = isset( $_POST['delete_postid'] ) ? sanitize_text_field( wp_unslash( $_POST['delete_postid'] ) ) : '';
@@ -210,9 +205,9 @@ class Postratings_Admin {
 		}
 
 		if ( ! empty( $notices ) ) {
-			set_transient( 'postratings_admin_notices', $notices, 60 );
+			set_transient( 'wp_postratings_admin_notices', $notices, 60 );
 
-			wp_safe_redirect( add_query_arg( 'page', self::PAGE_MANAGE, admin_url( 'admin.php' ) ) );
+			wp_safe_redirect( add_query_arg( 'page', self::PAGE, admin_url( 'admin.php' ) ) );
 			exit;
 		}
 	}
@@ -282,22 +277,22 @@ class Postratings_Admin {
 	public static function render_manage() {
 		global $wpdb;
 
-		if ( ! current_user_can( Postratings_Installer::CAPABILITY ) ) {
+		if ( ! current_user_can( WP_PostRatings_Settings::capability() ) ) {
 			wp_die( esc_html__( 'Access Denied', 'wp-postratings' ) );
 		}
 
 		self::require_list_table();
 
-		if ( ! self::$table instanceof Postratings_Logs_Table ) {
-			self::$table = new Postratings_Logs_Table();
+		if ( ! self::$table instanceof WP_PostRatings_Logs_Table ) {
+			self::$table = new WP_PostRatings_Logs_Table();
 		}
 
 		self::$table->prepare_items();
 
-		$notices = get_transient( 'postratings_admin_notices' );
+		$notices = get_transient( 'wp_postratings_admin_notices' );
 
 		if ( ! empty( $notices ) ) {
-			delete_transient( 'postratings_admin_notices' );
+			delete_transient( 'wp_postratings_admin_notices' );
 
 			foreach ( (array) $notices as $notice ) {
 				printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $notice ) );
@@ -313,7 +308,7 @@ class Postratings_Admin {
 
 			<h2><?php esc_html_e( 'Rating Logs', 'wp-postratings' ); ?></h2>
 			<form method="get">
-				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE_MANAGE ); ?>" />
+				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>" />
 				<?php
 				self::$table->search_box( __( 'Search Logs', 'wp-postratings' ), 'postratings' );
 				self::$table->display();
@@ -337,8 +332,8 @@ class Postratings_Admin {
 			</table>
 
 			<h2><?php esc_html_e( 'Delete Ratings Data/Logs', 'wp-postratings' ); ?></h2>
-			<form method="post" action="<?php echo esc_url( add_query_arg( 'page', self::PAGE_MANAGE, admin_url( 'admin.php' ) ) ); ?>">
-				<?php wp_nonce_field( 'wp-postratings_logs' ); ?>
+			<form method="post" action="<?php echo esc_url( add_query_arg( 'page', self::PAGE, admin_url( 'admin.php' ) ) ); ?>">
+				<?php wp_nonce_field( 'wp_postratings_logs' ); ?>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row">
@@ -363,7 +358,7 @@ class Postratings_Admin {
 					</tr>
 				</table>
 				<p class="submit">
-					<button type="submit" name="postratings_delete" value="1" class="button button-secondary"
+					<button type="submit" name="wp_postratings_delete" value="1" class="button button-secondary"
 						data-confirm="<?php esc_attr_e( 'You are about to delete post ratings data/logs. This action is not reversible.', 'wp-postratings' ); ?>"
 						id="postratings-delete-data">
 						<?php esc_html_e( 'Delete Data/Logs', 'wp-postratings' ); ?>
@@ -404,7 +399,7 @@ class Postratings_Admin {
 			WP_POSTRATINGS_VERSION
 		);
 
-		wp_add_inline_style( 'wp-postratings', Postratings::color_css() );
+		wp_add_inline_style( 'wp-postratings', WP_PostRatings::color_css() );
 
 		// There is no separate admin stylesheet: postratings-admin-css.css had
 		// been an empty file since 2020 and was still being requested on every
@@ -423,8 +418,8 @@ class Postratings_Admin {
 			'postratingsAdminL10n',
 			array(
 				'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
-				'defaultTemplates' => Postratings_Options::defaults()['templates'],
-				'updownTemplates'  => Postratings_Settings::updown_templates(),
+				'defaultTemplates' => WP_PostRatings_Options::defaults()['templates'],
+				'updownTemplates'  => WP_PostRatings_Settings::updown_templates(),
 			)
 		);
 	}
@@ -459,11 +454,11 @@ class Postratings_Admin {
 		$template = str_replace(
 			'%RATINGS_IMAGES_VOTE%',
 			'%RATINGS_IMAGES%<br />',
-			Postratings_Options::template( 'vote' )
+			WP_PostRatings_Options::template( 'vote' )
 		);
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-		echo Postratings_Template::expand( $template, $post, null, 0, false );
+		echo WP_PostRatings_Template::expand( $template, $post, null, 0, false );
 	}
 
 	/**
