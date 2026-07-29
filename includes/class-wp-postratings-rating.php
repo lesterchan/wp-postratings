@@ -141,7 +141,8 @@ class WP_PostRatings_Rating {
 	public static function rated_by_ip( $post_id ) {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and a cached answer would let the same address vote twice.
+		// Deliberately uncached: a stale answer here lets the same address
+		// rate the same post twice.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s",
@@ -165,7 +166,6 @@ class WP_PostRatings_Rating {
 			return 0;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and a cached answer would let the same user vote twice.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT rating_userid FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d",
@@ -556,7 +556,6 @@ class WP_PostRatings_Rating {
 		$always_log = apply_filters( 'wp_postratings_always_log', false );
 
 		if ( $logging_method > 1 || $always_log ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Writing a row to the plugin's own log table; core has no API for it and there is nothing to cache about an insert.
 			$wpdb->query(
 				$wpdb->prepare(
 					"INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d)",

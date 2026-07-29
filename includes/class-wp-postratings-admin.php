@@ -239,7 +239,6 @@ class WP_PostRatings_Admin {
 
 		if ( 1 === $mode || 3 === $mode ) {
 			if ( $is_all ) {
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Emptying the plugin's own table; core has no API for it and there is nothing to cache.
 				$deleted = (int) $wpdb->query( "DELETE FROM {$wpdb->ratings}" );
 			} else {
 				$deleted = self::delete_log_rows( 'rating_postid', $post_ids );
@@ -251,8 +250,9 @@ class WP_PostRatings_Admin {
 
 		if ( 2 === $mode || 3 === $mode ) {
 			if ( $is_all ) {
+				// delete_post_meta() wants a post id, and "every post" is not
+				// one; this clears the key across the table in one statement.
 				foreach ( $meta_keys as $meta_key ) {
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- delete_post_meta() wants a post id; this clears the key across every post in one statement.
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $meta_key ) );
 				}
 
@@ -295,7 +295,6 @@ class WP_PostRatings_Admin {
 		$deleted = 0;
 
 		foreach ( $ids as $id ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Deleting from the plugin's own table; core has no API for it and there is nothing to cache.
 			$deleted += (int) $wpdb->delete( $wpdb->ratings, array( $column => (int) $id ), array( '%d' ) );
 		}
 
@@ -322,7 +321,6 @@ class WP_PostRatings_Admin {
 
 		self::$table->prepare_items();
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Summing a meta key across every post; get_post_meta() cannot aggregate, and the totals are cached below.
 		$total_users = wp_cache_get( 'totals_users', WP_PostRatings_Stats::CACHE_GROUP );
 		$total_score = wp_cache_get( 'totals_score', WP_PostRatings_Stats::CACHE_GROUP );
 
@@ -333,7 +331,6 @@ class WP_PostRatings_Admin {
 			wp_cache_add( 'totals_users', $total_users, WP_PostRatings_Stats::CACHE_GROUP, HOUR_IN_SECONDS );
 			wp_cache_add( 'totals_score', $total_score, WP_PostRatings_Stats::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 
 		$total_users = (int) $total_users;
 		$total_score = (int) $total_score;

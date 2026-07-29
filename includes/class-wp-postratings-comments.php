@@ -48,7 +48,6 @@ class WP_PostRatings_Comments {
 			return;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and the map is rebuilt per post per request.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT rating_username, rating_rating, rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d",

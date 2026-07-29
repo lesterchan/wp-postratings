@@ -186,7 +186,7 @@ class WP_PostRatings_Stats {
 		$results   = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $results ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- $sql is built above by $wpdb->prepare(); the ranking queries span the plugin's own table and the post meta, which no core API can express, and the result is cached either side of this line.
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is built above by $wpdb->prepare(); the ranking queries span the plugin's own table and the post meta, which no core API can express.
 			$results = $wpdb->get_results( $sql, ARRAY_A );
 			wp_cache_add( $cache_key, $results, self::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
@@ -258,7 +258,6 @@ class WP_PostRatings_Stats {
 		$ratings_users = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $ratings_users ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Summing a meta key across every post; get_post_meta() cannot aggregate, and the total is cached either side of this line.
 			$ratings_users = $wpdb->get_var( "SELECT SUM((meta_value+0.00)) FROM $wpdb->postmeta WHERE meta_key = 'ratings_users'" );
 			wp_cache_add( $cache_key, $ratings_users, self::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
