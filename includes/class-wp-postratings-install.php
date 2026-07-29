@@ -64,6 +64,70 @@ class WP_PostRatings_Install {
 	}
 
 	/**
+	 * Remove everything the plugin created, for one site or the whole network.
+	 *
+	 * Lives here rather than in uninstall.php so that install and uninstall sit
+	 * side by side and stay in step, and so that a test can drive it directly
+	 * instead of asserting on the shape of a root file with a regular
+	 * expression. uninstall.php is four lines that call this.
+	 *
+	 * @return void
+	 */
+	public static function uninstall() {
+		if ( ! is_multisite() ) {
+			self::uninstall_site();
+
+			return;
+		}
+
+		// 'number' => 0 lifts WP_Site_Query's default cap of 100, which would
+		// otherwise leave the options and tables behind on every site past the
+		// hundredth while uninstall still reported success.
+		$site_ids = get_sites(
+			array(
+				'fields' => 'ids',
+				'number' => 0,
+			)
+		);
+
+		// restore_current_blog() sits inside the loop on purpose: switching
+		// pushes onto a stack, so switching many times and restoring once
+		// leaves the stack unwound by exactly one.
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( (int) $site_id );
+			self::uninstall_site();
+			restore_current_blog();
+		}
+	}
+
+	/**
+	 * Remove the plugin's options, table, capability and post meta for one site.
+	 *
+	 * @return void
+	 */
+	public static function uninstall_site() {
+		global $wpdb;
+
+		foreach ( WP_PostRatings_Options::all_option_names() as $option_name ) {
+			delete_option( $option_name );
+		}
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Dropping the plugin's own table and clearing its meta key across every post; core has no API for either and there is nothing to cache.
+		$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}ratings`" );
+
+		foreach ( array( 'ratings_users', 'ratings_score', 'ratings_average' ) as $meta_key ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = %s", $meta_key ) );
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
+
+		$role = get_role( 'administrator' );
+
+		if ( $role instanceof WP_Role ) {
+			$role->remove_cap( WP_PostRatings_Settings::CAPABILITY );
+		}
+	}
+
+	/**
 	 * Run the install checks on a normal request when something is out of date.
 	 *
 	 * Activation does not fire on plugin *update*, which is the single most
