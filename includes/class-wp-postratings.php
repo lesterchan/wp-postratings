@@ -128,7 +128,7 @@ class WP_PostRatings {
 
 		wp_localize_script(
 			'wp-postratings',
-			'ratingsL10n',
+			'wpPostRatingsL10n',
 			array(
 				// Much smaller than before 2.0.0: hovering is CSS now, so the
 				// script no longer needs the image set, the extension, the

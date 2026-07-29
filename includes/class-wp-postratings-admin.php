@@ -444,7 +444,7 @@ class WP_PostRatings_Admin {
 
 		wp_localize_script(
 			'wp-postratings-admin',
-			'postratingsAdminL10n',
+			'wpPostRatingsL10n',
 			array(
 				'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
 				'defaultTemplates' => WP_PostRatings_Options::defaults()['templates'],

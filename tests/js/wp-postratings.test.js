@@ -12,7 +12,7 @@ import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helper-dom.
 describe( 'wp-postratings front end', () => {
 	beforeAll( () => {
 		// Must exist before the IIFE evaluates: it reads l10n as it runs.
-		window.ratingsL10n = l10nFixture();
+		window.wpPostRatingsL10n = l10nFixture();
 		loadScript( 'js/wp-postratings.js' );
 	} );
 
@@ -54,7 +54,7 @@ describe( 'wp-postratings front end', () => {
 
 		const [ url, options ] = window.fetch.mock.calls[ 0 ];
 
-		expect( url ).toBe( window.ratingsL10n.ajaxUrl );
+		expect( url ).toBe( window.wpPostRatingsL10n.ajaxUrl );
 		expect( options.method ).toBe( 'POST' );
 	} );
 
@@ -136,7 +136,7 @@ describe( 'wp-postratings front end', () => {
 		choose( 5 );
 
 		expect( window.fetch ).toHaveBeenCalledTimes( 1 );
-		expect( window.alert ).toHaveBeenCalledWith( window.ratingsL10n.textWait );
+		expect( window.alert ).toHaveBeenCalledWith( window.wpPostRatingsL10n.textWait );
 
 		release();
 	} );

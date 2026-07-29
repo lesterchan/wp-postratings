@@ -12,7 +12,7 @@
 ( function() {
 	'use strict';
 
-	const l10n = window.ratingsL10n || {};
+	const l10n = window.wpPostRatingsL10n || {};
 
 	/** Posts currently mid-vote, so a second click cannot double-submit. */
 	const inFlight = new Set();

@@ -9,7 +9,7 @@ import { loadScript } from './helper-dom.js';
 
 describe( 'wp-postratings settings screen', () => {
 	beforeAll( () => {
-		window.postratingsAdminL10n = {
+		window.wpPostRatingsL10n = {
 			ajaxUrl: 'https://example.com/wp-admin/admin-ajax.php',
 			defaultTemplates: {
 				vote: 'DEFAULT VOTE %RATINGS_IMAGES_VOTE%',

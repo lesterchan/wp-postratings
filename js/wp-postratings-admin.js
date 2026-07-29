@@ -7,7 +7,7 @@
 ( function() {
 	'use strict';
 
-	const l10n = window.postratingsAdminL10n || {};
+	const l10n = window.wpPostRatingsL10n || {};
 
 	/**
 	 * Enable or disable the "ratings in rich snippets" radios to match the
