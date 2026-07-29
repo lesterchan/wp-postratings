@@ -63,8 +63,10 @@ class WP_PostRatings_WPStats {
 	/**
 	 * Echo the section body.
 	 *
-	 * Takes no arguments and returns nothing, per the contract: WP-Stats has
-	 * echoed the heading by the time this runs.
+	 * Takes no arguments and echoes rather than returns, per the contract:
+	 * WP-Stats assembles its page under ob_start(), so anything returned here
+	 * would be dropped without a word. The section's own heading is echoed by
+	 * WP-Stats before this runs -- the headings below are the sub-lists'.
 	 *
 	 * @return void
 	 */
@@ -104,7 +106,12 @@ class WP_PostRatings_WPStats {
 	private static function render_list( $heading, $items ) {
 		printf( '<p><strong>%s</strong></p>' . "\n", esc_html( $heading ) );
 		echo '<ul>' . "\n";
-		echo wp_kses_post( $items );
+
+		// Not wp_kses_post(): the list items carry the rating shapes, whose
+		// masks travel as inline custom properties that safecss_filter_attr()
+		// strips, so filtering here would leave every shape invisible.
+		WP_PostRatings_Template::render( $items );
+
 		echo '</ul>' . "\n";
 	}
 

@@ -203,6 +203,72 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * A shared row a sibling has already deleted means on, not off.
+	 *
+	 * All seven contributing plugins fold stats_display in and delete it, so
+	 * six of them find nothing. Reading that as a deliberate opt-out is how a
+	 * site that updated WP-Stats first loses its ratings block with no error
+	 * anywhere. This is the guard for that.
+	 *
+	 * @return void
+	 */
+	public function test_an_already_deleted_shared_row_migrates_to_on() {
+		$this->build_install_without_stats_settings();
+
+		delete_option( 'stats_display' );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 1, (int) WP_PostRatings_Options::get( 'stats_display' ), 'an absent shared row must mean on' );
+	}
+
+	/**
+	 * A shared row that is present and switched off is still honoured.
+	 *
+	 * @return void
+	 */
+	public function test_a_shared_row_that_says_off_migrates_to_off() {
+		$this->build_install_without_stats_settings();
+
+		update_option( 'stats_display', array( 'polls' => 1 ) );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 0, (int) WP_PostRatings_Options::get( 'stats_display' ), 'a stored opt-out must survive the migration' );
+	}
+
+	/**
+	 * The shared rows are deleted once they have been folded in.
+	 *
+	 * @return void
+	 */
+	public function test_the_shared_rows_are_deleted_by_the_migration() {
+		$this->build_install_without_stats_settings();
+
+		update_option( 'stats_display', array( 'ratings' => 1 ) );
+		update_option( 'stats_mostlimit', '7' );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 7, (int) WP_PostRatings_Options::get( 'stats_most_limit' ) );
+		$this->assertFalse( get_option( 'stats_display' ), 'the shared row should be gone' );
+		$this->assertFalse( get_option( 'stats_mostlimit' ), 'the shared row should be gone' );
+	}
+
+	/**
+	 * A settings row with no WP-Stats keys yet, as an un-migrated site has.
+	 *
+	 * @return void
+	 */
+	private function build_install_without_stats_settings() {
+		$options = WP_PostRatings_Options::defaults();
+
+		unset( $options['stats_display'], $options['stats_most_limit'] );
+
+		update_option( WP_PostRatings_Options::OPTION, $options );
+	}
+
+	/**
 	 * The list length comes from this plugin's own setting.
 	 *
 	 * @return void

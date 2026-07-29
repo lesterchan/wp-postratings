@@ -499,10 +499,18 @@ class WP_PostRatings_Options {
 	 * Take this plugin's share of the two rows it used to hold jointly.
 	 *
 	 * The old stats_display row was an array of checkbox keys written by
-	 * whichever of the six contributing plugins saved the WP-Stats screen last,
-	 * and this plugin owned four of those keys. Only one question survives --
-	 * does WP-Stats show a ratings section at all -- because WP-Stats collects
-	 * whole sections now rather than individual panels.
+	 * whichever of the seven contributing plugins saved the WP-Stats screen
+	 * last, and this plugin owned four of those keys. Only one question
+	 * survives -- does WP-Stats show a ratings section at all -- because
+	 * WP-Stats collects whole sections now rather than individual panels.
+	 *
+	 * An absent row means "on", never "off". All seven plugins fold these two
+	 * rows in and each deletes them afterwards, so whichever one the site
+	 * updates first takes them away and the other six find nothing left to
+	 * read. Treating that as a deliberate opt-out would make the ratings block
+	 * disappear from the stats page of any site that happened to update
+	 * WP-Stats first, silently and with nothing in any log to explain it. The
+	 * worst case the other way round is a block the owner switches off again.
 	 *
 	 * @param array $merged Settings assembled so far.
 	 *
@@ -514,15 +522,22 @@ class WP_PostRatings_Options {
 				continue;
 			}
 
-			$value = get_option( $legacy_name, null );
+			$legacy = get_option( $legacy_name, null );
 
-			if ( null === $value || '' === $value ) {
+			if ( 'stats_display' === $key ) {
+				// null is "a sibling has already migrated it away", not "off".
+				$merged[ $key ] = null === $legacy
+					? 1
+					: (int) ( is_array( $legacy ) ? ! empty( $legacy['ratings'] ) : (bool) $legacy );
+
 				continue;
 			}
 
-			$merged[ $key ] = 'stats_display' === $key
-				? (int) ( is_array( $value ) && ! empty( $value['ratings'] ) )
-				: max( 1, (int) $value );
+			// The limit is only a number, and its default is a sensible one, so
+			// an absent row simply leaves the default in place.
+			if ( null !== $legacy && '' !== $legacy ) {
+				$merged[ $key ] = max( 1, (int) $legacy );
+			}
 		}
 
 		return $merged;
