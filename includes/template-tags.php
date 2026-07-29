@@ -87,8 +87,7 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 		return $output;
 	}
 
-	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-	echo $output;
+	WP_PostRatings_Template::render( $output );
 }
 
 /**

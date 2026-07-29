@@ -93,12 +93,7 @@ class WP_PostRatings_Widget extends WP_Widget {
 
 		$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sidebar chrome supplied by the theme; the title is escaped.
-		echo $args['before_widget'] . $args['before_title'] . esc_html( $title ) . $args['after_title'];
-		echo '<ul>' . "\n";
-
-		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered list markup, escaped as it is built.
-		echo WP_PostRatings_Stats::output(
+		$list = WP_PostRatings_Stats::output(
 			array(
 				'source'    => $source,
 				'order'     => $order,
@@ -114,11 +109,16 @@ class WP_PostRatings_Widget extends WP_Widget {
 			false
 		);
 
-		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
-
-		echo '</ul>' . "\n";
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sidebar chrome supplied by the theme.
-		echo $args['after_widget'];
+		// Assembled and printed in one piece. The sidebar chrome is the theme's
+		// own markup and the list is this plugin's, and neither can be escaped
+		// on the way out without printing it instead of using it -- so it goes
+		// through the one method that says so.
+		WP_PostRatings_Template::render(
+			$args['before_widget'] .
+			$args['before_title'] . esc_html( $title ) . $args['after_title'] .
+			'<ul>' . "\n" . $list . '</ul>' . "\n" .
+			$args['after_widget']
+		);
 	}
 
 	/**

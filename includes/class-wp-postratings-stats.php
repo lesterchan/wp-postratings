@@ -112,6 +112,7 @@ class WP_PostRatings_Stats {
 				" INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id)";
 
 			$taxonomy_where = $wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $placeholders is a generated run of %d, one per term id; prepare() cannot bind a variable-length IN () list.
 				" AND $wpdb->term_taxonomy.taxonomy = %s AND $wpdb->term_taxonomy.term_id IN ( $placeholders )",
 				array_merge( array( $args['taxonomy'] ), $terms )
 			);
@@ -119,7 +120,17 @@ class WP_PostRatings_Stats {
 
 		$order_by = self::order_by( $args['order'] );
 
+		/*
+		 * The two statements below are assembled from four pieces -- the post
+		 * type clause, the taxonomy join and its clause, and the ORDER BY --
+		 * each of which is either a $wpdb->prepare() result or a string from an
+		 * allow list in this class. $wpdb->prepare() cannot bind an identifier
+		 * or a variable-length IN () list, so the assembly has to happen in the
+		 * string, and the sniff cannot see that the pieces are already safe.
+		 */
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- See the note above: every interpolated piece is a prepare() result or an allow-listed identifier, which the sniff cannot see.
 		if ( 'range' === $args['source'] ) {
+			// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp -- rating_timestamp holds a site-local timestamp in every row ever written, so the range has to be computed in the same frame.
 			$min_time = strtotime( '-' . $args['time'], current_time( 'timestamp' ) );
 
 			$sql = $wpdb->prepare(
@@ -169,11 +180,13 @@ class WP_PostRatings_Stats {
 			);
 		}
 
-		$cache_key = 'postratings_stats_' . md5( $sql );
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$cache_key = 'wp_postratings_stats_' . md5( $sql );
 		$results   = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $results ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is built above by $wpdb->prepare(); the interpolated parts are allow-listed identifiers.
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery -- $sql is built above by $wpdb->prepare(); the ranking queries span the plugin's own table and the post meta, which no core API can express, and the result is cached either side of this line.
 			$results = $wpdb->get_results( $sql, ARRAY_A );
 			wp_cache_add( $cache_key, $results, self::CACHE_GROUP, HOUR_IN_SECONDS );
 		}
@@ -223,8 +236,7 @@ class WP_PostRatings_Stats {
 		$output = self::render( self::query( $args ), $template, $chars );
 
 		if ( $display ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-			echo $output;
+			WP_PostRatings_Template::render( $output );
 
 			return;
 		}
@@ -246,6 +258,7 @@ class WP_PostRatings_Stats {
 		$ratings_users = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
 		if ( false === $ratings_users ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Summing a meta key across every post; get_post_meta() cannot aggregate, and the total is cached either side of this line.
 			$ratings_users = $wpdb->get_var( "SELECT SUM((meta_value+0.00)) FROM $wpdb->postmeta WHERE meta_key = 'ratings_users'" );
 			wp_cache_add( $cache_key, $ratings_users, self::CACHE_GROUP, HOUR_IN_SECONDS );
 		}

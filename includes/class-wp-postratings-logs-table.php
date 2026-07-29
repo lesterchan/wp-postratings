@@ -152,11 +152,11 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 
 		$count_sql = "SELECT COUNT(rating_id) FROM {$wpdb->ratings} WHERE $where";
 
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $count_sql is built above from bound %d/%s placeholders and a literal table name.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery -- $count_sql is built above from bound %d/%s placeholders and a literal table name; the table is the plugin's own and the count changes on every vote.
 		$this->total_items = (int) ( empty( $values )
 			? $wpdb->get_var( $count_sql )
 			: $wpdb->get_var( $wpdb->prepare( $count_sql, $values ) ) );
-		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery
 
 		// Both halves come from the allow list above, never from the request.
 		$orderby = self::current_orderby();
@@ -164,11 +164,11 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 
 		$sql = "SELECT * FROM {$wpdb->ratings} WHERE $where ORDER BY $orderby $order LIMIT %d, %d";
 
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- $sql is built above from bound placeholders; $orderby/$order come from the allow list, never the request.
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery -- $sql is built above from bound placeholders; $orderby/$order come from the allow list, never the request; and the table is the plugin's own.
 		$this->items = $wpdb->get_results(
 			$wpdb->prepare( $sql, array_merge( $values, array( ( $paged - 1 ) * $per_page, $per_page ) ) )
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery
 
 		$this->set_pagination_args(
 			array(
@@ -201,7 +201,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 	 * @return string
 	 */
 	private static function current_orderby() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading the sort column to decide what to list; the value is resolved through the allow list above and nothing is written.
 		$orderby = isset( $_REQUEST['orderby'] ) ? sanitize_key( wp_unslash( $_REQUEST['orderby'] ) ) : '';
 
 		return isset( self::$sortable_map[ $orderby ] ) ? self::$sortable_map[ $orderby ] : 'rating_timestamp';
@@ -213,7 +213,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 	 * @return string
 	 */
 	private static function current_order() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading the sort direction to decide what to list; it collapses to ASC or DESC and nothing is written.
 		$order = isset( $_REQUEST['order'] ) ? strtoupper( sanitize_key( wp_unslash( $_REQUEST['order'] ) ) ) : '';
 
 		return 'ASC' === $order ? 'ASC' : 'DESC';
@@ -327,6 +327,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 
 		$filters = self::current_filters();
 
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Listing the distinct values in the plugin's own log table to populate the filters; caching them would hide a vote cast a second ago.
 		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT DISTINCT rating_username, rating_userid FROM {$wpdb->ratings} WHERE rating_username != %s ORDER BY rating_userid ASC, rating_username ASC",
@@ -335,6 +336,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 		);
 
 		$ratings = $wpdb->get_col( "SELECT DISTINCT rating_rating FROM {$wpdb->ratings} ORDER BY rating_rating ASC" );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 		?>
 		<div class="alignleft actions">
 			<label class="screen-reader-text" for="postratings-filter-id"><?php esc_html_e( 'Post ID', 'wp-postratings' ); ?></label>

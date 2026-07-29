@@ -141,6 +141,7 @@ class WP_PostRatings_Rating {
 	public static function rated_by_ip( $post_id ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and a cached answer would let the same address vote twice.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s",
@@ -164,6 +165,7 @@ class WP_PostRatings_Rating {
 			return 0;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Reading the plugin's own log table; core has no API for it, and a cached answer would let the same user vote twice.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT rating_userid FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d",
@@ -311,6 +313,7 @@ class WP_PostRatings_Rating {
 	 * @return resource|false
 	 */
 	public static function acquire_lock( $post_id ) {
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- WP_Filesystem abstracts over FTP and SSH and has no locking primitive, so there is nothing to port flock() to.
 		$handle = fopen( self::lock_file( $post_id ), 'w+' );
 
 		if ( false === $handle ) {
@@ -318,6 +321,7 @@ class WP_PostRatings_Rating {
 		}
 
 		if ( ! flock( $handle, LOCK_EX | LOCK_NB ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- See above; the handle taken by fopen() has to be closed with fclose().
 			fclose( $handle );
 
 			return false;
@@ -325,6 +329,7 @@ class WP_PostRatings_Rating {
 
 		ftruncate( $handle, 0 );
 		fwrite( $handle, microtime( true ) );
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 
 		return $handle;
 	}
@@ -344,6 +349,7 @@ class WP_PostRatings_Rating {
 
 		fflush( $handle );
 		flock( $handle, LOCK_UN );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- The handle came from fopen() in acquire_lock(); see the note there.
 		fclose( $handle );
 		wp_delete_file( self::lock_file( $post_id ) );
 
@@ -388,8 +394,7 @@ class WP_PostRatings_Rating {
 
 		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-		echo self::process_vote( $post_id, $rate );
+		WP_PostRatings_Template::render( self::process_vote( $post_id, $rate ) );
 		exit;
 	}
 
@@ -551,6 +556,7 @@ class WP_PostRatings_Rating {
 		$always_log = apply_filters( 'wp_postratings_always_log', false );
 
 		if ( $logging_method > 1 || $always_log ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Writing a row to the plugin's own log table; core has no API for it and there is nothing to cache about an insert.
 			$wpdb->query(
 				$wpdb->prepare(
 					"INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d)",
@@ -558,6 +564,7 @@ class WP_PostRatings_Rating {
 					$post_id,
 					$post->post_title,
 					$rating_value,
+					// phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp -- rating_timestamp holds a site-local timestamp in every row ever written; changing it would reinterpret stored data.
 					current_time( 'timestamp' ),
 					self::get_ip(),
 					self::get_hostname(),

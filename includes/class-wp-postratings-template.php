@@ -17,6 +17,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_PostRatings_Template {
 
 	/**
+	 * Echo markup this plugin built itself.
+	 *
+	 * The one place the plugin prints rendered markup, and therefore the one
+	 * place the escaping sniff has to be told about it. The rating markup is
+	 * assembled here attribute by attribute with esc_attr() and esc_html(), and
+	 * it carries inline custom properties holding an SVG mask as a data URI --
+	 * which safecss_filter_attr() strips, so running it back through wp_kses()
+	 * on the way out would leave every rating invisible. The widget hands its
+	 * sidebar chrome through here for the same reason: escaping a theme's
+	 * before_widget prints the wrapper instead of opening it.
+	 *
+	 * @param string $html Markup built by this plugin.
+	 *
+	 * @return void
+	 */
+	public static function render( $html ) {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Markup built and escaped piece by piece above; see the note on this method.
+		echo $html;
+	}
+
+	/**
 	 * Resolve a stored name to a shape.
 	 *
 	 * Installs that have not run the 2.0.0 migration yet still store an image
@@ -329,14 +350,12 @@ class WP_PostRatings_Template {
 	 * @return string
 	 */
 	public static function expand( $template, $post_data, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true ) {
-		global $post;
-
-		// expand() reassigns the global $post to read another post's excerpt or
-		// content. Without restoring it the rest of the loop renders against
-		// whichever post this template happened to name.
-		// phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited -- Reassigned to read another post's excerpt/content, and restored below.
-		$original_post = $post;
-
+		// Nothing here touches the global $post any more. It used to be
+		// reassigned so get_the_content() and friends would read the post the
+		// template named, and restored afterwards -- which worked, but meant
+		// every early return had to remember to put it back. get_the_content(),
+		// get_the_post_thumbnail() and get_post() all take a post, so the
+		// template reads another post without the loop ever noticing.
 		$options        = WP_PostRatings_Options::get();
 		$ratings_image  = $options['image'];
 		$ratings_max    = (int) $options['max'];
@@ -471,31 +490,20 @@ class WP_PostRatings_Template {
 			$value
 		);
 
-		$post_excerpt = '';
+		$post_excerpt  = '';
+		$template_post = get_post( $post_id );
 
-		if ( false !== strpos( $template, '%POST_EXCERPT%' ) ) {
-			if ( get_the_ID() !== $post_id ) {
-				$post = get_post( $post_id );
-			}
-
-			$post_excerpt = self::post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
+		if ( false !== strpos( $template, '%POST_EXCERPT%' ) && $template_post instanceof WP_Post ) {
+			$post_excerpt = self::post_excerpt( $post_id, $template_post->post_excerpt, $template_post->post_content );
 			$value        = str_replace( '%POST_EXCERPT%', $post_excerpt, $value );
 		}
 
 		if ( false !== strpos( $template, '%POST_CONTENT%' ) ) {
-			if ( get_the_ID() !== $post_id ) {
-				$post = get_post( $post_id );
-			}
-
-			$value = str_replace( '%POST_CONTENT%', get_the_content(), $value );
+			$value = str_replace( '%POST_CONTENT%', get_the_content( null, false, $post_id ), $value );
 		}
 
 		if ( false !== strpos( $template, '%POST_THUMBNAIL%' ) ) {
-			if ( get_the_ID() !== $post_id ) {
-				$post = get_post( $post_id );
-			}
-
-			$value = str_replace( '%POST_THUMBNAIL%', get_the_post_thumbnail( $post, 'thumbnail' ), $value );
+			$value = str_replace( '%POST_THUMBNAIL%', get_the_post_thumbnail( $post_id, 'thumbnail' ), $value );
 		}
 
 		$structured_data = self::structured_data(
@@ -509,9 +517,6 @@ class WP_PostRatings_Template {
 			$ratings_max,
 			$is_main_loop
 		);
-
-		$post = $original_post;
-		// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		/**
 		 * Filters a rating template after its %TOKEN% variables have been expanded.

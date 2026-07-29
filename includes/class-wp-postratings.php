@@ -117,7 +117,8 @@ class WP_PostRatings {
 		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'wp-postratings.css' ), array(), WP_POSTRATINGS_VERSION );
 		wp_add_inline_style( 'wp-postratings', self::color_css() );
 
-		// No jQuery dependency since 2.0.0.
+		// The empty dependency array is the point: the script is vanilla
+		// ES2017 and asks for nothing since 2.0.0.
 		wp_enqueue_script(
 			'wp-postratings',
 			WP_POSTRATINGS_URL . 'js/wp-postratings.js',

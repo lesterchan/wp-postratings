@@ -94,6 +94,7 @@ class WP_PostRatings_Install {
 	private static function maybe_create_table() {
 		global $wpdb;
 
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Creating and inspecting the plugin's own table is the whole job of this class; core has no API for it and there is nothing to cache.
 		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) );
 
 		if ( $exists === $wpdb->ratings ) {
@@ -121,6 +122,7 @@ class WP_PostRatings_Install {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**
@@ -130,6 +132,8 @@ class WP_PostRatings_Install {
 	 */
 	private static function maybe_add_indexes() {
 		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- Adding an index to the plugin's own table; core has no API for it and there is nothing to cache.
 
 		// Column 2 of SHOW INDEX is Key_name. Taken by position rather than by
 		// name because the name is MySQL's, and reading $row->Key_name off the
@@ -144,6 +148,7 @@ class WP_PostRatings_Install {
 		if ( ! in_array( 'rating_postid_ip', $key_names, true ) ) {
 			$wpdb->query( "ALTER TABLE $wpdb->ratings ADD INDEX rating_postid_ip (rating_postid, rating_ip)" );
 		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 	}
 
 	/**

@@ -486,8 +486,7 @@ class WP_PostRatings_Admin {
 			WP_PostRatings_Options::template( 'vote' )
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered template markup, escaped as it is built.
-		echo WP_PostRatings_Template::expand( $template, $post, null, 0, false );
+		WP_PostRatings_Template::render( WP_PostRatings_Template::expand( $template, $post, null, 0, false ) );
 	}
 
 	/**

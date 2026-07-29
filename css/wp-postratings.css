@@ -107,7 +107,7 @@
 }
 
 /* The scale is a span carrying role="radiogroup"; see the note in
-   Postratings_Template::scale_control() for why it is not a fieldset. */
+   WP_PostRatings_Template::scale_control() for why it is not a fieldset. */
 
 
 .wp-postratings-vote > legend {

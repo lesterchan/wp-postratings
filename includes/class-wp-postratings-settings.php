@@ -339,15 +339,13 @@ class WP_PostRatings_Settings {
 				esc_attr( $is_updown ? 2 : $max )
 			);
 
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Shape markup built and escaped attribute by attribute by WP_PostRatings_Template; escaping it again would double-encode the aria-label.
 			if ( $is_updown ) {
-				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' );
-				echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' );
+				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' ) );
+				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' ) );
 			} else {
 				// Filled to 60% so the preview shows both states at once.
-				echo WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' );
+				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' ) );
 			}
-			// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			echo '&nbsp;&nbsp;&nbsp;' . esc_html( $shape['label'] );
 			echo '</p>' . "\n";
@@ -855,13 +853,11 @@ class WP_PostRatings_Settings {
 							// Preview of this step: an up/down set shows the one
 							// glyph for this position, anything else shows the
 							// strip lit up to it.
-							// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- Shape markup built and escaped attribute by attribute by WP_PostRatings_Template.
 							if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $image ) ) ) {
-								echo WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' );
+								WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' ) );
 							} else {
-								echo WP_PostRatings_Template::ratings_images( 0, $max, $i, $image, '' );
+								WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $i, $image, '' ) );
 							}
-							// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 							?>
 						</td>
 						<td>
