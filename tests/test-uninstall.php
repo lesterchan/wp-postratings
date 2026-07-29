@@ -147,7 +147,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 		$this->assertFalse( get_option( WP_PostRatings_Options::VERSION ), 'the marker row survived' );
 		$this->assertNull( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) ), 'the log table survived' );
 		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'the rating meta survived' );
-		$this->assertFalse( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::CAPABILITY ), 'the capability survived' );
+		$this->assertFalse( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() ), 'the capability survived' );
 
 		// Put the site back for whatever runs next: neither the table nor the
 		// capability is part of WP_UnitTestCase's rollback.

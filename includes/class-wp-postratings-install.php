@@ -122,8 +122,11 @@ class WP_PostRatings_Install {
 
 		$role = get_role( 'administrator' );
 
+		// The same expression add_capability() grants, filter and all: removing
+		// the constant while granting the filtered value would leave a site that
+		// uses wp_postratings_capability with a capability nothing takes back.
 		if ( $role instanceof WP_Role ) {
-			$role->remove_cap( WP_PostRatings_Settings::CAPABILITY );
+			$role->remove_cap( WP_PostRatings_Settings::capability() );
 		}
 	}
 
