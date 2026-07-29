@@ -193,7 +193,7 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 		foreach ( array( $first, $second ) as $blog_id ) {
 			switch_to_blog( $blog_id );
 			$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->ratings}" );
-			delete_option( WP_PostRatings_Install::DB_VERSION_OPTION );
+			delete_option( WP_PostRatings_Options::VERSION );
 			restore_current_blog();
 		}
 
@@ -223,7 +223,7 @@ class Test_Postratings_Multisite extends WP_PostRatings_TestCase {
 
 		switch_to_blog( $other );
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->ratings}" );
-		delete_option( WP_PostRatings_Install::DB_VERSION_OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
 		restore_current_blog();
 
 		WP_PostRatings_Install::activate( false );

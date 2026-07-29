@@ -32,9 +32,9 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 		$wpdb->query( "DELETE FROM {$wpdb->ratings}" );
 
 		delete_option( WP_PostRatings_Options::OPTION );
-		delete_option( WP_PostRatings_Options::VERSION_OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
 		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
-		update_option( WP_PostRatings_Options::VERSION_OPTION, WP_PostRatings_Options::VERSION );
+		WP_PostRatings_Options::update_markers();
 
 		$_SERVER['REMOTE_ADDR']     = '203.0.113.1';
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (phpunit)';

@@ -42,9 +42,9 @@ class Test_Postratings_Upgrade extends WP_PostRatings_TestCase {
 
 		// The consolidated row as 1.x knew it: three keys, nothing else.
 		delete_option( WP_PostRatings_Options::OPTION );
-		delete_option( WP_PostRatings_Options::VERSION_OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
 		update_option(
-			WP_PostRatings_Options::OPTION,
+			'postratings_options',
 			array(
 				'ip_header'           => 'HTTP_CF_CONNECTING_IP',
 				'richsnippet'         => 1,

@@ -143,68 +143,74 @@ class Test_Postratings_Remaining extends WP_PostRatings_TestCase {
 	// --- WP-Stats ---------------------------------------------------------
 
 	/**
-	 * The plugin declares its own display toggles.
-	 *
-	 * Without this WP-Stats only learns a key exists once its checkbox has
-	 * been submitted, so the panels start out off on a fresh install.
+	 * The section entry carries exactly the three keys WP-Stats asks for.
 	 *
 	 * @return void
 	 */
-	public function test_the_wp_stats_toggles_are_declared() {
-		$defaults = WP_PostRatings_WPStats::display_defaults( array() );
+	public function test_the_wp_stats_section_has_the_contract_shape() {
+		$sections = apply_filters( 'wp_stats_sections', array() );
 
-		$this->assertSame( 1, $defaults['ratings'] );
-		$this->assertArrayHasKey( 'rated_highest_post', $defaults );
-		$this->assertArrayHasKey( 'rated_most_page', $defaults );
+		$this->assertArrayHasKey( 'wp_postratings', $sections, 'the section is keyed by the plugin slug with underscores' );
+		$this->assertSame(
+			array( 'title', 'priority', 'render' ),
+			array_keys( $sections['wp_postratings'] ),
+			'the entry must carry title, priority and render, in that order and nothing else'
+		);
+		$this->assertIsString( $sections['wp_postratings']['title'] );
+		$this->assertIsInt( $sections['wp_postratings']['priority'] );
+		$this->assertIsCallable( $sections['wp_postratings']['render'] );
 	}
 
 	/**
-	 * WP-Stats' own defaults win over the plugin's.
+	 * Another plugin's entry is left alone.
 	 *
 	 * @return void
 	 */
-	public function test_wp_stats_own_defaults_win() {
-		$defaults = WP_PostRatings_WPStats::display_defaults( array( 'ratings' => 0 ) );
+	public function test_the_wp_stats_filter_keeps_a_sibling_entry() {
+		$sections = WP_PostRatings_WPStats::register_section( array( 'wp_polls' => array( 'title' => 'Polls' ) ) );
 
-		$this->assertSame( 0, $defaults['ratings'] );
+		$this->assertArrayHasKey( 'wp_polls', $sections, 'a contributor must never drop a sibling' );
+		$this->assertArrayHasKey( 'wp_postratings', $sections );
 	}
 
 	/**
-	 * The options screen offers a checkbox per panel.
+	 * Opting out contributes nothing at all, not an empty section.
 	 *
 	 * @return void
 	 */
-	public function test_the_wp_stats_options_offer_every_panel() {
-		$html = WP_PostRatings_WPStats::admin_most( '' );
+	public function test_a_disabled_wp_stats_section_is_not_offered() {
+		$this->set_option( 'stats_display', 0 );
 
-		foreach ( array( 'rated_highest_post', 'rated_highest_page', 'rated_most_post', 'rated_most_page' ) as $key ) {
-			$this->assertStringContainsString( $key, $html );
-		}
+		$this->assertSame( array(), WP_PostRatings_WPStats::register_section( array() ) );
 	}
 
 	/**
-	 * A disabled panel contributes nothing to the page.
+	 * The section body reports the vote total, and echoes rather than returns.
 	 *
 	 * @return void
 	 */
-	public function test_a_disabled_wp_stats_panel_is_skipped() {
-		update_option( 'stats_display', array( 'ratings' => 0 ) );
-
-		$this->assertSame( '', WP_PostRatings_WPStats::page_general( '' ) );
-	}
-
-	/**
-	 * An enabled panel reports the vote total.
-	 *
-	 * @return void
-	 */
-	public function test_an_enabled_wp_stats_panel_reports_the_total() {
-		update_option( 'stats_display', array( 'ratings' => 1 ) );
-
+	public function test_the_wp_stats_section_echoes_the_vote_total() {
 		$this->make_rated_post( 4, 18 );
 		wp_cache_flush();
 
-		$this->assertStringContainsString( 'WP-PostRatings', WP_PostRatings_WPStats::page_general( '' ) );
+		ob_start();
+		$returned = WP_PostRatings_WPStats::render();
+		$html     = ob_get_clean();
+
+		$this->assertNull( $returned, 'render() echoes; it does not return markup' );
+		$this->assertStringContainsString( 'Highest Rated Post', $html );
+		$this->assertStringContainsString( '4', $html );
+	}
+
+	/**
+	 * The list length comes from this plugin's own setting.
+	 *
+	 * @return void
+	 */
+	public function test_the_wp_stats_limit_comes_from_our_own_row() {
+		$this->set_option( 'stats_most_limit', 3 );
+
+		$this->assertSame( 3, WP_PostRatings_WPStats::most_limit() );
 	}
 
 	// --- shapes -----------------------------------------------------------

@@ -73,7 +73,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 	public function test_the_schema_version_is_recorded() {
 		$this->assertSame(
 			WP_POSTRATINGS_DB_VERSION,
-			(string) get_option( WP_PostRatings_Install::DB_VERSION_OPTION )
+			WP_PostRatings_Options::markers()['db']
 		);
 	}
 
@@ -106,7 +106,7 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 		$source = file_get_contents( dirname( __DIR__ ) . '/uninstall.php' );
 
 		$this->assertMatchesRegularExpression(
-			'/foreach\s*\(.*\)\s*\{\s*switch_to_blog\(.*\);\s*postratings_uninstall_site\(\);\s*restore_current_blog\(\);\s*\}/s',
+			'/foreach\s*\(.*\)\s*\{\s*switch_to_blog\(.*\);\s*wp_postratings_uninstall_site\(\);\s*restore_current_blog\(\);\s*\}/s',
 			$source
 		);
 	}
@@ -131,8 +131,10 @@ class Test_Postratings_Uninstall extends WP_PostRatings_TestCase {
 		$names = WP_PostRatings_Options::all_option_names();
 
 		$this->assertContains( WP_PostRatings_Options::OPTION, $names );
-		$this->assertContains( WP_PostRatings_Options::VERSION_OPTION, $names );
-		$this->assertContains( WP_PostRatings_Install::DB_VERSION_OPTION, $names );
+		$this->assertContains( WP_PostRatings_Options::VERSION, $names );
+		$this->assertContains( 'postratings_options', $names, 'the renamed row would be orphaned' );
+		$this->assertContains( 'postratings_db_version', $names );
+		$this->assertContains( 'postratings_options_version', $names );
 		$this->assertContains( 'postratings_template_vote', $names, 'a legacy row would be orphaned' );
 		$this->assertContains( 'widget_ratings-widget', $names );
 	}

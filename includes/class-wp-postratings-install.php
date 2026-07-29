@@ -17,14 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_PostRatings_Install {
 
 	/**
-	 * Option holding the installed schema version.
-	 *
-	 * Kept out of the settings row: it is read to decide whether the settings
-	 * need migrating, so it cannot live inside the thing being migrated.
-	 */
-	const DB_VERSION_OPTION = 'postratings_db_version';
-
-	/**
 	 * Run on activation, for one site or every site on the network.
 	 *
 	 * @param bool $network_wide Whether the plugin is being network activated.
@@ -64,23 +56,30 @@ class WP_PostRatings_Install {
 		self::add_capability();
 
 		WP_PostRatings_Options::maybe_migrate();
+
+		// Last, and in one write. A run that fails part way through leaves the
+		// markers where they were, so the next request tries again rather than
+		// believing the upgrade finished.
+		WP_PostRatings_Options::update_markers();
 	}
 
 	/**
 	 * Run the install checks on a normal request when something is out of date.
 	 *
 	 * Activation does not fire on plugin *update*, which is the single most
-	 * common reason a migration never runs.
+	 * common reason a migration never runs. Gated on one autoloaded row, so an
+	 * install that is already current pays a lookup and nothing else.
 	 *
 	 * @return void
 	 */
 	public static function maybe_upgrade() {
-		if ( (string) get_option( self::DB_VERSION_OPTION, '' ) !== WP_POSTRATINGS_DB_VERSION ) {
-			self::maybe_create_table();
-			self::add_capability();
+		$markers = WP_PostRatings_Options::markers();
+
+		if ( WP_POSTRATINGS_VERSION === $markers['plugin'] && WP_POSTRATINGS_DB_VERSION === $markers['db'] ) {
+			return;
 		}
 
-		WP_PostRatings_Options::maybe_migrate();
+		self::install();
 	}
 
 	/**
@@ -99,7 +98,6 @@ class WP_PostRatings_Install {
 
 		if ( $exists === $wpdb->ratings ) {
 			self::maybe_add_indexes();
-			update_option( self::DB_VERSION_OPTION, WP_POSTRATINGS_DB_VERSION );
 
 			return;
 		}
@@ -123,8 +121,6 @@ class WP_PostRatings_Install {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
-
-		update_option( self::DB_VERSION_OPTION, WP_POSTRATINGS_DB_VERSION );
 	}
 
 	/**

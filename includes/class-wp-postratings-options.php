@@ -12,10 +12,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Reads, writes, sanitizes and migrates the plugin's settings.
  *
- * Before 2.0.0 the plugin owned fifteen autoloaded rows, six of them templates.
- * They are consolidated into the single `postratings_options` row the plugin
- * already had, so no new option name is minted and the existing value merges
- * over the defaults for free.
+ * Before 2.0.0 the plugin owned seventeen autoloaded rows: fifteen of its own,
+ * six of those templates, plus the two unprefixed rows it shared with WP-Stats.
+ * They collapse into two -- wp_postratings_options for everything a site owner
+ * can change, and wp_postratings_version for the two upgrade markers.
+ *
+ * The markers live in their own row rather than inside the settings because the
+ * settings form never posts them: anything kept in the settings array has to be
+ * rescued from the stored value on every save, and forgetting to do that is how
+ * an upgrade marker gets silently wiped the first time somebody opens the
+ * screen. With two rows the settings screen writes one and the upgrade routine
+ * writes the other, and neither can corrupt the other.
  *
  * @since 2.0.0
  */
@@ -24,32 +31,29 @@ class WP_PostRatings_Options {
 	/**
 	 * Option holding the plugin settings.
 	 */
-	const OPTION = 'postratings_options';
+	const OPTION = 'wp_postratings_options';
 
 	/**
-	 * Bumped when the consolidated shape changes, so stored values migrate once.
+	 * Option holding the 'plugin' and 'db' upgrade markers, and nothing else.
+	 */
+	const VERSION = 'wp_postratings_version';
+
+	/**
+	 * The row this plugin's settings lived in before they were renamed.
 	 *
-	 * Lives in its own row rather than inside the settings: it is read to decide
-	 * whether the settings need migrating, so it cannot live inside the thing
-	 * being migrated.
+	 * @var string
 	 */
-	const VERSION_OPTION = 'postratings_options_version';
-
-	/**
-	 * Current settings shape.
-	 */
-	const VERSION = 3;
+	private static $renamed_from = 'postratings_options';
 
 	/**
 	 * The rows consolidated into self::OPTION by the 2.0.0 migration.
 	 *
-	 * Note that self::OPTION is deliberately absent: it is the row being
-	 * written, and deleting it here would throw away every setting the
-	 * migration has just merged.
-	 *
 	 * @var array
 	 */
 	private static $legacy_options = array(
+		'postratings_options',
+		'postratings_db_version',
+		'postratings_options_version',
 		'postratings_image',
 		'postratings_max',
 		'postratings_customrating',
@@ -64,6 +68,24 @@ class WP_PostRatings_Options {
 		'postratings_template_none',
 		'postratings_template_highestrated',
 		'postratings_template_mostrated',
+	);
+
+	/**
+	 * The unprefixed rows this plugin shared with WP-Stats and five others.
+	 *
+	 * They were never any one plugin's to own: whichever of the six saved the
+	 * WP-Stats screen last wrote the whole row, and whichever was uninstalled
+	 * first took the other five's settings with it. Each plugin keeps its own
+	 * copy now, so the migration folds these in and deletes them -- and, unlike
+	 * the rows above, they are deliberately absent from all_option_names(),
+	 * because uninstalling one plugin must not clear a setting that a sibling
+	 * which has not upgraded yet is still reading.
+	 *
+	 * @var array
+	 */
+	private static $shared_options = array(
+		'stats_display'   => 'stats_display',
+		'stats_mostlimit' => 'stats_most_limit',
 	);
 
 	/**
@@ -116,6 +138,10 @@ class WP_PostRatings_Options {
 			'ip_header'           => '',
 			'richsnippet'         => 1,
 			'richsnippet_ratings' => 1,
+			// The plugin's half of the WP-Stats contract. Its own setting now,
+			// not a slice of a row six plugins wrote to at once.
+			'stats_display'       => 1,
+			'stats_most_limit'    => 10,
 			'ajax_style'          => array(
 				'loading' => 1,
 				'fading'  => 1,
@@ -293,10 +319,14 @@ class WP_PostRatings_Options {
 			$clean['ip_header'] = preg_match( '/^[A-Z0-9_]*$/', $ip_header ) ? $ip_header : '';
 		}
 
-		foreach ( array( 'richsnippet', 'richsnippet_ratings' ) as $key ) {
+		foreach ( array( 'richsnippet', 'richsnippet_ratings', 'stats_display' ) as $key ) {
 			if ( isset( $options[ $key ] ) ) {
 				$clean[ $key ] = empty( $options[ $key ] ) ? 0 : 1;
 			}
+		}
+
+		if ( isset( $options['stats_most_limit'] ) ) {
+			$clean['stats_most_limit'] = max( 1, (int) $options['stats_most_limit'] );
 		}
 
 		if ( isset( $options['ajax_style'] ) && is_array( $options['ajax_style'] ) ) {
@@ -353,23 +383,64 @@ class WP_PostRatings_Options {
 	}
 
 	/**
-	 * Consolidate the pre-2.0.0 option rows into one.
+	 * The two upgrade markers, normalised.
 	 *
-	 * Gated on the stored version rather than on "do the old keys exist": an
-	 * install that has already migrated has no old keys, and treating that as a
-	 * fresh install would write defaults straight over the merged row.
+	 * Always exactly 'plugin' and 'db', whatever is actually in the row, so a
+	 * caller never has to guard either key.
 	 *
-	 * Idempotent, and driven from admin_init as well as activation, because
-	 * activation does not fire on plugin update.
+	 * @return array
+	 */
+	public static function markers() {
+		$stored = get_option( self::VERSION, array() );
+		$stored = is_array( $stored ) ? $stored : array();
+
+		return array(
+			'plugin' => isset( $stored['plugin'] ) ? (string) $stored['plugin'] : '',
+			'db'     => isset( $stored['db'] ) ? (string) $stored['db'] : '',
+		);
+	}
+
+	/**
+	 * Record that this version's upgrade has finished.
+	 *
+	 * One write, both markers, at the end of the upgrade routine: a half-run
+	 * upgrade never gets to record itself as complete.
+	 *
+	 * @return void
+	 */
+	public static function update_markers() {
+		update_option(
+			self::VERSION,
+			array(
+				'plugin' => WP_POSTRATINGS_VERSION,
+				'db'     => WP_POSTRATINGS_DB_VERSION,
+			)
+		);
+	}
+
+	/**
+	 * Fold every pre-2.0.0 option row into wp_postratings_options.
+	 *
+	 * Seventeen rows go in: postratings_options itself, the fourteen loose
+	 * settings rows beside it, and the two unprefixed rows this plugin shared
+	 * with WP-Stats. All seventeen are deleted afterwards, including the old
+	 * postratings_options, because the row has been renamed and leaving it
+	 * behind would mean a later downgrade silently resurrected stale settings.
+	 *
+	 * Idempotent: after the first run there are no legacy rows left to read, and
+	 * re-merging the stored value over the defaults changes nothing.
 	 *
 	 * @return void
 	 */
 	public static function maybe_migrate() {
-		if ( (int) get_option( self::VERSION_OPTION, 0 ) >= self::VERSION ) {
-			return;
+		$stored = get_option( self::OPTION, null );
+
+		// The old row is the starting point when the new one does not exist yet,
+		// so an install upgrading from 1.91.3 keeps every setting it had.
+		if ( null === $stored ) {
+			$stored = get_option( self::$renamed_from, array() );
 		}
 
-		$stored = get_option( self::OPTION, array() );
 		$merged = is_array( $stored ) ? $stored : array();
 
 		foreach ( self::legacy_map() as $legacy_name => $path ) {
@@ -415,17 +486,53 @@ class WP_PostRatings_Options {
 			$merged['image'] = WP_PostRatings_Template::resolve_shape( $merged['image'] );
 		}
 
+		$merged = self::migrate_stats_settings( $merged );
+
 		self::update( self::merge( self::defaults(), $merged ) );
 
-		foreach ( self::$legacy_options as $legacy_name ) {
+		foreach ( array_merge( self::$legacy_options, array_keys( self::$shared_options ) ) as $legacy_name ) {
 			delete_option( $legacy_name );
 		}
+	}
 
-		update_option( self::VERSION_OPTION, self::VERSION );
+	/**
+	 * Take this plugin's share of the two rows it used to hold jointly.
+	 *
+	 * stats_display was an array of checkbox keys written by whichever of the
+	 * six contributing plugins saved the WP-Stats screen last, and this plugin
+	 * owned four of those keys. Only one question survives -- does WP-Stats show
+	 * a ratings section at all -- because WP-Stats collects whole sections now
+	 * rather than individual panels.
+	 *
+	 * @param array $merged Settings assembled so far.
+	 *
+	 * @return array
+	 */
+	private static function migrate_stats_settings( $merged ) {
+		foreach ( self::$shared_options as $legacy_name => $key ) {
+			if ( isset( $merged[ $key ] ) ) {
+				continue;
+			}
+
+			$value = get_option( $legacy_name, null );
+
+			if ( null === $value || '' === $value ) {
+				continue;
+			}
+
+			$merged[ $key ] = 'stats_display' === $key
+				? (int) ( is_array( $value ) && ! empty( $value['ratings'] ) )
+				: max( 1, (int) $value );
+		}
+
+		return $merged;
 	}
 
 	/**
 	 * Every option row the plugin owns, for uninstall.
+	 *
+	 * The legacy names are included so uninstalling after an upgrade that never
+	 * ran still clears them.
 	 *
 	 * @return array
 	 */
@@ -434,8 +541,7 @@ class WP_PostRatings_Options {
 			self::$legacy_options,
 			array(
 				self::OPTION,
-				self::VERSION_OPTION,
-				'postratings_db_version',
+				self::VERSION,
 				'widget_ratings',
 				'widget_ratings-widget',
 				'widget_ratings_highest_rated',

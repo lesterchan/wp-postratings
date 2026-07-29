@@ -148,16 +148,24 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The version marker is recorded so the migration cannot re-run.
+	 * Both upgrade markers are recorded, in one row, once the upgrade finishes.
 	 *
 	 * @return void
 	 */
-	public function test_the_version_is_recorded() {
+	public function test_the_version_markers_are_recorded() {
 		$this->build_legacy_install();
+		delete_option( WP_PostRatings_Options::VERSION );
 
-		WP_PostRatings_Options::maybe_migrate();
+		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( WP_PostRatings_Options::VERSION, (int) get_option( WP_PostRatings_Options::VERSION_OPTION ) );
+		$this->assertSame(
+			array(
+				'plugin' => WP_POSTRATINGS_VERSION,
+				'db'     => WP_POSTRATINGS_DB_VERSION,
+			),
+			get_option( WP_PostRatings_Options::VERSION ),
+			'the marker row should hold exactly the two markers'
+		);
 	}
 
 	// --- sanitizing -------------------------------------------------------
@@ -279,7 +287,7 @@ class Test_Postratings_Options extends WP_PostRatings_TestCase {
 	 */
 	private function build_legacy_install() {
 		delete_option( WP_PostRatings_Options::OPTION );
-		delete_option( WP_PostRatings_Options::VERSION_OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
 
 		update_option( 'postratings_image', 'thumbs' );
 		update_option( 'postratings_max', '2' );
