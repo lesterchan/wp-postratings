@@ -46,6 +46,13 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 	if ( ! empty( $ajax_style['loading'] ) ) {
 		// The spinner is a CSS pseudo-element since 2.0.0, so there is no
 		// loading.gif to request and it inherits the surrounding text colour.
+		/**
+		 * Filters the text shown while a vote is in flight.
+		 *
+		 * @since 1.87
+		 *
+		 * @param string $loading_text Loading text.
+		 */
 		$loading_text = apply_filters( 'wp_postratings_loading_alt', esc_html__( 'Loading...', 'wp-postratings' ) );
 
 		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading"' .
@@ -56,9 +63,11 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 
 	$attributes = 'id="post-ratings-' . $ratings_id . '" class="post-ratings"';
 
+	/** This filter is documented in includes/class-wp-postratings-template.php */
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 
 	if ( ! $disable_richsnippet && is_singular() && WP_PostRatings_Options::get( 'richsnippet' ) ) {
+		/** This filter is documented in includes/class-wp-postratings-template.php */
 		$itemtype    = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
 		$attributes .= ' ' . $itemtype;
 	}

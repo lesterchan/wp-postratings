@@ -133,7 +133,14 @@ class WP_PostRatings_Template {
 
 		$shape       = self::resolve_shape( $shape );
 		$ratings_max = max( 1, (int) $ratings_max );
-		$image_alt   = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
+		/**
+		 * Filters the accessible label describing a displayed rating.
+		 *
+		 * @since 1.84
+		 *
+		 * @param string $image_alt Text such as "4 votes, average: 3.70 out of 5".
+		 */
+		$image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
 		$fill        = self::fill_percentage( $post_rating, $ratings_max );
 
 		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
@@ -398,6 +405,16 @@ class WP_PostRatings_Template {
 
 		if ( false !== strpos( $template, '%RATINGS_IMAGES%' ) ) {
 			$images = self::ratings_images( $ratings_custom, $ratings_max, $post_ratings, $ratings_image, $post_ratings_alt_text, $insert_half );
+			/**
+			 * Filters the read-only rating markup.
+			 *
+			 * @since 1.80
+			 *
+			 * @param string $images       Rendered markup.
+			 * @param int    $post_id      Post being rendered.
+			 * @param float  $post_ratings Average rating.
+			 * @param int    $ratings_max  Top of the scale.
+			 */
 			$images = apply_filters( 'wp_postratings_ratings_images', $images, $post_id, $post_ratings, $ratings_max );
 			$value  = str_replace( '%RATINGS_IMAGES%', $images, $value );
 		}
@@ -405,7 +422,17 @@ class WP_PostRatings_Template {
 		if ( false !== strpos( $template, '%RATINGS_IMAGES_VOTE%' ) ) {
 			$ratings_texts = WP_PostRatings_Options::get_nested( 'ratings', 'text' );
 			$images        = self::ratings_images_vote( $post_id, $ratings_custom, $ratings_max, $post_ratings, $ratings_image, $post_ratings_alt_text, $insert_half, (array) $ratings_texts );
-			$images        = apply_filters( 'wp_postratings_ratings_images_vote', $images, $post_id, $post_ratings, $ratings_max );
+			/**
+			 * Filters the clickable rating control markup.
+			 *
+			 * @since 1.80
+			 *
+			 * @param string $images       Rendered markup.
+			 * @param int    $post_id      Post being rendered.
+			 * @param float  $post_ratings Average rating.
+			 * @param int    $ratings_max  Top of the scale.
+			 */
+			$images = apply_filters( 'wp_postratings_ratings_images_vote', $images, $post_id, $post_ratings, $ratings_max );
 			$value         = str_replace( '%RATINGS_IMAGES_VOTE%', $images, $value );
 		}
 
@@ -486,6 +513,14 @@ class WP_PostRatings_Template {
 		$post = $original_post;
 		// phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 
+		/**
+		 * Filters a rating template after its %TOKEN% variables have been expanded.
+		 *
+		 * @since 1.87
+		 *
+		 * @param string $value   Expanded markup, structured data included.
+		 * @param int    $post_id Post the template was expanded for.
+		 */
 		return apply_filters( 'wp_postratings_expand_ratings_template', $value . $structured_data, $post_id );
 	}
 
@@ -507,6 +542,13 @@ class WP_PostRatings_Template {
 	private static function structured_data( $options, $post_id, $post_title, $post_link, $post_excerpt, $post_ratings_average, $post_ratings_users, $ratings_max, $is_main_loop ) {
 		global $post;
 
+		/**
+		 * Filters whether to suppress the Google rich snippet markup entirely.
+		 *
+		 * @since 1.88
+		 *
+		 * @param bool $disable Whether to suppress it.
+		 */
 		if ( apply_filters( 'wp_postratings_disable_richsnippet', false ) ) {
 			return '';
 		}
@@ -515,6 +557,13 @@ class WP_PostRatings_Template {
 			return '';
 		}
 
+		/**
+		 * Filters the schema.org item type the rating markup declares.
+		 *
+		 * @since 1.79
+		 *
+		 * @param string $itemtype The itemscope/itemtype attribute pair.
+		 */
 		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
 
 		if ( empty( $post_excerpt ) && ! empty( $post ) ) {
@@ -531,6 +580,14 @@ class WP_PostRatings_Template {
 		$post_meta .= '<meta itemprop="mainEntityOfPage" content="' . esc_url( get_permalink() ) . '" />';
 
 		$thumbnail = has_post_thumbnail() ? wp_get_attachment_image_src( get_post_thumbnail_id( null ) ) : '';
+		/**
+		 * Filters the thumbnail offered to the rich snippet.
+		 *
+		 * @since 1.85
+		 *
+		 * @param array|string $thumbnail wp_get_attachment_image_src() result, or ''.
+		 * @param int          $post_id   Post being rendered.
+		 */
 		$thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
 
 		if ( ! empty( $thumbnail ) ) {
@@ -553,6 +610,13 @@ class WP_PostRatings_Template {
 			$site_logo = get_header_image();
 		}
 
+		/**
+		 * Filters the publisher logo offered to the rich snippet.
+		 *
+		 * @since 1.87
+		 *
+		 * @param string $site_logo Logo URL.
+		 */
 		$site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
 
 		$post_meta .= '<div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
@@ -574,6 +638,13 @@ class WP_PostRatings_Template {
 			$ratings_meta .= '</div>';
 		}
 
+		/**
+		 * Filters the whole block of Google structured data.
+		 *
+		 * @since 1.84
+		 *
+		 * @param string $structured_data Rendered <meta> markup.
+		 */
 		return apply_filters(
 			'wp_postratings_google_structured_data',
 			empty( $itemtype ) ? $ratings_meta : $post_meta . $ratings_meta

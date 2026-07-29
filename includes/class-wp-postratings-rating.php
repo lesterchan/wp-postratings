@@ -109,6 +109,14 @@ class WP_PostRatings_Rating {
 				break;
 		}
 
+		/**
+		 * Filters whether the visitor has already rated a post.
+		 *
+		 * @since 1.80
+		 *
+		 * @param bool $rated   Whether the logging method says they have.
+		 * @param int  $post_id Post being checked.
+		 */
 		return apply_filters( 'wp_postratings_check_rated', $rated, $post_id );
 	}
 
@@ -224,6 +232,13 @@ class WP_PostRatings_Rating {
 	 * @return string
 	 */
 	public static function get_ip() {
+		/**
+		 * Filters the address as it is stored in the rating log.
+		 *
+		 * @since 1.87
+		 *
+		 * @param string $ipaddress Hashed address.
+		 */
 		return apply_filters( 'wp_postratings_ipaddress', wp_hash( self::get_raw_ip() ) );
 	}
 
@@ -238,6 +253,7 @@ class WP_PostRatings_Rating {
 		// gethostbyaddr() warns on anything that is not an address, which is
 		// what an absent or unroutable REMOTE_ADDR resolves to here.
 		if ( '' === $ip ) {
+			/** This filter is documented in includes/class-wp-postratings-rating.php */
 			return apply_filters( 'wp_postratings_hostname', '' );
 		}
 
@@ -251,6 +267,13 @@ class WP_PostRatings_Rating {
 			$hostname = substr( $hostname, strpos( $hostname, '.' ) + 1 );
 		}
 
+		/**
+		 * Filters the host name recorded beside a rating.
+		 *
+		 * @since 1.87
+		 *
+		 * @param string $hostname Resolved host name, anonymised when it does not resolve.
+		 */
 		return apply_filters( 'wp_postratings_hostname', $hostname );
 	}
 
@@ -262,6 +285,14 @@ class WP_PostRatings_Rating {
 	 * @return string
 	 */
 	public static function lock_file( $post_id ) {
+		/**
+		 * Filters the path of a post's advisory lock file.
+		 *
+		 * @since 1.90
+		 *
+		 * @param string $path    Lock file path.
+		 * @param int    $post_id Post being rated.
+		 */
 		return apply_filters(
 			'wp_postratings_lock_file',
 			get_temp_dir() . '/wp-blog-' . get_current_blog_id() . '-wp-postratings-' . $post_id . '.lock',
@@ -468,21 +499,58 @@ class WP_PostRatings_Rating {
 			$rate_user = __( 'Guest', 'wp-postratings' );
 		}
 
-		$rate_user   = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
+		/**
+		 * Filters the name recorded against a rating.
+		 *
+		 * @since 1.80
+		 *
+		 * @param string $rate_user Display name, comment author name, or "Guest".
+		 */
+		$rate_user = apply_filters( 'wp_postratings_process_ratings_user', $rate_user );
+
+		/**
+		 * Filters the user id recorded against a rating.
+		 *
+		 * @since 1.80
+		 *
+		 * @param int $rate_userid User id, 0 for a guest.
+		 */
 		$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', get_current_user_id() );
 
 		$logging_method = (int) WP_PostRatings_Options::get( 'logging_method' );
 
 		if ( 1 === $logging_method || 3 === $logging_method ) {
-			setcookie(
-				'rated_' . $post_id,
-				$rating_value,
-				apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 ),
-				apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH )
-			);
+			/**
+			 * Filters when the "already rated" cookie expires.
+			 *
+			 * @since 1.84
+			 *
+			 * @param int $expiration Unix timestamp.
+			 */
+			$expiration = apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 );
+
+			/**
+			 * Filters the path the "already rated" cookie is set on.
+			 *
+			 * @since 1.78
+			 *
+			 * @param string $path Cookie path.
+			 */
+			$cookie_path = apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH );
+
+			setcookie( 'rated_' . $post_id, $rating_value, $expiration, $cookie_path );
 		}
 
-		if ( $logging_method > 1 || apply_filters( 'wp_postratings_always_log', false ) ) {
+		/**
+		 * Filters whether to write a log row whatever the logging method says.
+		 *
+		 * @since 1.87
+		 *
+		 * @param bool $always_log Whether to log unconditionally.
+		 */
+		$always_log = apply_filters( 'wp_postratings_always_log', false );
+
+		if ( $logging_method > 1 || $always_log ) {
 			$wpdb->query(
 				$wpdb->prepare(
 					"INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d)",
@@ -502,14 +570,16 @@ class WP_PostRatings_Rating {
 		/**
 		 * Fires after a post has been rated.
 		 *
-		 * Unprefixed because it has been public since 2005.
+		 * Renamed from the unprefixed rate_post in 2.0.0, which had been public
+		 * since 2005 and is gone rather than deprecated.
+		 *
+		 * @since 2.0.0
 		 *
 		 * @param int $rate_userid  User id that rated, 0 for a guest.
 		 * @param int $post_id      Post that was rated.
 		 * @param int $rating_value Score the rating was worth.
 		 */
-		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Public since 2005.
-		do_action( 'rate_post', $rate_userid, $post_id, $rating_value );
+		do_action( 'wp_postratings_rate_post', $rate_userid, $post_id, $rating_value );
 
 		return array(
 			'ratings_users'   => $users,

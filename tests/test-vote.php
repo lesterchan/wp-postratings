@@ -274,15 +274,15 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The rate_post action still fires with its documented arguments.
+	 * The renamed rate action fires with its documented arguments.
 	 *
 	 * @return void
 	 */
-	public function test_the_rate_post_action_fires() {
+	public function test_the_rate_post_action_fires_under_its_prefixed_name() {
 		$seen = array();
 
 		add_action(
-			'rate_post',
+			'wp_postratings_rate_post',
 			static function ( $user_id, $post_id, $value ) use ( &$seen ) {
 				$seen = array( $user_id, $post_id, $value );
 			},
@@ -293,6 +293,27 @@ class Test_Postratings_Vote extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 		WP_PostRatings_Rating::process_vote( $post_id, 3 );
 
-		$this->assertSame( array( 0, $post_id, 3 ), $seen );
+		$this->assertSame( array( 0, $post_id, 3 ), $seen, 'wp_postratings_rate_post did not fire' );
+	}
+
+	/**
+	 * The unprefixed name it replaced is gone rather than deprecated.
+	 *
+	 * @return void
+	 */
+	public function test_the_unprefixed_rate_post_action_no_longer_fires() {
+		$fired = false;
+
+		add_action(
+			'rate_post',
+			static function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
+
+		$post_id = $this->make_rated_post( 0, 0 );
+		WP_PostRatings_Rating::process_vote( $post_id, 3 );
+
+		$this->assertFalse( $fired, 'rate_post was dropped outright in 2.0.0, with no shim' );
 	}
 }

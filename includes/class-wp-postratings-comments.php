@@ -155,6 +155,13 @@ class WP_PostRatings_Comments {
 	public static function append_to_comment( $comment_text ) {
 		global $comment;
 
+		/**
+		 * Filters whether to append each comment author's rating to their comment.
+		 *
+		 * @since 1.83
+		 *
+		 * @param bool $display Whether to display them. Off by default.
+		 */
 		if ( ! apply_filters( 'wp_postratings_display_comment_author_ratings', false ) ) {
 			return $comment_text;
 		}
