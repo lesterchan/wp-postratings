@@ -39,7 +39,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Changelog
 ### 2.0.0
 * IMPORTANT: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
-* IMPORTANT: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. `.post-ratings-image` no longer exists, so custom CSS targeting it needs updating. Colour, size and spacing are CSS custom properties now, which is usually a one-line replacement; see the FAQ.
+* IMPORTANT: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. `.wp-postratings-image` no longer exists, so custom CSS targeting it needs updating. Colour, size and spacing are CSS custom properties now, which is usually a one-line replacement; see the FAQ.
 * IMPORTANT: Ratings display a true percentage instead of being rounded to the nearest half image, so an average of 3.7 out of 5 now fills 74% of the stars rather than showing three and a half.
 * IMPORTANT: If you set "Header That Contains The IP" (for Cloudflare, a load balancer or any reverse proxy), that header is now parsed as the forwarded-for chain it is, and only the first valid address in it is used. Previously the whole header value was stored, so a visitor could rate repeatedly just by appending another address to it. Existing rating logs recorded through such a header will no longer match, so some visitors may be able to rate once more. Leave the field blank unless you are actually behind a proxy. See the FAQ.
 * IMPORTANT: The vote images no longer carry inline `onmouseover`/`onclick` attributes; hovering and clicking are handled by one delegated listener. Custom CSS or JavaScript that targeted those inline handlers, or that called `current_rating()` or `rate_post()` directly, needs updating.
@@ -216,7 +216,7 @@ I spent most of my free time creating, updating, maintaining and supporting thes
 ## Upgrade Notice
 
 ### 2.0.0
-Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rating style are migrated automatically. The rating images are replaced by SVG shapes and the markup has changed, so custom CSS targeting `.post-ratings-image`, or JavaScript targeting the old inline `onmouseover`/`onclick` attributes, needs updating. If you have set "Header That Contains The IP", read the changelog before upgrading.
+Major release. Requires WordPress 6.0 and PHP 7.4. Your settings and chosen rating style are migrated automatically. The rating images are replaced by SVG shapes and the markup has changed, so custom CSS targeting `.wp-postratings-image`, or JavaScript targeting the old inline `onmouseover`/`onclick` attributes, needs updating. If you have set "Header That Contains The IP", read the changelog before upgrading.
 
 ## Screenshots
 
@@ -236,10 +236,10 @@ Hovering uses the rated colour. If you would rather tell "about to pick" apart f
 
 ### How do I change the size, spacing or hover colour?
 
-Anything beyond the two colours is a CSS custom property on `.post-ratings`, so this is all it takes in your theme:
+Anything beyond the two colours is a CSS custom property on `.wp-postratings`, so this is all it takes in your theme:
 
 ```css
-.post-ratings {
+.wp-postratings {
 	--wp-postratings-size: 24px;
 	--wp-postratings-gap: 4px;
 	--wp-postratings-color-hover: #f7c56b;

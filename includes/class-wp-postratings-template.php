@@ -111,9 +111,9 @@ class WP_PostRatings_Template {
 	 */
 	private static function row( $count, $extra = '' ) {
 		$style = '' !== $extra ? ' style="' . esc_attr( $extra ) . '"' : '';
-		$item  = '<i class="post-ratings-item"' . $style . '></i>';
+		$item  = '<i class="wp-postratings-item"' . $style . '></i>';
 
-		return '<span class="post-ratings-row">' . str_repeat( $item, max( 0, (int) $count ) ) . '</span>';
+		return '<span class="wp-postratings-row">' . str_repeat( $item, max( 0, (int) $count ) ) . '</span>';
 	}
 
 	/**
@@ -149,12 +149,12 @@ class WP_PostRatings_Template {
 			? '--wp-postratings-shape:var(--wp-postratings-shape-up)'
 			: '';
 
-		$html  = '<span class="post-ratings-strip post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html  = '<span class="wp-postratings-strip wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '"';
 		$html .= '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"';
 		$html .= '>';
-		$html .= '<span class="post-ratings-track" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
-		$html .= '<span class="post-ratings-fill" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
+		$html .= '<span class="wp-postratings-track" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
+		$html .= '<span class="wp-postratings-fill" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
 		$html .= '</span>';
 
 		return $html;
@@ -219,7 +219,7 @@ class WP_PostRatings_Template {
 		// element straight back out of it -- leaving the control outside its own
 		// container. role="radiogroup" with a label is equivalent for assistive
 		// technology and nests legally.
-		$html  = '<span class="post-ratings-vote post-ratings-scale post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html  = '<span class="wp-postratings-vote wp-postratings-scale wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
 		$html .= ' role="radiogroup" aria-label="' . esc_attr__( 'Rate this post', 'wp-postratings' ) . '">';
 
@@ -231,13 +231,13 @@ class WP_PostRatings_Template {
 				$label = sprintf( _n( '%s Star', '%s Stars', $i, 'wp-postratings' ), number_format_i18n( $i ) );
 			}
 
-			$id = 'postratings-' . $post_id . '-' . $i;
+			$id = 'wp-postratings-' . $post_id . '-' . $i;
 
 			$html .= '<input type="radio" id="' . esc_attr( $id ) . '"';
-			$html .= ' name="postratings-' . esc_attr( $post_id ) . '"';
+			$html .= ' name="wp-postratings-' . esc_attr( $post_id ) . '"';
 			$html .= ' value="' . esc_attr( $i ) . '" data-rating="' . esc_attr( $i ) . '" />';
 			$html .= '<label for="' . esc_attr( $id ) . '">';
-			$html .= '<i class="post-ratings-item"></i><span>' . esc_html( $label ) . '</span>';
+			$html .= '<i class="wp-postratings-item"></i><span>' . esc_html( $label ) . '</span>';
 			$html .= '</label>';
 		}
 
@@ -263,7 +263,7 @@ class WP_PostRatings_Template {
 			? (string) $ratings_texts[1]
 			: __( 'Vote Up', 'wp-postratings' );
 
-		$html  = '<span class="post-ratings-vote post-ratings-updown post-ratings-shape-' . esc_attr( $shape ) . '"';
+		$html  = '<span class="wp-postratings-vote wp-postratings-updown wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
 		$html .= ' role="group" aria-label="' . esc_attr__( 'Vote on this post', 'wp-postratings' ) . '">';
 
@@ -275,9 +275,9 @@ class WP_PostRatings_Template {
 		foreach ( $buttons as $button ) {
 			list( $direction, $value, $label, $item_style ) = $button;
 
-			$html .= '<button type="button" class="post-ratings-' . esc_attr( $direction ) . '"';
+			$html .= '<button type="button" class="wp-postratings-' . esc_attr( $direction ) . '"';
 			$html .= ' data-rating="' . esc_attr( $value ) . '">';
-			$html .= '<i class="post-ratings-item" style="' . esc_attr( $item_style ) . '"></i>';
+			$html .= '<i class="wp-postratings-item" style="' . esc_attr( $item_style ) . '"></i>';
 			$html .= '<span>' . esc_html( $label ) . '</span>';
 			$html .= '</button>';
 		}
@@ -308,7 +308,7 @@ class WP_PostRatings_Template {
 			// A single glyph in normal flow, not the track-and-fill overlay: the
 			// fill layer is absolutely positioned, so on its own it leaves the
 			// strip with no intrinsic size and nothing renders.
-			return '<span class="post-ratings-strip post-ratings-single post-ratings-shape-' . esc_attr( $shape ) . '"' .
+			return '<span class="wp-postratings-strip wp-postratings-single wp-postratings-shape-' . esc_attr( $shape ) . '"' .
 				' style="' . esc_attr( $style ) . '" role="img" aria-label="' . esc_attr( $image_alt ) . '">' .
 				self::row( 1 ) .
 				'</span>';
@@ -371,7 +371,7 @@ class WP_PostRatings_Template {
 			$post_ratings_percentage = round( ( ( $post_ratings_score / $post_ratings_users ) / $ratings_max ) * 100, 2 );
 		}
 
-		$post_ratings_text = '<span class="post-ratings-text" id="ratings_' . $post_id . '_text"></span>';
+		$post_ratings_text = '<span class="wp-postratings-text" id="wp-postratings-' . $post_id . '-text"></span>';
 
 		if ( $ratings_custom && 2 === $ratings_max ) {
 			if ( $post_ratings_score > 0 ) {
@@ -591,7 +591,7 @@ class WP_PostRatings_Template {
 		$thumbnail = apply_filters( 'wp_postratings_post_thumbnail', $thumbnail, $post_id );
 
 		if ( ! empty( $thumbnail ) ) {
-			$post_meta .= '<div style="display: none;" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
+			$post_meta .= '<div class="wp-postratings-schema" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">';
 			$post_meta .= '<meta itemprop="url" content="' . esc_url( $thumbnail[0] ) . '" />';
 			$post_meta .= '<meta itemprop="width" content="' . esc_attr( $thumbnail[1] ) . '" />';
 			$post_meta .= '<meta itemprop="height" content="' . esc_attr( $thumbnail[2] ) . '" />';
@@ -619,7 +619,7 @@ class WP_PostRatings_Template {
 		 */
 		$site_logo = apply_filters( 'wp_postratings_site_logo', $site_logo );
 
-		$post_meta .= '<div style="display: none;" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
+		$post_meta .= '<div class="wp-postratings-schema" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">';
 		$post_meta .= '<meta itemprop="name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '" />';
 		$post_meta .= '<meta itemprop="url" content="' . esc_url( home_url() ) . '" />';
 		$post_meta .= '<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">';
@@ -630,7 +630,7 @@ class WP_PostRatings_Template {
 		$ratings_meta = '';
 
 		if ( ! empty( $options['richsnippet_ratings'] ) && $post_ratings_average > 0 ) {
-			$ratings_meta .= '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
+			$ratings_meta .= '<div class="wp-postratings-schema" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
 			$ratings_meta .= '<meta itemprop="bestRating" content="' . esc_attr( $ratings_max ) . '" />';
 			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
 			$ratings_meta .= '<meta itemprop="ratingValue" content="' . esc_attr( $post_ratings_average ) . '" />';

@@ -29,10 +29,10 @@
 			return;
 		}
 
-		const loading = document.getElementById( 'post-ratings-' + postId + '-loading' );
+		const loading = document.getElementById( 'wp-postratings-' + postId + '-loading' );
 
 		if ( loading ) {
-			loading.style.display = visible ? '' : 'none';
+			loading.hidden = ! visible;
 		}
 	}
 
@@ -56,7 +56,7 @@
 			return;
 		}
 
-		const container = document.getElementById( 'post-ratings-' + postId );
+		const container = document.getElementById( 'wp-postratings-' + postId );
 
 		if ( ! container ) {
 			return;
@@ -124,13 +124,13 @@
 		// for a click and for arrow-key navigation alike, which is what makes
 		// the control usable from the keyboard without any extra handling.
 		document.addEventListener( 'change', function( event ) {
-			const input = event.target.closest( '.post-ratings-scale input[type="radio"]' );
+			const input = event.target.closest( '.wp-postratings-scale input[type="radio"]' );
 
 			if ( ! input ) {
 				return;
 			}
 
-			const control = input.closest( '.post-ratings-vote' );
+			const control = input.closest( '.wp-postratings-vote' );
 
 			if ( control ) {
 				vote( control, Number( input.value ) );
@@ -139,7 +139,7 @@
 
 		// An up/down pair is two buttons, not a scale.
 		document.addEventListener( 'click', function( event ) {
-			const button = event.target.closest( '.post-ratings-updown button' );
+			const button = event.target.closest( '.wp-postratings-updown button' );
 
 			if ( ! button ) {
 				return;
@@ -147,7 +147,7 @@
 
 			event.preventDefault();
 
-			const control = button.closest( '.post-ratings-vote' );
+			const control = button.closest( '.wp-postratings-vote' );
 
 			if ( control ) {
 				vote( control, Number( button.dataset.rating ) );

@@ -66,7 +66,7 @@ class WP_PostRatings_Shapes {
 		 *     'down'  => SVG path data for the negative glyph (UPDOWN)
 		 *
 		 * Colour, size and spacing are CSS custom properties on
-		 * .post-ratings, so restyling an existing shape needs no PHP at all.
+		 * .wp-postratings, so restyling an existing shape needs no PHP at all.
 		 *
 		 * @since 2.0.0
 		 *

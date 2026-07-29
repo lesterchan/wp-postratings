@@ -87,16 +87,18 @@ describe( 'wp-postratings front end', () => {
 		choose( 4 );
 
 		await vi.waitFor( () =>
-			expect( document.getElementById( 'post-ratings-4' ).innerHTML ).toBe( '<em>Thanks!</em>' ),
+			expect( document.getElementById( 'wp-postratings-4' ).innerHTML ).toBe( '<em>Thanks!</em>' ),
 		);
 	} );
 
-	it( 'hides the loading indicator once the response lands', async () => {
+	it( 'shows the loading indicator while voting and hides it once the response lands', async () => {
+		const loading = document.getElementById( 'wp-postratings-4-loading' );
+
 		choose( 4 );
 
-		await vi.waitFor( () =>
-			expect( document.getElementById( 'post-ratings-4-loading' ).style.display ).toBe( 'none' ),
-		);
+		expect( loading.hidden ).toBe( false );
+
+		await vi.waitFor( () => expect( loading.hidden ).toBe( true ) );
 	} );
 
 	// --- keyboard ---------------------------------------------------------
@@ -142,7 +144,7 @@ describe( 'wp-postratings front end', () => {
 	} );
 
 	it( 'marks the container busy while voting and clears it after', async () => {
-		const container = document.getElementById( 'post-ratings-4' );
+		const container = document.getElementById( 'wp-postratings-4' );
 
 		choose( 4 );
 
@@ -158,7 +160,7 @@ describe( 'wp-postratings front end', () => {
 
 		await vi.waitFor( () =>
 			expect(
-				document.getElementById( 'post-ratings-4' ).hasAttribute( 'aria-busy' ),
+				document.getElementById( 'wp-postratings-4' ).hasAttribute( 'aria-busy' ),
 			).toBe( false ),
 		);
 
@@ -187,7 +189,7 @@ describe( 'wp-postratings front end', () => {
 		document.body.innerHTML = updownMarkup( 7 );
 
 		document
-			.querySelector( '.post-ratings-up' )
+			.querySelector( '.wp-postratings-up' )
 			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ) );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
@@ -202,7 +204,7 @@ describe( 'wp-postratings front end', () => {
 		document.body.innerHTML = updownMarkup( 7 );
 
 		document
-			.querySelector( '.post-ratings-down' )
+			.querySelector( '.wp-postratings-down' )
 			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true, cancelable: true } ) );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
@@ -215,7 +217,7 @@ describe( 'wp-postratings front end', () => {
 	it( 'does not submit a surrounding form when an up/down button is used', () => {
 		document.body.innerHTML = updownMarkup( 7 );
 
-		const button = document.querySelector( '.post-ratings-up' );
+		const button = document.querySelector( '.wp-postratings-up' );
 		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
 
 		button.dispatchEvent( event );
@@ -227,7 +229,7 @@ describe( 'wp-postratings front end', () => {
 		document.body.innerHTML = updownMarkup( 7 );
 
 		document
-			.querySelector( '.post-ratings' )
+			.querySelector( '.wp-postratings' )
 			.dispatchEvent( new window.MouseEvent( 'click', { bubbles: true } ) );
 
 		expect( window.fetch ).not.toHaveBeenCalled();
@@ -242,7 +244,7 @@ describe( 'wp-postratings front end', () => {
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
-		const items = [ ...document.querySelectorAll( '.post-ratings-item' ) ];
+		const items = [ ...document.querySelectorAll( '.wp-postratings-item' ) ];
 
 		expect( items.every( ( el ) => null === el.getAttribute( 'src' ) ) ).toBe( true );
 	} );

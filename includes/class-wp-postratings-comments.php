@@ -173,7 +173,7 @@ class WP_PostRatings_Comments {
 		$images = self::author_ratings();
 		$author = get_comment_author();
 
-		$output = '<div class="post-ratings-comment-author">';
+		$output = '<div class="wp-postratings-comment-author">';
 
 		if ( '' !== $images ) {
 			/* translators: %s: comment author. */

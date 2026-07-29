@@ -55,19 +55,19 @@ export function voteMarkup( postId = 4, max = 5 ) {
 
 	// Emitted highest first, the way the CSS sibling combinator needs.
 	for ( let i = max; i >= 1; i-- ) {
-		const id = 'postratings-' + postId + '-' + i;
+		const id = 'wp-postratings-' + postId + '-' + i;
 		values +=
-			'<input type="radio" id="' + id + '" name="postratings-' + postId + '"' +
+			'<input type="radio" id="' + id + '" name="wp-postratings-' + postId + '"' +
 			' value="' + i + '" data-rating="' + i + '" />' +
-			'<label for="' + id + '"><i class="post-ratings-item"></i><span>' + i + ' Stars</span></label>';
+			'<label for="' + id + '"><i class="wp-postratings-item"></i><span>' + i + ' Stars</span></label>';
 	}
 
 	return (
-		'<span id="post-ratings-' + postId + '" class="post-ratings" data-nonce="abc123">' +
-		'<span class="post-ratings-vote post-ratings-scale" data-post-id="' + postId + '"' +
+		'<span id="wp-postratings-' + postId + '" class="wp-postratings" data-nonce="abc123">' +
+		'<span class="wp-postratings-vote wp-postratings-scale" data-post-id="' + postId + '"' +
 		' role="radiogroup" aria-label="Rate this post">' + values + '</span>' +
 		'</span>' +
-		'<span id="post-ratings-' + postId + '-loading" class="post-ratings-loading">Loading…</span>'
+		'<span id="wp-postratings-' + postId + '-loading" class="wp-postratings-loading" hidden>Loading…</span>'
 	);
 }
 
@@ -79,13 +79,13 @@ export function voteMarkup( postId = 4, max = 5 ) {
  */
 export function updownMarkup( postId = 4 ) {
 	return (
-		'<span id="post-ratings-' + postId + '" class="post-ratings" data-nonce="abc123">' +
-		'<span class="post-ratings-vote post-ratings-updown" data-post-id="' + postId + '"' +
+		'<span id="wp-postratings-' + postId + '" class="wp-postratings" data-nonce="abc123">' +
+		'<span class="wp-postratings-vote wp-postratings-updown" data-post-id="' + postId + '"' +
 		' role="group" aria-label="Vote on this post">' +
-		'<button type="button" class="post-ratings-up" data-rating="2">' +
-		'<i class="post-ratings-item"></i><span>Vote Up</span></button>' +
-		'<button type="button" class="post-ratings-down" data-rating="1">' +
-		'<i class="post-ratings-item"></i><span>Vote Down</span></button>' +
+		'<button type="button" class="wp-postratings-up" data-rating="2">' +
+		'<i class="wp-postratings-item"></i><span>Vote Up</span></button>' +
+		'<button type="button" class="wp-postratings-down" data-rating="1">' +
+		'<i class="wp-postratings-item"></i><span>Vote Down</span></button>' +
 		'</span></span>'
 	);
 }

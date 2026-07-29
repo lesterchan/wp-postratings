@@ -179,7 +179,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 
 		$html = WP_PostRatings_Comments::author_ratings();
 
-		$this->assertStringContainsString( 'post-ratings-item', $html );
+		$this->assertStringContainsString( 'wp-postratings-item', $html );
 		$this->assertStringContainsString( 'Alice gives a rating of 4', $html );
 	}
 
@@ -209,7 +209,7 @@ class Test_Postratings_Comments extends WP_PostRatings_TestCase {
 
 		add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 
-		$this->assertStringContainsString( 'post-ratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
+		$this->assertStringContainsString( 'wp-postratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
 	}
 
 	/**

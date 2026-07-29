@@ -338,7 +338,7 @@ class Test_Postratings_Shapes extends WP_PostRatings_TestCase {
 		$this->assertStringContainsString( '--wp-postratings-color-off: #eeeeee', $css );
 
 		// Scoped to the wrapper, as wp-polls does, not to :root.
-		$this->assertStringContainsString( '.post-ratings {', $css );
+		$this->assertStringContainsString( '.wp-postratings {', $css );
 		$this->assertStringNotContainsString( ':root', $css );
 	}
 

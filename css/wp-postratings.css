@@ -3,9 +3,9 @@
  *
  * The rating shapes are CSS masks, so the markup carries no images and the
  * colour is whatever the theme sets. Everything worth changing is a custom
- * property on .post-ratings -- restyling needs no PHP and no plugin files.
+ * property on .wp-postratings -- restyling needs no PHP and no plugin files.
  *
- *     .post-ratings {
+ *     .wp-postratings {
  *         --wp-postratings-size: 24px;
  *         --wp-postratings-color-on: #e5484d;
  *     }
@@ -15,12 +15,12 @@
  * There is no defaults block on purpose. Every custom property carries its
  * default as a var() fallback at the point it is used, which is how wp-polls
  * does it, and it means the values injected by the settings screen have
- * nothing to compete with. Declaring defaults on .post-ratings and injecting
+ * nothing to compete with. Declaring defaults on .wp-postratings and injecting
  * on :root -- the arrangement this replaced -- loses on specificity, so the
  * chosen colour silently never applied.
  */
 
-.post-ratings {
+.wp-postratings {
 	display: inline-flex;
 	align-items: center;
 	flex-wrap: wrap;
@@ -29,7 +29,7 @@
 
 /* --- the shape itself ---------------------------------------------------- */
 
-.post-ratings-item {
+.wp-postratings-item {
 	display: block;
 	flex: none;
 	inline-size: var( --wp-postratings-size, 20px );
@@ -50,33 +50,33 @@
 
 /* --- read-only display --------------------------------------------------- */
 
-.post-ratings-strip {
+.wp-postratings-strip {
 	position: relative;
 	display: inline-flex;
 	vertical-align: middle;
 	line-height: 1;
 }
 
-.post-ratings-row {
+.wp-postratings-row {
 	display: flex;
 	gap: var( --wp-postratings-gap, 2px );
 	inline-size: max-content;
 }
 
-.post-ratings-track {
+.wp-postratings-track {
 	color: var( --wp-postratings-color-off, #d4d4d8 );
 }
 
 /* A lone glyph -- an up/down vote, or a settings screen preview -- sits in
    normal flow and is always shown in the "on" colour. */
-.post-ratings-single {
+.wp-postratings-single {
 	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
-.post-ratings-single.post-ratings-shape-thumb,
-.post-ratings-single.post-ratings-shape-plusminus,
-.post-ratings-single.post-ratings-shape-tickcross,
-.post-ratings-single.post-ratings-shape-updown {
+.wp-postratings-single.wp-postratings-shape-thumb,
+.wp-postratings-single.wp-postratings-shape-plusminus,
+.wp-postratings-single.wp-postratings-shape-tickcross,
+.wp-postratings-single.wp-postratings-shape-updown {
 	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
@@ -85,7 +85,7 @@
  * 3.7 of 5 renders as 74% rather than being rounded to the nearest half image
  * the way the pre-2.0.0 GIF sets had to be.
  */
-.post-ratings-fill {
+.wp-postratings-fill {
 	position: absolute;
 	inset-block: 0;
 	inset-inline-start: 0;
@@ -96,7 +96,7 @@
 
 /* --- voting: a scale ----------------------------------------------------- */
 
-.post-ratings-vote {
+.wp-postratings-vote {
 	display: inline-flex;
 	align-items: center;
 	gap: var( --wp-postratings-gap, 2px );
@@ -110,7 +110,7 @@
    Postratings_Template::scale_control() for why it is not a fieldset. */
 
 
-.post-ratings-vote > legend {
+.wp-postratings-vote > legend {
 	position: absolute;
 	inline-size: 1px;
 	block-size: 1px;
@@ -119,7 +119,7 @@
 	white-space: nowrap;
 }
 
-.post-ratings-vote input[type="radio"] {
+.wp-postratings-vote input[type="radio"] {
 	position: absolute;
 	opacity: 0;
 	inline-size: 1px;
@@ -128,14 +128,14 @@
 	pointer-events: none;
 }
 
-.post-ratings-vote label {
+.wp-postratings-vote label {
 	display: block;
 	cursor: pointer;
 	color: var( --wp-postratings-color-off, #d4d4d8 );
 	transition: color var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
-.post-ratings-vote label span {
+.wp-postratings-vote label span {
 	position: absolute;
 	inline-size: 1px;
 	block-size: 1px;
@@ -150,24 +150,24 @@
  * is what lets the whole hover behaviour be CSS rather than JavaScript
  * swapping image sources on every mouseover.
  */
-.post-ratings-scale {
+.wp-postratings-scale {
 	flex-direction: row-reverse;
 	justify-content: flex-end;
 }
 
-.post-ratings-scale label:hover,
-.post-ratings-scale label:hover ~ label,
-.post-ratings-scale input:focus-visible + label,
-.post-ratings-scale input:focus-visible + label ~ label {
+.wp-postratings-scale label:hover,
+.wp-postratings-scale label:hover ~ label,
+.wp-postratings-scale input:focus-visible + label,
+.wp-postratings-scale input:focus-visible + label ~ label {
 	color: var( --wp-postratings-color-hover, var( --wp-postratings-color-on, #f5a623 ) );
 }
 
-.post-ratings-scale input:checked + label,
-.post-ratings-scale input:checked + label ~ label {
+.wp-postratings-scale input:checked + label,
+.wp-postratings-scale input:checked + label ~ label {
 	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
-.post-ratings-scale input:focus-visible + label {
+.wp-postratings-scale input:focus-visible + label {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
 }
@@ -179,7 +179,7 @@
  * actions, not one value out of several, and announcing it as a scale would
  * misrepresent it.
  */
-.post-ratings-updown button {
+.wp-postratings-updown button {
 	display: block;
 	border: 0;
 	padding: 0;
@@ -190,27 +190,27 @@
 	transition: color var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
-.post-ratings-updown button:hover,
-.post-ratings-updown button:focus-visible {
+.wp-postratings-updown button:hover,
+.wp-postratings-updown button:focus-visible {
 	color: var( --wp-postratings-color-hover, var( --wp-postratings-color-on, #f5a623 ) );
 }
 
-.post-ratings-updown button:focus-visible {
+.wp-postratings-updown button:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
 }
 
-.post-ratings-updown .post-ratings-up:hover,
-.post-ratings-updown .post-ratings-up:focus-visible {
+.wp-postratings-updown .wp-postratings-up:hover,
+.wp-postratings-updown .wp-postratings-up:focus-visible {
 	color: var( --wp-postratings-color-up, #2e9e4f );
 }
 
-.post-ratings-updown .post-ratings-down:hover,
-.post-ratings-updown .post-ratings-down:focus-visible {
+.wp-postratings-updown .wp-postratings-down:hover,
+.wp-postratings-updown .wp-postratings-down:focus-visible {
 	color: var( --wp-postratings-color-down, #e5484d );
 }
 
-.post-ratings-updown button span {
+.wp-postratings-updown button span {
 	position: absolute;
 	inline-size: 1px;
 	block-size: 1px;
@@ -221,52 +221,76 @@
 
 /* --- state --------------------------------------------------------------- */
 
-.post-ratings[aria-busy="true"] {
+.wp-postratings[aria-busy="true"] {
 	opacity: 0.5;
 	transition: opacity var( --wp-postratings-transition, 120ms ease-in-out );
 }
 
-.post-ratings[aria-busy="true"] label,
-.post-ratings[aria-busy="true"] button {
+.wp-postratings[aria-busy="true"] label,
+.wp-postratings[aria-busy="true"] button {
 	pointer-events: none;
 }
 
-.post-ratings-loading {
+.wp-postratings-loading {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4em;
 }
 
-.post-ratings-loading::before {
+/* The markup ships with the hidden attribute, so the display above has to
+   yield to it; without this the loading text is visible on page load. */
+.wp-postratings-loading[hidden] {
+	display: none;
+}
+
+/* The rich snippet is <meta> elements inside a wrapper, which has to be a
+   block element to be valid and so has to be taken out of flow by hand. */
+.wp-postratings-schema {
+	display: none;
+}
+
+.wp-postratings-loading::before {
 	content: "";
 	inline-size: 1em;
 	block-size: 1em;
 	border: 2px solid currentColor;
 	border-block-start-color: transparent;
 	border-radius: 50%;
-	animation: post-ratings-spin 700ms linear infinite;
+	animation: wp-postratings-spin 700ms linear infinite;
 }
 
-@keyframes post-ratings-spin {
+@keyframes wp-postratings-spin {
 	to {
 		transform: rotate(360deg);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.post-ratings-loading::before {
+	.wp-postratings-loading::before {
 		animation-duration: 3s;
 	}
 
-	.post-ratings-vote label,
-	.post-ratings-updown button,
-	.post-ratings {
+	.wp-postratings-vote label,
+	.wp-postratings-updown button,
+	.wp-postratings {
 		transition: none;
 	}
 }
 
 @media (prefers-contrast: more) {
-	.post-ratings {
+	.wp-postratings {
 		--wp-postratings-color-off: #6b7280;
+	}
+}
+
+/*
+ * The plugin paints one surface of its own -- the unrated shapes -- and the
+ * default for those is a light grey chosen against a light page. On a dark one
+ * it reads as almost-white, brighter than the rated colour it is meant to sit
+ * behind, so it is darkened rather than left to the theme.
+ */
+@media (prefers-color-scheme: dark) {
+	.wp-postratings {
+		--wp-postratings-color-off: #52525b;
 	}
 }

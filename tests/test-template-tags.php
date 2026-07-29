@@ -197,8 +197,8 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 
 		$output = the_ratings( 'div', $post_id, false );
 
-		$this->assertStringNotContainsString( 'post-ratings-vote', $output );
-		$this->assertStringContainsString( 'post-ratings', $output );
+		$this->assertStringNotContainsString( 'wp-postratings-vote', $output );
+		$this->assertStringContainsString( 'wp-postratings', $output );
 	}
 
 	/**
@@ -236,7 +236,7 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 
 		$output = do_shortcode( '[ratings id="' . $post_id . '"]' );
 
-		$this->assertStringContainsString( 'post-ratings-' . $post_id, $output );
+		$this->assertStringContainsString( 'wp-postratings-' . $post_id, $output );
 		$this->assertStringNotContainsString( '[ratings', $output );
 	}
 
@@ -250,7 +250,7 @@ class Test_Postratings_Template_Tags extends WP_PostRatings_TestCase {
 
 		$output = do_shortcode( '[ratings id="' . $post_id . '" results="true"]' );
 
-		$this->assertStringNotContainsString( 'post-ratings-vote', $output );
+		$this->assertStringNotContainsString( 'wp-postratings-vote', $output );
 	}
 
 	/**

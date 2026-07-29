@@ -55,13 +55,15 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 		 */
 		$loading_text = apply_filters( 'wp_postratings_loading_alt', esc_html__( 'Loading...', 'wp-postratings' ) );
 
-		$loading = '<' . $start_tag . ' id="post-ratings-' . $ratings_id . '-loading" class="post-ratings-loading"' .
-			' role="status" style="display:none">' . esc_html( $loading_text ) . '</' . $start_tag . '>';
+		// The hidden attribute rather than an inline style: the stylesheet owns
+		// the rule, and the script toggles the property instead of a string.
+		$loading = '<' . $start_tag . ' id="wp-postratings-' . $ratings_id . '-loading" class="wp-postratings-loading"' .
+			' role="status" hidden>' . esc_html( $loading_text ) . '</' . $start_tag . '>';
 	}
 
 	$user_voted = check_rated( $ratings_id );
 
-	$attributes = 'id="post-ratings-' . $ratings_id . '" class="post-ratings"';
+	$attributes = 'id="wp-postratings-' . $ratings_id . '" class="wp-postratings"';
 
 	/** This filter is documented in includes/class-wp-postratings-template.php */
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );

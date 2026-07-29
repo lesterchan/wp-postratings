@@ -469,7 +469,7 @@ class Test_Postratings_Admin_Writes extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'post-ratings-shape-star', $html );
+		$this->assertStringContainsString( 'wp-postratings-shape-star', $html );
 	}
 
 	/**

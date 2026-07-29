@@ -150,7 +150,7 @@ class WP_PostRatings {
 	 * Scoped to the wrapper rather than :root, matching wp-polls. The
 	 * stylesheet carries its defaults as var() fallbacks at each use site, so
 	 * there is nothing here to lose a specificity contest against -- which is
-	 * exactly what went wrong when the defaults sat on .post-ratings and this
+	 * exactly what went wrong when the defaults sat on .wp-postratings and this
 	 * was injected on :root -- and the plugin's properties stay off every other
 	 * element on the page.
 	 *
@@ -166,7 +166,7 @@ class WP_PostRatings {
 			return '';
 		}
 
-		$css  = '.post-ratings {' . "\n";
+		$css  = '.wp-postratings {' . "\n";
 		$css .= '' !== $on ? "\t" . '--wp-postratings-color-on: ' . $on . ';' . "\n" : '';
 		$css .= '' !== $off ? "\t" . '--wp-postratings-color-off: ' . $off . ';' . "\n" : '';
 
