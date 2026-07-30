@@ -618,11 +618,9 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Upgrade Notice
 
-### 2.0.0
+### 2.0.0. This is a major release and it changes things you may have customised. Read this before updating from 1.91.3.
 
-This is a major release and it changes things you may have customised. Read this before updating from 1.91.3.
-
-**Your server has to be new enough.** WP-PostRatings now needs WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4. If your site is older than that, WordPress will not offer you the update at all. Ask your host to move you to a current PHP before updating.
+**Your server has to be new enough.** WP-PostRatings now needs WordPress 6.8 and PHP 8.2. If your site is older than that, WordPress will not offer you the update at all. Ask your host to move you to a current PHP before updating.
 
 **Your settings move themselves.** The first page load after the update folds the fifteen `postratings_*` option rows, plus the two shared `stats_display` and `stats_mostlimit` rows, into one `wp_postratings_options` row, and replaces `postratings_db_version` and `postratings_options_version` with a single `wp_postratings_version`. You do not have to do anything, but if you have code that reads those old rows directly, it will find them gone.
 
