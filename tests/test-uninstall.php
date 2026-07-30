@@ -141,11 +141,31 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 4, 18 );
 		$this->log_rating( $post_id );
 
+		// Watch for the DROP rather than looking for the table afterwards.
+		//
+		// WP_UnitTestCase filters every query through _create_temporary_tables()
+		// and _drop_temporary_tables(), which rewrite CREATE/DROP TABLE into the
+		// TEMPORARY forms so a test cannot alter real schema. SHOW TABLES never
+		// lists temporary tables and a DROP TEMPORARY TABLE cannot remove a real
+		// one, so "is the table gone" is a question this environment cannot
+		// answer -- it reports whatever real table the bootstrap happened to
+		// leave behind, no matter what uninstall did.
+		$dropped = false;
+		$watch   = static function ( $query ) use ( &$dropped ) {
+			if ( false !== stripos( $query, 'DROP' ) && false !== stripos( $query, 'ratings' ) ) {
+				$dropped = true;
+			}
+
+			return $query;
+		};
+
+		add_filter( 'query', $watch );
 		WP_PostRatings_Install::uninstall_site();
+		remove_filter( 'query', $watch );
 
 		$this->assertFalse( get_option( WP_PostRatings_Options::OPTION ), 'the settings row survived' );
 		$this->assertFalse( get_option( WP_PostRatings_Options::VERSION ), 'the marker row survived' );
-		$this->assertNull( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) ), 'the log table survived' );
+		$this->assertTrue( $dropped, 'uninstall issued no DROP for the log table' );
 		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'the rating meta survived' );
 		$this->assertFalse( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() ), 'the capability survived' );
 

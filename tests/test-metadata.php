@@ -339,6 +339,8 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 
 			$this->assertSame( array(), $surviving, 'uninstall stopped at the first site of the network' );
 		}
+
+		$this->restore_after_uninstall();
 	}
 
 	/**
@@ -352,9 +354,20 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 		}
 
 		require dirname( __DIR__ ) . '/uninstall.php';
+	}
 
-		// The table and the capability come back for whatever runs next; the
-		// suite's transaction does not roll either of them back.
+	/**
+	 * Put the table and the capability back for whatever runs next.
+	 *
+	 * Deliberately NOT called from run_uninstall(). install() writes the option
+	 * rows as well as creating the table, so restoring inside the helper put
+	 * wp_postratings_options and wp_postratings_version straight back and the
+	 * caller then asserted that uninstall had left them behind. Restore after
+	 * asserting, never before.
+	 *
+	 * @return void
+	 */
+	private function restore_after_uninstall() {
 		WP_PostRatings_Install::install();
 	}
 
