@@ -59,7 +59,7 @@ class WP_PostRatings_Admin {
 	public static function menu() {
 		$hook = add_menu_page(
 			__( 'Ratings', 'wp-postratings' ),
-			__( 'Ratings', 'wp-postratings' ),
+			__( 'WP-PostRatings', 'wp-postratings' ),
 			WP_PostRatings_Settings::capability(),
 			self::PAGE,
 			array( __CLASS__, 'render_manage' ),
