@@ -100,8 +100,8 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	 * A single-site suite cannot build a 101-site network, so this is a
 	 * source-level guard: without 'number' => 0 the loop silently stops at the
 	 * hundredth site, leaving the options and tables behind on every one after
-	 * it while still reporting success. The removed wp_get_sites() -- it went
-	 * in WordPress 5.1 -- is checked for at the same time.
+	 * it while still reporting success. wp_get_sites() -- deprecated in
+	 * WordPress 4.6 and capped the same way -- is checked for at the same time.
 	 *
 	 * @return void
 	 */
