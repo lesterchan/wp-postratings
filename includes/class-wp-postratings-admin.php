@@ -59,7 +59,7 @@ class WP_PostRatings_Admin {
 	public static function menu() {
 		$hook = add_menu_page(
 			__( 'Ratings', 'wp-postratings' ),
-			__( 'WP-PostRatings', 'wp-postratings' ),
+			self::menu_title(),
 			WP_PostRatings_Settings::capability(),
 			self::PAGE,
 			array( __CLASS__, 'render_manage' ),
@@ -88,18 +88,37 @@ class WP_PostRatings_Admin {
 	}
 
 	/**
-	 * The admin pages this plugin owns, by hook suffix.
+	 * The top level menu's title, which also names every submenu's hook suffix.
 	 *
-	 * Extracted so the asset loading and anything else that needs the list
-	 * cannot drift apart.
+	 * Read from here rather than repeated, because WordPress derives each
+	 * submenu's hook suffix from it -- see screen_hooks().
 	 *
-	 * @return array
+	 * @return string
+	 */
+	public static function menu_title() {
+		return __( 'WP-PostRatings', 'wp-postratings' );
+	}
+
+	/**
+	 * The hook suffixes WordPress reports for this plugin's own admin screens.
+	 *
+	 * Derived from the menu title, never spelled out. WordPress builds a
+	 * submenu's hook suffix as sanitize_title( $menu_title ) . '_page_' . $slug,
+	 * so these strings move whenever the menu is renamed. They were hardcoded to
+	 * 'ratings_page_', and renaming the menu to WP-PostRatings silently stopped
+	 * the stylesheet loading on the settings screen -- which draws every rating
+	 * shape as a CSS mask, so the shape picker became a list of labels with
+	 * nothing beside them.
+	 *
+	 * @return string[]
 	 */
 	public static function screen_hooks() {
+		$prefix = sanitize_title( self::menu_title() ) . '_page_';
+
 		return array(
 			'toplevel_page_' . self::PAGE,
-			'ratings_page_' . self::PAGE,
-			'ratings_page_' . WP_PostRatings_Settings::page(),
+			$prefix . self::PAGE,
+			$prefix . WP_PostRatings_Settings::page(),
 		);
 	}
 
