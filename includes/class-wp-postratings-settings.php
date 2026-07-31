@@ -577,6 +577,22 @@ class WP_PostRatings_Settings {
 	 */
 	public static function field_stats_display() {
 		?>
+		<?php
+		/*
+		 * A hidden 0 in front of the box, sharing its name.
+		 *
+		 * An unticked checkbox posts nothing at all, and the sanitizer keeps
+		 * whatever the submission did not mention -- deliberately, because this
+		 * screen has two tabs writing one option row and neither may blank the
+		 * other. Together those meant this box could be ticked and never
+		 * unticked: turning it off posted nothing, the sanitizer read the
+		 * silence as "leave it alone", and the box came back ticked.
+		 *
+		 * With the hidden field the control always says something. PHP keeps the
+		 * last of a repeated name, so ticked posts 1 and unticked posts 0.
+		 */
+		?>
+		<input type="hidden" name="<?php echo esc_attr( self::name( 'stats_display' ) ); ?>" value="0" />
 		<label>
 			<input type="checkbox" id="wp_postratings_stats_display" name="<?php echo esc_attr( self::name( 'stats_display' ) ); ?>"
 				value="1" <?php checked( (int) WP_PostRatings_Options::get( 'stats_display' ), 1 ); ?> />
@@ -812,21 +828,31 @@ class WP_PostRatings_Settings {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Ratings Settings', 'wp-postratings' ); ?></h1>
 
+			<?php
+			/*
+			 * Unscoped, so "Settings saved." actually appears.
+			 *
+			 * options.php registers that notice against the 'general' slug, not
+			 * against this screen, so settings_errors( self::PAGE ) -- which is
+			 * what the logs screen wants for its own delete notice -- filtered
+			 * out the one message this page exists to show. Pressing Save
+			 * Changes sent the browser back here and said nothing at all.
+			 */
+			settings_errors();
+			?>
+
 			<nav class="nav-tab-wrapper">
 				<?php foreach ( self::tabs() as $slug => $label ) : ?>
-					<a href="
 					<?php
-					echo esc_url(
-						add_query_arg(
-							array(
-								'page' => self::page(),
-								'tab'  => $slug,
-							),
-							admin_url( 'admin.php' )
-						)
+					$tab_url = add_query_arg(
+						array(
+							'page' => self::page(),
+							'tab'  => $slug,
+						),
+						admin_url( 'admin.php' )
 					);
 					?>
-								"
+					<a href="<?php echo esc_url( $tab_url ); ?>"
 						class="nav-tab<?php echo $slug === $tab ? ' nav-tab-active' : ''; ?>">
 						<?php echo esc_html( $label ); ?>
 					</a>

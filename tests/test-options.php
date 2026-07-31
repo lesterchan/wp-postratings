@@ -975,6 +975,41 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * The WP-Stats box can be turned off, not only on.
+	 *
+	 * An unticked checkbox posts nothing, and the sanitizer keeps what the
+	 * submission did not mention -- so on its own that pair meant the box could
+	 * never be cleared. The field prints a hidden 0 of the same name in front of
+	 * it, which is what makes the 0 below arrive at all.
+	 */
+	public function test_the_stats_box_can_be_unticked() {
+		$this->set_option( 'stats_display', 1 );
+
+		$clean = WP_PostRatings_Options::sanitize( array( 'stats_display' => '0' ) );
+
+		$this->assertSame( 0, $clean['stats_display'], 'the WP-Stats box could not be turned off' );
+
+		$clean = WP_PostRatings_Options::sanitize( array( 'stats_display' => '1' ) );
+
+		$this->assertSame( 1, $clean['stats_display'], 'the WP-Stats box could not be turned back on' );
+	}
+
+	/**
+	 * The field prints the hidden partner that makes that possible.
+	 */
+	public function test_the_stats_box_ships_its_hidden_zero() {
+		ob_start();
+		WP_PostRatings_Settings::field_stats_display();
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString(
+			'type="hidden" name="wp_postratings_options[stats_display]" value="0"',
+			$html,
+			'the checkbox lost the hidden 0 that lets it be unticked'
+		);
+	}
+
+	/**
 	 * The first save after a type change keeps what was typed into it.
 	 *
 	 * The screen rebuilds the table as soon as the type changes, so the rows

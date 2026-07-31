@@ -441,7 +441,7 @@ class WP_PostRatings_Admin {
 				<li><?php esc_html_e( '"Logs Only" means the logs generated when a user rates a post.', 'wp-postratings' ); ?></li>
 				<li><?php esc_html_e( '"Data Only" means the rating data for the post.', 'wp-postratings' ); ?></li>
 				<li><?php esc_html_e( '"Logs And Data" means both the logs generated and the rating data for the post.', 'wp-postratings' ); ?></li>
-				<li><?php esc_html_e( 'If your logging method is by IP and Cookie or by Cookie, users may still be unable to rate if they have voted before, as the cookie is still stored on their computer.', 'wp-postratings' ); ?></li>
+				<li><?php esc_html_e( 'If repeat votes are checked by cookie, or by cookie and IP address, a visitor who has voted before may still be unable to rate: the cookie is on their computer, and deleting the logs here does not reach it.', 'wp-postratings' ); ?></li>
 			</ul>
 		</div>
 		<?php
