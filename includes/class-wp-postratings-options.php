@@ -113,6 +113,27 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * The largest scale a rating may use.
+	 *
+	 * Ten by default. Every point on the scale is a glyph the visitor has to
+	 * aim at and a column in the rating text table, so a scale of fifty is a
+	 * misconfiguration rather than a preference -- and it used to be accepted
+	 * silently, because the only bound was a floor of one.
+	 *
+	 * @return int
+	 */
+	public static function max_scale() {
+		/**
+		 * Filters the largest scale a rating may use.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param int $max Maximum number of points on the scale.
+		 */
+		return max( 1, (int) apply_filters( 'wp_postratings_max_scale', 10 ) );
+	}
+
+	/**
 	 * Default settings.
 	 *
 	 * The template strings are byte-for-byte what the pre-2.0.0 activation
@@ -299,7 +320,7 @@ class WP_PostRatings_Options {
 		}
 
 		if ( isset( $options['max'] ) ) {
-			$clean['max'] = max( 1, (int) $options['max'] );
+			$clean['max'] = max( 1, min( self::max_scale(), (int) $options['max'] ) );
 		}
 
 		if ( isset( $options['allowtorate'] ) ) {

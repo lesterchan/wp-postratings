@@ -311,4 +311,35 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		update_option( 'postratings_template_highestrated', '<li>H</li>' );
 		update_option( 'postratings_template_mostrated', '<li>M</li>' );
 	}
+	/**
+	 * A scale larger than the cap is brought back to it, not stored as given.
+	 *
+	 * Every point on the scale is a glyph a visitor has to aim at and a column in
+	 * the rating text table, so fifty is a misconfiguration rather than a
+	 * preference. The only bound used to be a floor of one.
+	 */
+	public function test_the_scale_is_capped() {
+		$clean = WP_PostRatings_Options::sanitize( array( 'max' => 50 ) );
+
+		$this->assertSame( 10, $clean['max'], 'a scale of fifty was stored as given' );
+
+		$clean = WP_PostRatings_Options::sanitize( array( 'max' => 0 ) );
+
+		$this->assertSame( 1, $clean['max'], 'a scale of zero was not floored at one' );
+	}
+
+	/**
+	 * A site that wants a longer scale says so through the filter.
+	 */
+	public function test_the_cap_is_filterable() {
+		add_filter(
+			'wp_postratings_max_scale',
+			static function () {
+				return 20;
+			}
+		);
+
+		$this->assertSame( 20, WP_PostRatings_Options::max_scale(), 'the filter did not move the cap' );
+		$this->assertSame( 15, WP_PostRatings_Options::sanitize( array( 'max' => 15 ) )['max'], 'the filtered cap was not honoured' );
+	}
 }

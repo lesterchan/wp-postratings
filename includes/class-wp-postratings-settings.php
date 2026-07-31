@@ -360,12 +360,21 @@ class WP_PostRatings_Settings {
 	public static function field_max() {
 		$options = WP_PostRatings_Options::get();
 		?>
-		<input type="number" min="1" id="wp_postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
+		<input type="number" min="1" max="<?php echo esc_attr( WP_PostRatings_Options::max_scale() ); ?>"
+			id="wp_postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
 			value="<?php echo esc_attr( $options['max'] ); ?>" class="small-text"
 			<?php echo $options['customrating'] ? 'readonly="readonly"' : ''; ?> />
 		<input type="hidden" id="wp_postratings_customrating" name="<?php echo esc_attr( self::name( 'customrating' ) ); ?>"
 			value="<?php echo esc_attr( $options['customrating'] ); ?>" />
-		<p class="description"><?php esc_html_e( 'Fixed at two for an up/down shape, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ); ?></p>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: %s: the largest scale allowed. */
+				esc_html__( 'Between 1 and %s. Fixed at two for an up/down shape, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ),
+				esc_html( number_format_i18n( WP_PostRatings_Options::max_scale() ) )
+			);
+			?>
+		</p>
 		<?php
 	}
 
