@@ -528,4 +528,63 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			'the down fallback in the stylesheet does not match the constant'
 		);
 	}
+	/**
+	 * An up/down pair renders green and red without anything being stored.
+	 *
+	 * The bug this pins: the settings table showed those colours as the default
+	 * while the preview beside it read the stored value, found nothing, and fell
+	 * back to the stylesheet's orange. A default that only exists in the swatch
+	 * is not a default.
+	 */
+	public function test_an_up_down_pair_defaults_to_green_and_red_when_rendered() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'thumb';
+		$options['max']                  = 2;
+		$options['ratings']['color']     = array( '', '' );
+		$options['ratings']['color_off'] = array( '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame(
+			'--wp-postratings-color-on:' . WP_PostRatings_Options::COLOR_DOWN,
+			WP_PostRatings_Template::rating_color_style( 1 ),
+			'the down vote did not default to red'
+		);
+		$this->assertSame(
+			'--wp-postratings-color-on:' . WP_PostRatings_Options::COLOR_UP,
+			WP_PostRatings_Template::rating_color_style( 2 ),
+			'the up vote did not default to green'
+		);
+	}
+
+	/**
+	 * A scale has no such convention, so it emits nothing and the stylesheet
+	 * decides. Otherwise every star would be given a colour nobody chose.
+	 */
+	public function test_a_scale_emits_no_colour_of_its_own_by_default() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'star';
+		$options['max']                  = 5;
+		$options['ratings']['color']     = array( '', '', '', '', '' );
+		$options['ratings']['color_off'] = array( '', '', '', '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 3 ), 'a star step invented a colour' );
+	}
+
+	/**
+	 * A stored colour still wins over the built-in one.
+	 */
+	public function test_a_stored_colour_wins_over_the_built_in_one() {
+		$options                     = WP_PostRatings_Options::get();
+		$options['shape']            = 'thumb';
+		$options['max']              = 2;
+		$options['ratings']['color'] = array( '#123456', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame(
+			'--wp-postratings-color-on:#123456',
+			WP_PostRatings_Template::rating_color_style( 1 ),
+			'the stored colour lost to the built-in one'
+		);
+	}
 }

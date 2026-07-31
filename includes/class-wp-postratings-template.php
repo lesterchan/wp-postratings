@@ -154,15 +154,16 @@ class WP_PostRatings_Template {
 	 * @return string CSS declarations, or '' to leave the built-in colours alone.
 	 */
 	public static function rating_color_style( $rating ) {
-		$ratings = (array) WP_PostRatings_Options::get( 'ratings' );
-		$step    = (int) round( (float) $rating );
+		$step = (int) round( (float) $rating );
 
 		if ( $step < 1 ) {
 			return '';
 		}
 
-		// Both colours, not just the rated one. A step that sets only one gets
-		// only that one, and the stylesheet's own fallback covers the other.
+		$shape = self::resolve_shape( (string) WP_PostRatings_Options::get( 'shape' ) );
+
+		// Both colours, not just the rated one. A step that sets neither, and has
+		// no built-in of its own, emits nothing and the stylesheet decides.
 		$properties = array(
 			'color'     => '--wp-postratings-color-on',
 			'color_off' => '--wp-postratings-color-off',
@@ -171,8 +172,7 @@ class WP_PostRatings_Template {
 		$declarations = array();
 
 		foreach ( $properties as $key => $property ) {
-			$colors = (array) ( $ratings[ $key ] ?? array() );
-			$color  = isset( $colors[ $step - 1 ] ) ? (string) $colors[ $step - 1 ] : '';
+			$color = WP_PostRatings_Options::rating_color( $step, $key, $shape );
 
 			if ( '' !== $color ) {
 				$declarations[] = $property . ':' . $color;

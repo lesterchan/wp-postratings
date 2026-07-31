@@ -176,6 +176,40 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * The colour a step uses, stored or built in.
+	 *
+	 * One place answers this, because the settings screen and the renderer both
+	 * need it and they were disagreeing: the screen showed an up/down pair the
+	 * green and red it defaults to, while the preview beside it read the stored
+	 * value, found nothing, and fell back to the stylesheet's orange. A default
+	 * that only exists in the swatch is not a default.
+	 *
+	 * @param int    $step  Position on the scale, from 1.
+	 * @param string $key   Either 'color' or 'color_off'.
+	 * @param string $shape Shape name, already resolved.
+	 *
+	 * @return string A hex colour, or '' to leave the stylesheet's own to it.
+	 */
+	public static function rating_color( $step, $key, $shape = '' ) {
+		$colors = (array) ( self::get( 'ratings' )[ $key ] ?? array() );
+		$stored = isset( $colors[ $step - 1 ] ) ? (string) $colors[ $step - 1 ] : '';
+
+		if ( '' !== $stored ) {
+			return $stored;
+		}
+
+		// Only the rated colour has a built-in worth writing out, and only for an
+		// up/down pair: two opposing actions conventionally read green and red,
+		// where no convention says the third star differs from the fourth. The
+		// unrated colour and a scale's rated colour are left to the stylesheet.
+		if ( 'color' !== $key || ! WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return '';
+		}
+
+		return 2 === (int) $step ? self::COLOR_UP : self::COLOR_DOWN;
+	}
+
+	/**
 	 * The largest scale a rating may use.
 	 *
 	 * Ten by default. Every point on the scale is a glyph the visitor has to

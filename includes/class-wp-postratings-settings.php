@@ -844,12 +844,10 @@ class WP_PostRatings_Settings {
 					$color     = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
 					$color_off = isset( $colors_off[ $i - 1 ] ) ? (string) $colors_off[ $i - 1 ] : '';
 
-					// Step 1 is the down vote and step 2 the up vote.
-					$step_default = $rated_color;
-
-					if ( $is_updown ) {
-						$step_default = 2 === $i ? WP_PostRatings_Options::COLOR_UP : WP_PostRatings_Options::COLOR_DOWN;
-					}
+					// The same answer the renderer uses, so the swatch and the
+					// preview beside it cannot disagree.
+					$step_default = WP_PostRatings_Options::rating_color( $i, 'color', $is_updown ? 'thumb' : '' );
+					$step_default = '' !== $step_default ? $step_default : $rated_color;
 					?>
 					<tr>
 						<td class="wp-postratings wp-postratings-rating-preview">
