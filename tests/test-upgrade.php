@@ -91,7 +91,13 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( '1', $options['allowtorate'] );
 		$this->assertSame( '2', $options['logging_method'] );
 		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $options['ip_header'] );
-		$this->assertSame( 0, $options['richsnippet_ratings'] );
+		// The two rich snippet toggles are gone, and an install that had them on
+		// lands on "No" rather than being given a type it never chose. The old
+		// output declared schema.org/Article, which Google shows no rating for,
+		// so nothing that worked is being taken away.
+		$this->assertSame( '', $options['schema_type'], 'a legacy install was given a schema type it never picked' );
+		$this->assertArrayNotHasKey( 'richsnippet', $options, 'the retired toggle survived the migration' );
+		$this->assertArrayNotHasKey( 'richsnippet_ratings', $options, 'the retired toggle survived the migration' );
 		$this->assertSame( array( 'Awful', 'Poor', 'OK', 'Good', 'Superb' ), $options['ratings']['text'] );
 		$this->assertSame( array( 0, 1 ), array( (int) $options['ajax_style']['loading'], (int) $options['ajax_style']['fading'] ) );
 	}

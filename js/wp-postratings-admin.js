@@ -10,29 +10,6 @@
 	const l10n = window.wpPostRatingsL10n || {};
 
 	/**
-	 * Enable or disable the "ratings in rich snippets" radios to match the
-	 * parent toggle.
-	 *
-	 * @return {void}
-	 */
-	function syncRichSnippetRatings() {
-		const parent = document.getElementById( 'wp_postratings_richsnippet_on' );
-
-		if ( ! parent ) {
-			return;
-		}
-
-		const disabled = ! parent.checked;
-
-		Array.prototype.forEach.call(
-			document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ),
-			function( input ) {
-				input.disabled = disabled;
-			},
-		);
-	}
-
-	/**
 	 * Rebuild the rating text/value table for the selected shape.
 	 *
 	 * @return {void}
@@ -140,12 +117,6 @@
 		// eslint-disable-next-line no-alert -- Deleting rating data is irreversible.
 		if ( deleteButton && ! window.confirm( deleteButton.dataset.confirm ) ) {
 			event.preventDefault();
-		}
-	} );
-
-	document.addEventListener( 'change', function( event ) {
-		if ( event.target.closest( 'input[name$="[richsnippet]"]' ) ) {
-			syncRichSnippetRatings();
 		}
 	} );
 }() );

@@ -113,6 +113,38 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * The schema.org types Google will show a rating for.
+	 *
+	 * Not an arbitrary list: these are the types Google documents as eligible
+	 * for a review snippet. Article, BlogPosting and NewsArticle are absent
+	 * because Google does not support them, which is why the old output --
+	 * schema.org/Article carrying an aggregateRating -- produced no rich result
+	 * on any post, ever.
+	 *
+	 * Structured data has to describe what the page actually is. Marking a blog
+	 * post as a Product to collect stars is what Google calls spammy structured
+	 * markup, and it is a manual action rather than a ranking nudge, which is
+	 * why this is off unless a site deliberately turns it on.
+	 *
+	 * @return array Label keyed by schema.org type.
+	 */
+	public static function schema_types() {
+		return array(
+			'Book'                => __( 'Book', 'wp-postratings' ),
+			'Course'              => __( 'Course', 'wp-postratings' ),
+			'Event'               => __( 'Event', 'wp-postratings' ),
+			'Game'                => __( 'Game', 'wp-postratings' ),
+			'HowTo'               => __( 'How-to', 'wp-postratings' ),
+			'LocalBusiness'       => __( 'Local business', 'wp-postratings' ),
+			'Movie'               => __( 'Movie', 'wp-postratings' ),
+			'Organization'        => __( 'Organization', 'wp-postratings' ),
+			'Product'             => __( 'Product', 'wp-postratings' ),
+			'Recipe'              => __( 'Recipe', 'wp-postratings' ),
+			'SoftwareApplication' => __( 'Software application', 'wp-postratings' ),
+		);
+	}
+
+	/**
 	 * The largest scale a rating may use.
 	 *
 	 * Ten by default. Every point on the scale is a glyph the visitor has to
@@ -151,19 +183,18 @@ class WP_PostRatings_Options {
 		$rated   = __( 'rated', 'wp-postratings' );
 
 		return array(
-			'shape'               => 'star',
-			'max'                 => 5,
-			'customrating'        => 0,
-			'allowtorate'         => 2,
-			'logging_method'      => 3,
-			'ip_header'           => '',
-			'richsnippet'         => 1,
-			'richsnippet_ratings' => 1,
+			'shape'            => 'star',
+			'max'              => 5,
+			'customrating'     => 0,
+			'allowtorate'      => 2,
+			'logging_method'   => 3,
+			'ip_header'        => '',
+			'schema_type'      => '',
 			// The plugin's half of the WP-Stats contract. Its own setting now,
 			// not a slice of a row six plugins wrote to at once.
-			'stats_display'       => 1,
-			'stats_most_limit'    => 10,
-			'ajax_style'          => array(
+			'stats_display'    => 1,
+			'stats_most_limit' => 10,
+			'ajax_style'       => array(
 				'loading' => 1,
 				'fading'  => 1,
 			),
@@ -171,11 +202,11 @@ class WP_PostRatings_Options {
 			// stars_crystal and stars_dark were the same star in another
 			// colour. Collapsing those into CSS would have left the choice
 			// only to people who write CSS, so it is a setting instead.
-			'colors'              => array(
+			'colors'           => array(
 				'on'  => '#f5a623',
 				'off' => '#d4d4d8',
 			),
-			'ratings'             => array(
+			'ratings'          => array(
 				'text'  => array(
 					__( '1 Star', 'wp-postratings' ),
 					__( '2 Stars', 'wp-postratings' ),
@@ -185,7 +216,7 @@ class WP_PostRatings_Options {
 				),
 				'value' => array( 1, 2, 3, 4, 5 ),
 			),
-			'templates'           => array(
+			'templates'        => array(
 				'vote'         => '%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%)<br />%RATINGS_TEXT%',
 				'text'         => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%' . $comma . ' <strong>' . $rated . '</strong></em>)',
 				'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%</em>)<br /><em>' . __( 'You need to be a registered member to rate this.', 'wp-postratings' ) . '</em>',
@@ -319,6 +350,11 @@ class WP_PostRatings_Options {
 			$clean['customrating'] = empty( $options['customrating'] ) ? 0 : 1;
 		}
 
+		if ( isset( $options['schema_type'] ) ) {
+			$type                 = (string) $options['schema_type'];
+			$clean['schema_type'] = array_key_exists( $type, self::schema_types() ) ? $type : '';
+		}
+
 		if ( isset( $options['max'] ) ) {
 			$clean['max'] = max( 1, min( self::max_scale(), (int) $options['max'] ) );
 		}
@@ -340,7 +376,7 @@ class WP_PostRatings_Options {
 			$clean['ip_header'] = preg_match( '/^[A-Z0-9_]*$/', $ip_header ) ? $ip_header : '';
 		}
 
-		foreach ( array( 'richsnippet', 'richsnippet_ratings', 'stats_display' ) as $key ) {
+		foreach ( array( 'stats_display' ) as $key ) {
 			if ( isset( $options[ $key ] ) ) {
 				$clean[ $key ] = empty( $options[ $key ] ) ? 0 : 1;
 			}
@@ -497,6 +533,17 @@ class WP_PostRatings_Options {
 
 			$merged[ $path[0] ][ $path[1] ] = $value;
 		}
+
+		/*
+		 * The two rich snippet toggles are retired.
+		 *
+		 * They had become one decision -- the aggregate rating is the only
+		 * reason to emit that markup -- and the type they declared,
+		 * schema.org/Article, is one Google shows no rating for. So an install
+		 * that had them on was getting nothing, and lands on "No" rather than
+		 * being handed a type it never chose.
+		 */
+		unset( $merged['richsnippet'], $merged['richsnippet_ratings'] );
 
 		/*
 		 * The key is 'shape' now, not 'image'.

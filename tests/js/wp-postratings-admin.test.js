@@ -35,14 +35,6 @@ describe( 'wp-postratings settings screen', () => {
 				<input type="number" id="wp_postratings_max" value="5" />
 				<input type="hidden" id="wp_postratings_customrating" value="0" />
 
-				<input type="radio" id="wp_postratings_richsnippet_on"
-					name="postratings_options[richsnippet]" value="1" checked />
-				<input type="radio" id="postratings_richsnippet_off"
-					name="postratings_options[richsnippet]" value="0" />
-				<input type="radio" class="wp-postratings-richsnippet-ratings"
-					name="postratings_options[richsnippet_ratings]" value="1" />
-				<input type="radio" class="wp-postratings-richsnippet-ratings"
-					name="postratings_options[richsnippet_ratings]" value="0" />
 
 				<button type="button" id="wp-postratings-refresh-ratings" data-nonce="nonce123"></button>
 				<span class="spinner" id="wp-postratings-spinner"></span>
@@ -215,37 +207,6 @@ describe( 'wp-postratings settings screen', () => {
 
 		expect( document.getElementById( 'wp_postratings_customrating' ).value ).toBe( '0' );
 		expect( document.getElementById( 'wp_postratings_max' ).readOnly ).toBe( false );
-	} );
-
-	// --- the rich snippet toggle ------------------------------------------
-
-	it( 'disables the ratings radios when rich snippets are turned off', () => {
-		const off = document.getElementById( 'postratings_richsnippet_off' );
-		off.checked = true;
-		document.getElementById( 'wp_postratings_richsnippet_on' ).checked = false;
-
-		off.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
-
-		document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ).forEach( ( input ) => {
-			expect( input.disabled ).toBe( true );
-		} );
-	} );
-
-	it( 'enables them again when rich snippets are turned back on', () => {
-		const on = document.getElementById( 'wp_postratings_richsnippet_on' );
-		const off = document.getElementById( 'postratings_richsnippet_off' );
-
-		off.checked = true;
-		on.checked = false;
-		off.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
-
-		on.checked = true;
-		off.checked = false;
-		on.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
-
-		document.querySelectorAll( '.wp-postratings-richsnippet-ratings' ).forEach( ( input ) => {
-			expect( input.disabled ).toBe( false );
-		} );
 	} );
 
 	// --- the destructive button -------------------------------------------

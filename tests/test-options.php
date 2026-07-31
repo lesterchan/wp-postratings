@@ -342,4 +342,26 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( 20, WP_PostRatings_Options::max_scale(), 'the filter did not move the cap' );
 		$this->assertSame( 15, WP_PostRatings_Options::sanitize( array( 'max' => 15 ) )['max'], 'the filtered cap was not honoured' );
 	}
+	/**
+	 * Ratings in Google results are off until a site picks a type.
+	 */
+	public function test_the_schema_type_is_off_by_default() {
+		$this->assertSame( '', WP_PostRatings_Options::defaults()['schema_type'], 'structured data was on by default' );
+	}
+
+	/**
+	 * Only the types Google actually shows a rating for are accepted.
+	 *
+	 * Article, BlogPosting and NewsArticle are not among them, which is why the
+	 * old markup produced no rich result on any post.
+	 */
+	public function test_only_supported_schema_types_are_accepted() {
+		foreach ( array_keys( WP_PostRatings_Options::schema_types() ) as $type ) {
+			$this->assertSame( $type, WP_PostRatings_Options::sanitize( array( 'schema_type' => $type ) )['schema_type'], $type . ' is offered but would not save' );
+		}
+
+		foreach ( array( 'Article', 'BlogPosting', 'NewsArticle', 'Nonsense' ) as $type ) {
+			$this->assertSame( '', WP_PostRatings_Options::sanitize( array( 'schema_type' => $type ) )['schema_type'], $type . ' was accepted and Google shows no rating for it' );
+		}
+	}
 }

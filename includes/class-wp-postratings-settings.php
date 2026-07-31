@@ -214,8 +214,7 @@ class WP_PostRatings_Settings {
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
-			array( 'richsnippet', __( 'Enable Google Rich Snippets?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
-			array( 'richsnippet_ratings', __( 'Enable Ratings In Rich Snippets?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
+			array( 'schema_type', __( 'Show ratings in Google results?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
 			array( 'stats_display', __( 'Show A Ratings Section On The Stats Page?', 'wp-postratings' ), self::SECTION_STATS, $settings ),
 			array( 'stats_most_limit', __( 'Entries Per Stats List:', 'wp-postratings' ), self::SECTION_STATS, $settings ),
 		);
@@ -535,42 +534,33 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * Whether to emit rich snippet markup at all.
+	 * Which schema.org type the rating markup declares, if any.
+	 *
+	 * One control, not two. There used to be an "Enable Google Rich Snippets?"
+	 * toggle and an "Enable Ratings In Rich Snippets?" toggle beside it, and
+	 * they had become the same decision: the aggregate rating is the only
+	 * reason to emit this markup at all -- everything else in it duplicates
+	 * what a theme or an SEO plugin already says, better.
 	 *
 	 * @return void
 	 */
-	public static function field_richsnippet() {
-		$current = (int) WP_PostRatings_Options::get( 'richsnippet' );
+	public static function field_schema_type() {
+		$current = (string) WP_PostRatings_Options::get( 'schema_type' );
 		?>
-		<label>
-			<input type="radio" id="wp_postratings_richsnippet_on" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="1" <?php checked( $current, 1 ); ?> />
-			<?php esc_html_e( 'Yes', 'wp-postratings' ); ?>
-		</label>
-		&nbsp;&nbsp;
-		<label>
-			<input type="radio" name="<?php echo esc_attr( self::name( 'richsnippet' ) ); ?>" value="0" <?php checked( $current, 0 ); ?> />
-			<?php esc_html_e( 'No', 'wp-postratings' ); ?>
-		</label>
-		<?php
-	}
-
-	/**
-	 * Whether the rich snippet includes the aggregate rating.
-	 *
-	 * @return void
-	 */
-	public static function field_richsnippet_ratings() {
-		$options = WP_PostRatings_Options::get();
-		?>
-		<label>
-			<input type="radio" class="wp-postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="1" <?php checked( $options['richsnippet_ratings'], 1 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />
-			<?php esc_html_e( 'Yes', 'wp-postratings' ); ?>
-		</label>
-		&nbsp;&nbsp;
-		<label>
-			<input type="radio" class="wp-postratings-richsnippet-ratings" name="<?php echo esc_attr( self::name( 'richsnippet_ratings' ) ); ?>" value="0" <?php checked( $options['richsnippet_ratings'], 0 ); ?> <?php disabled( $options['richsnippet'], 0 ); ?> />
-			<?php esc_html_e( 'No', 'wp-postratings' ); ?>
-		</label>
+		<select id="wp_postratings_schema_type" name="<?php echo esc_attr( self::name( 'schema_type' ) ); ?>">
+			<option value="" <?php selected( $current, '' ); ?>><?php esc_html_e( 'No', 'wp-postratings' ); ?></option>
+			<?php foreach ( WP_PostRatings_Options::schema_types() as $type => $label ) : ?>
+				<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $current, $type ); ?>>
+					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<p class="description">
+			<?php esc_html_e( 'Pick the type only if your posts really are that thing. Google shows a rating for these types and no others -- Article, BlogPosting and NewsArticle are not among them, which is why this produced nothing before.', 'wp-postratings' ); ?>
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'Marking a post as something it is not, to collect stars, is what Google calls spammy structured markup, and it costs a manual action rather than a ranking.', 'wp-postratings' ); ?>
+		</p>
 		<?php
 	}
 

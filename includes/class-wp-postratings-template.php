@@ -558,7 +558,9 @@ class WP_PostRatings_Template {
 			return '';
 		}
 
-		if ( empty( $options['richsnippet'] ) || ! is_singular() || ! $is_main_loop ) {
+		$schema_type = (string) ( $options['schema_type'] ?? '' );
+
+		if ( '' === $schema_type || ! is_singular() || ! $is_main_loop ) {
 			return '';
 		}
 
@@ -569,7 +571,10 @@ class WP_PostRatings_Template {
 		 *
 		 * @param string $itemtype The itemscope/itemtype attribute pair.
 		 */
-		$itemtype = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
+		$itemtype = apply_filters(
+			'wp_postratings_schema_itemtype',
+			'itemscope itemtype="https://schema.org/' . $schema_type . '"'
+		);
 
 		if ( empty( $post_excerpt ) && ! empty( $post ) ) {
 			$post_excerpt = self::post_excerpt( $post_id, $post->post_excerpt, $post->post_content );
@@ -634,7 +639,7 @@ class WP_PostRatings_Template {
 
 		$ratings_meta = '';
 
-		if ( ! empty( $options['richsnippet_ratings'] ) && $post_ratings_average > 0 ) {
+		if ( $post_ratings_average > 0 ) {
 			$ratings_meta .= '<div class="wp-postratings-schema" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
 			$ratings_meta .= '<meta itemprop="bestRating" content="' . esc_attr( $ratings_max ) . '" />';
 			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';
