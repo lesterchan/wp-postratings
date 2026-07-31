@@ -139,19 +139,19 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	public function test_settings_are_per_site() {
 		$other = $this->make_site();
 
-		$this->set_option( 'image', 'stars' );
+		$this->set_option( 'shape', 'stars' );
 
 		switch_to_blog( $other );
 		WP_PostRatings_Install::install();
 		$options          = WP_PostRatings_Options::get();
-		$options['image'] = 'thumbs';
+		$options['shape'] = 'thumbs';
 		WP_PostRatings_Options::update( $options );
 		restore_current_blog();
 
-		$this->assertSame( 'stars', WP_PostRatings_Options::get( 'image' ) );
+		$this->assertSame( 'stars', WP_PostRatings_Options::get( 'shape' ) );
 
 		switch_to_blog( $other );
-		$this->assertSame( 'thumbs', WP_PostRatings_Options::get( 'image' ) );
+		$this->assertSame( 'thumbs', WP_PostRatings_Options::get( 'shape' ) );
 		restore_current_blog();
 	}
 

@@ -104,7 +104,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_the_chosen_style_carries_over() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( 'star', WP_PostRatings_Options::get( 'image' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ) );
 	}
 
 	/**
@@ -255,7 +255,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 			'the front end served default templates instead of the site\'s own'
 		);
 
-		$this->assertSame( 'star', WP_PostRatings_Options::get( 'image' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ) );
 		$this->assertSame( '1', WP_PostRatings_Options::get( 'allowtorate' ) );
 	}
 

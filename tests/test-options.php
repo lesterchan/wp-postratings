@@ -33,7 +33,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$options = WP_PostRatings_Options::get();
 
 		$this->assertSame( 7, $options['max'] );
-		$this->assertSame( 'star', $options['image'] );
+		$this->assertSame( 'star', $options['shape'] );
 		$this->assertArrayHasKey( 'vote', $options['templates'] );
 	}
 
@@ -68,7 +68,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$options = WP_PostRatings_Options::get();
 
-		$this->assertSame( 'thumb', $options['image'], 'the up/down set did not map to its shape' );
+		$this->assertSame( 'thumb', $options['shape'], 'the up/down set did not map to its shape' );
 		$this->assertSame( '2', $options['max'] );
 		$this->assertSame( '4', $options['logging_method'] );
 		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'] );
@@ -145,7 +145,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$second = WP_PostRatings_Options::get();
 
 		$this->assertSame( $first, $second );
-		$this->assertSame( 'thumb', $second['image'], 'the second run reverted to defaults' );
+		$this->assertSame( 'thumb', $second['shape'], 'the second run reverted to defaults' );
 	}
 
 	/**
@@ -202,12 +202,12 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$this->assertContains( 'star', $shapes );
 
 		foreach ( $shapes as $shape ) {
-			$clean = WP_PostRatings_Options::sanitize( array( 'image' => $shape ) );
-			$this->assertSame( $shape, $clean['image'], $shape . ' is offered but rejected' );
+			$clean = WP_PostRatings_Options::sanitize( array( 'shape' => $shape ) );
+			$this->assertSame( $shape, $clean['shape'], $shape . ' is offered but rejected' );
 		}
 
-		$clean = WP_PostRatings_Options::sanitize( array( 'image' => '../../evil' ) );
-		$this->assertNotSame( '../../evil', $clean['image'] );
+		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => '../../evil' ) );
+		$this->assertNotSame( '../../evil', $clean['shape'] );
 	}
 
 	/**
@@ -219,9 +219,9 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_legacy_set_name_is_accepted_and_mapped() {
-		$clean = WP_PostRatings_Options::sanitize( array( 'image' => 'stars_crystal' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'stars_crystal' ) );
 
-		$this->assertSame( 'star', $clean['image'] );
+		$this->assertSame( 'star', $clean['shape'] );
 	}
 
 	/**

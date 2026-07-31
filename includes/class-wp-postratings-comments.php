@@ -141,7 +141,7 @@ class WP_PostRatings_Comments {
 		/* translators: 1: comment author, 2: rating they gave. */
 		$image_alt = sprintf( __( '%1$s gives a rating of %2$s', 'wp-postratings' ), $comment_author, $display_rating );
 
-		return WP_PostRatings_Template::ratings_images_comment_author( $ratings_custom, $ratings_max, $rating, $options['image'], $image_alt );
+		return WP_PostRatings_Template::ratings_images_comment_author( $ratings_custom, $ratings_max, $rating, $options['shape'], $image_alt );
 	}
 
 	/**

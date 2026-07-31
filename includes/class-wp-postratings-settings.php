@@ -205,7 +205,7 @@ class WP_PostRatings_Settings {
 		}
 
 		$fields = array(
-			array( 'image', __( 'Ratings Image:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
+			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'max', __( 'Max Ratings:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'colors', __( 'Ratings Colour:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
@@ -319,9 +319,9 @@ class WP_PostRatings_Settings {
 	 *
 	 * @return void
 	 */
-	public static function field_image() {
+	public static function field_shape() {
 		$options  = WP_PostRatings_Options::get();
-		$selected = WP_PostRatings_Template::resolve_shape( $options['image'] );
+		$selected = WP_PostRatings_Template::resolve_shape( $options['shape'] );
 		$max      = max( 1, (int) $options['max'] );
 
 		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
@@ -331,8 +331,8 @@ class WP_PostRatings_Settings {
 			// site has chosen: they are scoped to the wrapper, not to :root.
 			echo '<p class="wp-postratings">';
 			printf(
-				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-image-choice" />&nbsp;&nbsp;&nbsp;',
-				esc_attr( self::name( 'image' ) ),
+				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />&nbsp;&nbsp;&nbsp;',
+				esc_attr( self::name( 'shape' ) ),
 				esc_attr( $name ),
 				checked( $selected, $name, false ),
 				$is_updown ? 1 : 0,
@@ -415,7 +415,7 @@ class WP_PostRatings_Settings {
 			self::render_rating_fields(
 				$options['customrating'],
 				(int) $options['max'],
-				$options['image'],
+				$options['shape'],
 				(array) $options['ratings']['text'],
 				(array) $options['ratings']['value']
 			);
@@ -893,7 +893,7 @@ class WP_PostRatings_Settings {
 
 		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
 		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
-		$image  = isset( $_GET['image'] ) ? sanitize_text_field( wp_unslash( $_GET['image'] ) ) : '';
+		$image  = isset( $_GET['shape'] ) ? sanitize_text_field( wp_unslash( $_GET['shape'] ) ) : '';
 		$image  = WP_PostRatings_Template::resolve_shape_strict( $image );
 
 		if ( '' === $image ) {

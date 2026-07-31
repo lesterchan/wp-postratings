@@ -402,7 +402,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '3',
-				'image'       => 'star',
+				'shape'       => 'star',
 			)
 		);
 
@@ -423,7 +423,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '1',
 				'max'         => '2',
-				'image'       => 'thumb',
+				'shape'       => 'thumb',
 			)
 		);
 
@@ -443,7 +443,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'not-a-shape',
+				'shape'       => 'not-a-shape',
 			)
 		);
 
@@ -465,7 +465,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'stars_crystal',
+				'shape'       => 'stars_crystal',
 			)
 		);
 
@@ -486,7 +486,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'star',
+				'shape'       => 'star',
 			)
 		);
 
@@ -505,7 +505,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => 'not-a-nonce',
 				'custom'      => '0',
 				'max'         => '5',
-				'image'       => 'star',
+				'shape'       => 'star',
 			)
 		);
 
@@ -524,7 +524,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 				'_ajax_nonce' => wp_create_nonce( 'wp_postratings_rating_fields' ),
 				'custom'      => '0',
 				'max'         => '100000',
-				'image'       => 'star',
+				'shape'       => 'star',
 			)
 		);
 

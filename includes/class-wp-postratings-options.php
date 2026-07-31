@@ -95,7 +95,7 @@ class WP_PostRatings_Options {
 	 */
 	private static function legacy_map() {
 		return array(
-			'postratings_image'                 => array( 'image' ),
+			'postratings_image'                 => array( 'shape' ),
 			'postratings_max'                   => array( 'max' ),
 			'postratings_customrating'          => array( 'customrating' ),
 			'postratings_allowtorate'           => array( 'allowtorate' ),
@@ -130,7 +130,7 @@ class WP_PostRatings_Options {
 		$rated   = __( 'rated', 'wp-postratings' );
 
 		return array(
-			'image'               => 'star',
+			'shape'               => 'star',
 			'max'                 => 5,
 			'customrating'        => 0,
 			'allowtorate'         => 2,
@@ -284,14 +284,14 @@ class WP_PostRatings_Options {
 		// value rather than reverting to the default.
 		$clean = $current;
 
-		if ( isset( $options['image'] ) ) {
+		if ( isset( $options['shape'] ) ) {
 			// The allow list is the shape registry the settings picker also reads
 			// from, so the screen cannot offer a shape the sanitizer rejects.
 			// A pre-2.0.0 image set name is accepted and mapped, so an install
 			// that has not migrated yet still saves correctly.
-			$image = WP_PostRatings_Template::resolve_shape_strict( $options['image'] );
+			$shape = WP_PostRatings_Template::resolve_shape_strict( $options['shape'] );
 
-			$clean['image'] = '' !== $image ? $image : $current['image'];
+			$clean['shape'] = '' !== $shape ? $shape : $current['shape'];
 		}
 
 		if ( isset( $options['customrating'] ) ) {
@@ -477,13 +477,29 @@ class WP_PostRatings_Options {
 			$merged[ $path[0] ][ $path[1] ] = $value;
 		}
 
+		/*
+		 * The key is 'shape' now, not 'image'.
+		 *
+		 * Nothing released ever wrote 'image' -- the released option is
+		 * postratings_image, folded in by legacy_map() above -- so this only
+		 * catches an install that ran a 2.0.0 beta, where leaving it would drop
+		 * the chosen shape back to the default.
+		 */
+		if ( isset( $merged['image'] ) ) {
+			if ( ! isset( $merged['shape'] ) ) {
+				$merged['shape'] = $merged['image'];
+			}
+
+			unset( $merged['image'] );
+		}
+
 		// The 16 image folders became 9 SVG shapes in 2.0.0, and the colour and
 		// finish variants collapsed into CSS custom properties: stars,
 		// stars_crystal, stars_dark, stars_png and stars_flat_png were all one
 		// star. Anything unrecognised -- a folder the site added itself -- lands
 		// on stars rather than rendering nothing.
-		if ( isset( $merged['image'] ) ) {
-			$merged['image'] = WP_PostRatings_Template::resolve_shape( $merged['image'] );
+		if ( isset( $merged['shape'] ) ) {
+			$merged['shape'] = WP_PostRatings_Template::resolve_shape( $merged['shape'] );
 		}
 
 		$merged = self::migrate_stats_settings( $merged );

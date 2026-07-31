@@ -357,7 +357,7 @@ class WP_PostRatings_Template {
 		// get_the_post_thumbnail() and get_post() all take a post, so the
 		// template reads another post without the loop ever noticing.
 		$options        = WP_PostRatings_Options::get();
-		$ratings_image  = $options['image'];
+		$ratings_image  = $options['shape'];
 		$ratings_max    = (int) $options['max'];
 		$ratings_custom = (int) $options['customrating'];
 

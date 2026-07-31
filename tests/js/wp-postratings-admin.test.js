@@ -27,10 +27,10 @@ describe( 'wp-postratings settings screen', () => {
 	beforeEach( () => {
 		document.body.innerHTML = `
 			<form>
-				<input type="radio" name="postratings_options[image]" value="stars"
-					class="wp-postratings-image-choice" data-custom="0" data-max="5" checked />
-				<input type="radio" name="postratings_options[image]" value="thumbs"
-					class="wp-postratings-image-choice" data-custom="1" data-max="2" />
+				<input type="radio" name="postratings_options[shape]" value="stars"
+					class="wp-postratings-shape-choice" data-custom="0" data-max="5" checked />
+				<input type="radio" name="postratings_options[shape]" value="thumbs"
+					class="wp-postratings-shape-choice" data-custom="1" data-max="2" />
 
 				<input type="number" id="wp_postratings_max" value="5" />
 				<input type="hidden" id="wp_postratings_customrating" value="0" />
@@ -140,7 +140,7 @@ describe( 'wp-postratings settings screen', () => {
 		// rebuilding, silently.
 		expect( url.searchParams.get( 'action' ) ).toBe( 'wp_postratings_rating_fields' );
 		expect( url.searchParams.get( '_ajax_nonce' ) ).toBe( 'nonce123' );
-		expect( url.searchParams.get( 'image' ) ).toBe( 'stars' );
+		expect( url.searchParams.get( 'shape' ) ).toBe( 'stars' );
 		expect( url.searchParams.get( 'max' ) ).toBe( '5' );
 		expect( url.searchParams.get( 'custom' ) ).toBe( '0' );
 	} );
@@ -155,7 +155,7 @@ describe( 'wp-postratings settings screen', () => {
 		);
 	} );
 
-	it( 'sends the image set that is actually selected', async () => {
+	it( 'sends the shape that is actually selected', async () => {
 		document.querySelector( 'input[value="thumbs"]' ).checked = true;
 		document.querySelector( 'input[value="stars"]' ).checked = false;
 
@@ -165,7 +165,7 @@ describe( 'wp-postratings settings screen', () => {
 
 		const url = new URL( window.fetch.mock.calls[ 0 ][ 0 ] );
 
-		expect( url.searchParams.get( 'image' ) ).toBe( 'thumbs' );
+		expect( url.searchParams.get( 'shape' ) ).toBe( 'thumbs' );
 	} );
 
 	it( 'shows the spinner while the request is in flight and hides it after', async () => {
@@ -188,8 +188,8 @@ describe( 'wp-postratings settings screen', () => {
 		await vi.waitFor( () => expect( spinner.classList.contains( 'is-active' ) ).toBe( false ) );
 	} );
 
-	it( 'does nothing when no image set is selected', () => {
-		document.querySelectorAll( 'input[name="postratings_options[image]"]' ).forEach( ( input ) => {
+	it( 'does nothing when no shape is selected', () => {
+		document.querySelectorAll( 'input[name="postratings_options[shape]"]' ).forEach( ( input ) => {
 			input.checked = false;
 		} );
 
@@ -198,7 +198,7 @@ describe( 'wp-postratings settings screen', () => {
 		expect( window.fetch ).not.toHaveBeenCalled();
 	} );
 
-	// --- choosing an image set --------------------------------------------
+	// --- choosing a shape --------------------------------------------
 
 	it( 'fixes the scale when a custom set is chosen', () => {
 		click( 'input[value="thumbs"]' );

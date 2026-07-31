@@ -292,7 +292,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 			(int) $options['customrating'],
 			(int) $options['max'],
 			$rating,
-			$options['image'],
+			$options['shape'],
 			$alt,
 			0
 		);

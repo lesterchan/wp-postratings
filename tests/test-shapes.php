@@ -223,9 +223,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$clean = WP_PostRatings_Options::sanitize( array( 'image' => 'diamond' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'diamond' ) );
 
-		$this->assertSame( 'diamond', $clean['image'] );
+		$this->assertSame( 'diamond', $clean['shape'] );
 	}
 
 	/**

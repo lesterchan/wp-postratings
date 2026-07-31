@@ -33,14 +33,14 @@
 	}
 
 	/**
-	 * Rebuild the rating text/value table for the selected image set.
+	 * Rebuild the rating text/value table for the selected shape.
 	 *
 	 * @return {void}
 	 */
 	function refreshRatingFields() {
 		const button = document.getElementById( 'wp-postratings-refresh-ratings' );
 		const target = document.getElementById( 'wp-postratings-rating-fields' );
-		const image = document.querySelector( 'input[name$="[image]"]:checked' );
+		const image = document.querySelector( 'input[name$="[shape]"]:checked' );
 
 		if ( ! button || ! target || ! image ) {
 			return;
@@ -59,7 +59,7 @@
 			_ajax_nonce: button.dataset.nonce,
 			custom: custom ? custom.value : '0',
 			max: max ? max.value : '0',
-			image: image.value,
+			shape: image.value,
 		} );
 
 		window
@@ -84,7 +84,7 @@
 	}
 
 	/**
-	 * Apply the chosen image set's shape to the Max Ratings field.
+	 * Apply the chosen shape to the Max Ratings field.
 	 *
 	 * A custom set fixes the number of steps, so the field is made read only.
 	 *
@@ -128,7 +128,7 @@
 			return;
 		}
 
-		const imageChoice = event.target.closest( '.wp-postratings-image-choice' );
+		const imageChoice = event.target.closest( '.wp-postratings-shape-choice' );
 
 		if ( imageChoice ) {
 			applyImageChoice( imageChoice );

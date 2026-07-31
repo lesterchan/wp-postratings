@@ -146,20 +146,20 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The settings screen never offers an image set the sanitizer rejects.
+	 * The settings screen never offers a shape the sanitizer rejects.
 	 *
 	 * @return void
 	 */
-	public function test_the_screen_only_offers_valid_image_sets() {
+	public function test_the_screen_only_offers_valid_shapes() {
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ) );
 
-		preg_match_all( '/name="wp_postratings_options\[image\]" value="([^"]+)"/', $html, $matches );
+		preg_match_all( '/name="wp_postratings_options\[shape\]" value="([^"]+)"/', $html, $matches );
 
-		$this->assertNotEmpty( $matches[1], 'the screen offered no image sets at all' );
+		$this->assertNotEmpty( $matches[1], 'the screen offered no shapes at all' );
 
 		foreach ( $matches[1] as $offered ) {
-			$clean = WP_PostRatings_Options::sanitize( array( 'image' => $offered ) );
-			$this->assertSame( $offered, $clean['image'], $offered . ' is offered but would not save' );
+			$clean = WP_PostRatings_Options::sanitize( array( 'shape' => $offered ) );
+			$this->assertSame( $offered, $clean['shape'], $offered . ' is offered but would not save' );
 		}
 	}
 
