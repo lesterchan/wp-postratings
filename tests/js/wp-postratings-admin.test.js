@@ -218,7 +218,11 @@ describe( 'wp-postratings settings screen', () => {
 
 		// And every label travels with it, so a rebuild does not throw away what
 		// the site has typed into the rows that are not changing.
-		expect( url.searchParams.getAll( 'text' ) ).toEqual( [ 'One', 'Two', 'Three' ] );
+		// text[] rather than text: PHP builds an array from repeated parameters
+		// only when they carry brackets, and without them it keeps the last
+		// value alone -- which is how the first row came back holding the last
+		// row's label.
+		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [ 'One', 'Two', 'Three' ] );
 	} );
 
 	it( 'leaves the removed row out of the rebuild', async () => {
@@ -229,7 +233,7 @@ describe( 'wp-postratings settings screen', () => {
 		const url = new URL( window.fetch.mock.calls[ 0 ][ 0 ] );
 
 		expect( url.searchParams.get( 'max' ) ).toBe( '2' );
-		expect( url.searchParams.getAll( 'text' ) ).toEqual( [ 'Two', 'Three' ] );
+		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [ 'Two', 'Three' ] );
 	} );
 
 	// --- choosing a shape --------------------------------------------
@@ -295,8 +299,7 @@ describe( 'wp-postratings settings screen', () => {
 		// A different shape is a different rating: its labels and, across the two
 		// types, its values are not the old ones. Carrying them is what left the
 		// first row of a scale at -1 after switching away from thumbs.
-		expect( url.searchParams.getAll( 'text' ) ).toEqual( [] );
-		expect( url.searchParams.getAll( 'value' ) ).toEqual( [] );
+		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [] );
+		expect( url.searchParams.getAll( 'value[]' ) ).toEqual( [] );
 	} );
-
 } );

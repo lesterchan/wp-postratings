@@ -877,13 +877,42 @@ class WP_PostRatings_Settings {
 					$color     = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
 					$color_off = isset( $colors_off[ $i - 1 ] ) ? (string) $colors_off[ $i - 1 ] : '';
 
-					// The same answer the renderer uses, so the swatch and the
-					// preview beside it cannot disagree.
-					$step_default = WP_PostRatings_Options::rating_color( $i, 'color', $is_updown ? 'thumb' : '' );
-					$step_default = '' !== $step_default ? $step_default : $rated_color;
+					/*
+					 * From the shape being rendered, not from what is stored.
+					 *
+					 * This table is drawn for a shape the site may not have saved
+					 * yet -- switching type rebuilds it before anything is saved --
+					 * so consulting stored colours here showed a scale's orange in
+					 * an up/down pair that had never had one. The stored values
+					 * arrive as $colors and $colors_off; this is only what an
+					 * empty one falls back to.
+					 */
+					if ( $is_updown ) {
+						$step_default = 2 === $i ? WP_PostRatings_Options::COLOR_UP : WP_PostRatings_Options::COLOR_DOWN;
+					} else {
+						$step_default = $rated_color;
+					}
 					?>
 					<tr>
-						<td class="wp-postratings wp-postratings-rating-preview">
+						<?php
+						/*
+						 * The effective colours go on the cell, so the preview and
+						 * the two swatches beside it are fed by the same values.
+						 *
+						 * Without this the preview showed only what was stored,
+						 * and a step with nothing stored fell through to the
+						 * stylesheet -- which is not the built-in colour under a
+						 * dark colour scheme or increased contrast, both of which
+						 * move --wp-postratings-color-off. So a newly added step
+						 * rendered darker than the swatch beside it said it would.
+						 */
+						$preview_style = sprintf(
+							'--wp-postratings-color-on:%1$s;--wp-postratings-color-off:%2$s',
+							'' !== $color ? $color : $step_default,
+							'' !== $color_off ? $color_off : $unrated_color
+						);
+						?>
+						<td class="wp-postratings wp-postratings-rating-preview" style="<?php echo esc_attr( $preview_style ); ?>">
 							<?php
 							// Preview of this step: an up/down set shows the one
 							// glyph for this position, anything else shows the

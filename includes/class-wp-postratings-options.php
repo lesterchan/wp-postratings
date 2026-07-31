@@ -427,6 +427,30 @@ class WP_PostRatings_Options {
 		}
 
 		/*
+		 * Changing the rating type discards what belonged to the old one.
+		 *
+		 * A scale and an up/down pair do not share labels, values or colours: "1
+		 * Star" means nothing on a thumbs set, an up/down vote is signed where a
+		 * scale is not, and the built-in green and red only apply to one of them.
+		 * Carrying any of it across is what left a scale's first row at -1 after
+		 * switching away from thumbs, and left an up/down pair showing the star
+		 * colours it had inherited.
+		 *
+		 * The screen rebuilds the table on a shape change and posts the new
+		 * defaults, so this is the half that holds when the shape is changed by
+		 * anything else -- including a page that was open before the change.
+		 */
+		$was = WP_PostRatings_Template::resolve_shape( (string) self::get( 'shape' ) );
+		$now = isset( $clean['shape'] ) ? $clean['shape'] : $was;
+
+		if ( WP_PostRatings_Shapes::is_updown( $was ) !== WP_PostRatings_Shapes::is_updown( $now ) ) {
+			unset( $clean['ratings']['color'], $clean['ratings']['color_off'] );
+
+			$clean['ratings']['color']     = array();
+			$clean['ratings']['color_off'] = array();
+		}
+
+		/*
 		 * The scale is however many steps the table has, not a number posted
 		 * beside it. The table is the scale, so a Max field was a second place
 		 * holding one fact -- and the one that lost, since raising it left the

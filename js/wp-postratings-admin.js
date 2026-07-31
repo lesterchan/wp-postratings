@@ -71,7 +71,13 @@
 					target.querySelectorAll( '[name$="[' + field + '][]"]' ),
 					function( input, index ) {
 						if ( 'number' !== typeof removed || index !== removed ) {
-							query.append( field, input.value );
+							// field[] rather than field: PHP builds an array
+							// from repeated parameters only when they carry
+							// brackets. Without them it keeps the last value
+							// alone, so a three row table arrived as one string
+							// and the first row came back holding the last
+							// row's label.
+							query.append( field + '[]', input.value );
 						}
 					},
 				);

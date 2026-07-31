@@ -610,7 +610,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$html = ob_get_clean();
 
 		preg_match_all(
-			'~<td class="wp-postratings wp-postratings-rating-preview">.*?--wp-postratings-color-on:(\#[0-9a-f]{6})~s',
+			'~wp-postratings-rating-preview" style="--wp-postratings-color-on:(\#[0-9a-f]{6})~',
 			$html,
 			$previews
 		);
@@ -810,5 +810,108 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			'mostly down'      => array( -0.5, 'down' ),
 			'unanimously down' => array( -1.0, 'down' ),
 		);
+	}
+	/**
+	 * Changing the rating type discards the old type's colours.
+	 *
+	 * A scale's colours mean nothing on an up/down pair -- and worse, they hide
+	 * the built-in green and red, so switching to thumbs kept whatever the stars
+	 * had been given. The same leak in the other direction put -1 in a scale's
+	 * first row.
+	 */
+	public function test_changing_the_rating_type_clears_the_old_colours() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'star';
+		$options['max']                  = 5;
+		$options['ratings']['color']     = array_fill( 0, 5, '#e32400' );
+		$options['ratings']['color_off'] = array_fill( 0, 5, '#d4d4d8' );
+		WP_PostRatings_Options::update( $options );
+
+		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'thumb' ) );
+
+		$this->assertSame( array(), $clean['ratings']['color'], 'the old rated colours survived a type change' );
+		$this->assertSame( array(), $clean['ratings']['color_off'], 'the old unrated colours survived a type change' );
+	}
+
+	/**
+	 * Staying within a type keeps them.
+	 */
+	public function test_changing_shape_within_a_type_keeps_the_colours() {
+		$options                     = WP_PostRatings_Options::get();
+		$options['shape']            = 'star';
+		$options['max']              = 5;
+		$options['ratings']['color'] = array_fill( 0, 5, '#e32400' );
+		WP_PostRatings_Options::update( $options );
+
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'heart',
+				'ratings' => array( 'color' => array_fill( 0, 5, '#e32400' ) ),
+			)
+		);
+
+		$this->assertSame( array_fill( 0, 5, '#e32400' ), $clean['ratings']['color'], 'a colour was lost moving between two scales' );
+	}
+	/**
+	 * Every preview in the table carries the colours its swatches show.
+	 *
+	 * A row with nothing stored used to emit no colour at all and fall through
+	 * to the stylesheet -- which is not the built-in colour under a dark colour
+	 * scheme or increased contrast, both of which move
+	 * --wp-postratings-color-off. So a newly added step rendered darker than the
+	 * swatch beside it promised.
+	 */
+	public function test_every_preview_carries_its_own_colours() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'star';
+		$options['max']                  = 5;
+		$options['ratings']['color']     = array( '#e32400', '', '', '', '' );
+		$options['ratings']['color_off'] = array( '', '', '', '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		ob_start();
+		WP_PostRatings_Settings::field_ratings();
+		$html = ob_get_clean();
+
+		preg_match_all( '~wp-postratings-rating-preview" style="([^"]+)"~', $html, $previews );
+
+		$this->assertCount( 5, $previews[1], 'not every step has a preview' );
+
+		foreach ( $previews[1] as $step => $style ) {
+			$style = html_entity_decode( $style );
+
+			$this->assertStringContainsString( '--wp-postratings-color-off:' . WP_PostRatings_Options::COLOR_UNRATED, $style, 'step ' . ( $step + 1 ) . ' left its unrated colour to the stylesheet' );
+			$this->assertStringContainsString( '--wp-postratings-color-on:', $style, 'step ' . ( $step + 1 ) . ' left its rated colour to the stylesheet' );
+		}
+
+		$this->assertStringContainsString( '--wp-postratings-color-on:#e32400', html_entity_decode( $previews[1][0] ), 'the stored colour did not reach the first preview' );
+	}
+	/**
+	 * Switching type shows the new type's colours before anything is saved.
+	 *
+	 * The table is drawn for a shape the site has not saved yet, so taking the
+	 * defaults from stored state showed a five point rating's orange in an
+	 * up/down pair that had never had one. They come from the shape being
+	 * rendered instead.
+	 */
+	public function test_switching_type_uses_the_new_types_colours_unsaved() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'star';
+		$options['max']                  = 5;
+		$options['ratings']['color']     = array_fill( 0, 5, '#e32400' );
+		$options['ratings']['color_off'] = array_fill( 0, 5, '#cccccc' );
+		WP_PostRatings_Options::update( $options );
+
+		ob_start();
+		WP_PostRatings_Settings::render_rating_fields( 1, 2, 'thumb', array( 'Down', 'Up' ), array( -1, 1 ), array(), array() );
+		$html = ob_get_clean();
+
+		preg_match_all( '~data-default="(\#[0-9a-f]{6})"[^>]*data-property="--wp-postratings-color-on"~', $html, $swatches );
+		preg_match_all( '~wp-postratings-rating-preview" style="--wp-postratings-color-on:(\#[0-9a-f]{6})~', $html, $previews );
+
+		$expected = array( WP_PostRatings_Options::COLOR_DOWN, WP_PostRatings_Options::COLOR_UP );
+
+		$this->assertSame( $expected, $swatches[1], 'the swatches kept the old type\'s colours' );
+		$this->assertSame( $expected, $previews[1], 'the previews kept the old type\'s colours' );
 	}
 }
