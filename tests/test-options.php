@@ -657,10 +657,11 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 */
 	public function data_updown_averages() {
 		return array(
-			'all up'      => array( 2.0, 'up', WP_PostRatings_Options::COLOR_UP ),
-			'mostly up'   => array( 1.6, 'up', WP_PostRatings_Options::COLOR_UP ),
-			'mostly down' => array( 1.4, 'down', WP_PostRatings_Options::COLOR_DOWN ),
-			'all down'    => array( 1.0, 'down', WP_PostRatings_Options::COLOR_DOWN ),
+			// Signed: down is -1 and up is +1, so zero is the dividing line.
+			'all up'      => array( 1.0, 'up', WP_PostRatings_Options::COLOR_UP ),
+			'mostly up'   => array( 0.4, 'up', WP_PostRatings_Options::COLOR_UP ),
+			'mostly down' => array( -0.4, 'down', WP_PostRatings_Options::COLOR_DOWN ),
+			'all down'    => array( -1.0, 'down', WP_PostRatings_Options::COLOR_DOWN ),
 		);
 	}
 
@@ -712,5 +713,102 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 				$name . ' has no rating type'
 			);
 		}
+	}
+	/**
+	 * The scale is however many steps the table has.
+	 *
+	 * There is no Max field any more. The table is the scale, so a number beside
+	 * it telling it how long to be was a second place holding one fact -- and the
+	 * one that lost, because raising it left the text and value arrays shorter
+	 * than the loop that reads them.
+	 */
+	public function test_the_scale_is_the_number_of_steps_posted() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'star',
+				'ratings' => array(
+					'text'  => array( 'a', 'b', 'c', 'd' ),
+					'value' => array( 1, 2, 3, 4 ),
+				),
+			)
+		);
+
+		$this->assertSame( 4, $clean['max'], 'the scale did not follow the table' );
+	}
+
+	/**
+	 * Adding beyond the cap, or removing below the floor, is refused.
+	 */
+	public function test_the_number_of_steps_is_bounded() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'star',
+				'ratings' => array( 'text' => array_fill( 0, 50, 'x' ) ),
+			)
+		);
+
+		$this->assertSame( 10, $clean['max'], 'a fifty step table was accepted' );
+
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'star',
+				'ratings' => array( 'text' => array( 'only one' ) ),
+			)
+		);
+
+		$this->assertSame( WP_PostRatings_Options::MIN_SCALE, $clean['max'], 'a one step table was accepted as a scale' );
+	}
+
+	/**
+	 * An up/down rating stays two however many rows arrive.
+	 */
+	public function test_an_up_down_rating_ignores_the_number_of_rows() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'thumb',
+				'ratings' => array( 'text' => array( 'a', 'b', 'c', 'd', 'e' ) ),
+			)
+		);
+
+		$this->assertSame( 2, $clean['max'], 'an up/down rating grew a scale' );
+	}
+	/**
+	 * An up/down vote is stored signed, and read that way.
+	 *
+	 * Down is -1 and up is +1, so a post's average runs from -1 to +1 and zero
+	 * is the dividing line. It is not a scale of two: reading it against a
+	 * scale's midpoint called every average below 1.5 a down vote, including a
+	 * clear win for up.
+	 *
+	 * @dataProvider data_signed_averages
+	 *
+	 * @param float  $average   Stored average.
+	 * @param string $direction Glyph that should be shown.
+	 */
+	public function test_a_signed_up_down_average_reads_the_right_way( $average, $direction ) {
+		$options          = WP_PostRatings_Options::get();
+		$options['shape'] = 'thumb';
+		$options['max']   = 2;
+		WP_PostRatings_Options::update( $options );
+
+		$html = WP_PostRatings_Template::ratings_images( 0, 2, $average, 'thumb', 'x' );
+
+		$this->assertStringContainsString( 'shape-' . $direction . ')', $html, 'an average of ' . $average . ' pointed the wrong way' );
+	}
+
+	/**
+	 * Averages either side of zero.
+	 *
+	 * @return array
+	 */
+	public function data_signed_averages() {
+		return array(
+			'unanimously up'   => array( 1.0, 'up' ),
+			'mostly up'        => array( 0.5, 'up' ),
+			'barely up'        => array( 0.1, 'up' ),
+			'even'             => array( 0.0, 'down' ),
+			'mostly down'      => array( -0.5, 'down' ),
+			'unanimously down' => array( -1.0, 'down' ),
+		);
 	}
 }

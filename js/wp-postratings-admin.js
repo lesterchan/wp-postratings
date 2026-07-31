@@ -14,7 +14,24 @@
 	 *
 	 * @return {void}
 	 */
-	function refreshRatingFields() {
+	/**
+	 * How many steps the table should have after a change.
+	 *
+	 * Counted from the rows on screen rather than from a Max field, because the
+	 * table is the scale: a separate number telling it how long to be is a
+	 * second place holding one fact.
+	 *
+	 * @param {number} delta Steps to add, or a negative number to remove.
+	 * @return {number} The number of steps to render.
+	 */
+	function steps( delta ) {
+		const target = document.getElementById( 'wp-postratings-rating-fields' );
+		const rows = target ? target.querySelectorAll( 'tbody tr' ).length : 0;
+
+		return rows + ( delta || 0 );
+	}
+
+	function refreshRatingFields( delta, removed ) {
 		const target = document.getElementById( 'wp-postratings-rating-fields' );
 		const image = document.querySelector( 'input[name$="[shape]"]:checked' );
 
@@ -24,7 +41,6 @@
 
 		const spinner = document.getElementById( 'wp-postratings-spinner' );
 		const custom = document.getElementById( 'wp_postratings_customrating' );
-		const max = document.getElementById( 'wp_postratings_max' );
 
 		if ( spinner ) {
 			spinner.classList.add( 'is-active' );
@@ -34,9 +50,33 @@
 			action: 'wp_postratings_rating_fields',
 			_ajax_nonce: target.dataset.nonce,
 			custom: custom ? custom.value : '0',
-			max: max ? max.value : '0',
+			max: String( steps( delta ) ),
 			shape: image.value,
 		} );
+
+		/*
+		 * The table's current state travels with the request only when a step is
+		 * being added or removed. Then it is the same rating with one row more or
+		 * fewer, so every label, value and colour the site has typed should
+		 * survive -- including on the rows that are not changing.
+		 *
+		 * A change of shape is not that. It is a different rating, with different
+		 * labels ("1 Star" means nothing on a thumbs set) and, crossing between
+		 * the two types, different values: an up/down vote is signed, so carrying
+		 * its -1 into a scale left the first row at -1.
+		 */
+		if ( 'number' === typeof delta ) {
+			[ 'text', 'value', 'color', 'color_off' ].forEach( function( field ) {
+				Array.prototype.forEach.call(
+					target.querySelectorAll( '[name$="[' + field + '][]"]' ),
+					function( input, index ) {
+						if ( 'number' !== typeof removed || index !== removed ) {
+							query.append( field, input.value );
+						}
+					},
+				);
+			} );
+		}
 
 		window
 			.fetch( l10n.ajaxUrl + '?' + query.toString(), {
@@ -160,13 +200,6 @@
 		}
 	} );
 
-	// The scale is a number input, so it changes without a click.
-	document.addEventListener( 'change', function( event ) {
-		if ( event.target.closest( '#wp_postratings_max' ) ) {
-			refreshRatingFields();
-		}
-	} );
-
 	document.addEventListener( 'click', function( event ) {
 		const restore = event.target.closest( '.wp-postratings-restore-template' );
 
@@ -189,6 +222,24 @@
 		if ( imageChoice ) {
 			applyImageChoice( imageChoice );
 			refreshRatingFields();
+			return;
+		}
+
+		if ( event.target.closest( '#wp-postratings-add-step' ) ) {
+			event.preventDefault();
+			refreshRatingFields( 1 );
+			return;
+		}
+
+		const remove = event.target.closest( '.wp-postratings-remove-step' );
+
+		if ( remove ) {
+			event.preventDefault();
+
+			const row = remove.closest( 'tr' );
+			const rows = Array.prototype.slice.call( row.closest( 'tbody' ).children );
+
+			refreshRatingFields( -1, rows.indexOf( row ) );
 			return;
 		}
 

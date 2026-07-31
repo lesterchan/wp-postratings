@@ -274,9 +274,16 @@ class WP_PostRatings_Template {
 		 */
 		$image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
 		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
-			// Which side won, not how far along a scale: step 2 is the up vote,
-			// so an average at or above the midpoint reads as up.
-			return self::single_glyph( $shape, (float) $post_rating >= 1.5 ? 'up' : 'down', $image_alt );
+			/*
+			 * Which side won, not how far along a scale.
+			 *
+			 * An up/down vote is stored signed -- down is -1 and up is +1 -- so
+			 * the average runs from -1 to +1 and zero is the dividing line. It is
+			 * not a scale of two, and testing it against a scale's midpoint would
+			 * read every average below 1.5 as a down vote, including a clear win
+			 * for up.
+			 */
+			return self::single_glyph( $shape, (float) $post_rating > 0 ? 'up' : 'down', $image_alt );
 		}
 
 		$fill = self::fill_percentage( $post_rating, $ratings_max );

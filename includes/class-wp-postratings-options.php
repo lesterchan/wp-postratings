@@ -426,19 +426,24 @@ class WP_PostRatings_Options {
 			$clean['schema_type'] = array_key_exists( $type, self::schema_types() ) ? $type : '';
 		}
 
-		if ( isset( $options['max'] ) ) {
-			/*
-			 * An up/down set is always two: it is a pair of opposing actions, so
-			 * there is nothing to choose. A scale starts at three, because one or
-			 * two points is not a scale.
-			 */
-			$shape = isset( $clean['shape'] ) ? (string) $clean['shape'] : (string) self::get( 'shape' );
+		/*
+		 * The scale is however many steps the table has, not a number posted
+		 * beside it. The table is the scale, so a Max field was a second place
+		 * holding one fact -- and the one that lost, since raising it left the
+		 * text and value arrays shorter than the loop that reads them.
+		 *
+		 * An up/down set is always two: a pair of opposing actions, with nothing
+		 * to choose. A scale starts at three, because one or two points is not a
+		 * scale.
+		 */
+		$shape = isset( $clean['shape'] ) ? (string) $clean['shape'] : (string) self::get( 'shape' );
 
-			if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $shape ) ) ) {
-				$clean['max'] = 2;
-			} else {
-				$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), (int) $options['max'] ) );
-			}
+		if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $shape ) ) ) {
+			$clean['max'] = 2;
+		} elseif ( isset( $options['ratings']['text'] ) && is_array( $options['ratings']['text'] ) ) {
+			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), count( $options['ratings']['text'] ) ) );
+		} elseif ( isset( $options['max'] ) ) {
+			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), (int) $options['max'] ) );
 		}
 
 		if ( isset( $options['allowtorate'] ) ) {

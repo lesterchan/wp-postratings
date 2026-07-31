@@ -204,7 +204,6 @@ class WP_PostRatings_Settings {
 
 		$fields = array(
 			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
-			array( 'max', __( 'Max Ratings:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
@@ -389,34 +388,6 @@ class WP_PostRatings_Settings {
 			echo '<span>' . esc_html( $shape['label'] ) . '</span>';
 			echo '</p>' . "\n";
 		}
-	}
-
-	/**
-	 * How many steps the scale has.
-	 *
-	 * @return void
-	 */
-	public static function field_max() {
-		$options = WP_PostRatings_Options::get();
-		?>
-		<input type="number" min="<?php echo esc_attr( WP_PostRatings_Options::MIN_SCALE ); ?>"
-			max="<?php echo esc_attr( WP_PostRatings_Options::max_scale() ); ?>"
-			id="wp_postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
-			value="<?php echo esc_attr( $options['max'] ); ?>" class="small-text"
-			<?php echo $options['customrating'] ? 'readonly="readonly"' : ''; ?> />
-		<input type="hidden" id="wp_postratings_customrating" name="<?php echo esc_attr( self::name( 'customrating' ) ); ?>"
-			value="<?php echo esc_attr( $options['customrating'] ); ?>" />
-		<p class="description">
-			<?php
-			printf(
-				/* translators: 1: smallest scale, 2: largest scale. */
-				esc_html__( 'Between %1$s and %2$s. Fixed at two for an up or down rating, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ),
-				esc_html( number_format_i18n( WP_PostRatings_Options::MIN_SCALE ) ),
-				esc_html( number_format_i18n( WP_PostRatings_Options::max_scale() ) )
-			);
-			?>
-		</p>
-		<?php
 	}
 
 	/**
@@ -871,6 +842,7 @@ class WP_PostRatings_Settings {
 					<th scope="col"><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></th>
+					<th scope="col"><span class="screen-reader-text"><?php esc_html_e( 'Actions', 'wp-postratings' ); ?></span></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -929,15 +901,40 @@ class WP_PostRatings_Settings {
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color_off][]"
 								value="<?php echo esc_attr( '' !== $color_off ? $color_off : $unrated_color ); ?>" />
 						</td>
+						<td>
+							<?php if ( ! $is_updown ) : ?>
+								<button type="button" class="button-link wp-postratings-remove-step"
+									<?php disabled( $max <= WP_PostRatings_Options::MIN_SCALE ); ?>>
+									<?php esc_html_e( 'Remove', 'wp-postratings' ); ?>
+									<span class="screen-reader-text">
+										<?php
+										/* translators: %s: position on the rating scale. */
+										printf( esc_html__( 'step %s', 'wp-postratings' ), esc_html( number_format_i18n( $i ) ) );
+										?>
+									</span>
+								</button>
+							<?php endif; ?>
+						</td>
 					</tr>
 				<?php endfor; ?>
 			</tbody>
 		</table>
 		<p>
+			<?php if ( ! $is_updown ) : ?>
+				<button type="button" class="button" id="wp-postratings-add-step"
+					<?php disabled( $max >= WP_PostRatings_Options::max_scale() ); ?>>
+					<?php esc_html_e( 'Add a step', 'wp-postratings' ); ?>
+				</button>
+			<?php endif; ?>
 			<button type="button" class="button" id="wp-postratings-reset-colors">
 				<?php esc_html_e( 'Reset to default', 'wp-postratings' ); ?>
 			</button>
 		</p>
+		<?php if ( $is_updown ) : ?>
+			<p class="description">
+				<?php esc_html_e( 'An up or down rating is always two steps, so there is nothing to add or remove.', 'wp-postratings' ); ?>
+			</p>
+		<?php endif; ?>
 		<?php
 	}
 
@@ -962,27 +959,68 @@ class WP_PostRatings_Settings {
 			wp_die( -1, 400 );
 		}
 
-		$max = max( 1, min( 100, $max ) );
+		$is_updown = WP_PostRatings_Shapes::is_updown( $image );
+		$max       = $is_updown
+			? 2
+			: max( WP_PostRatings_Options::MIN_SCALE, min( WP_PostRatings_Options::max_scale(), $max ) );
 
-		if ( $custom && 2 === $max ) {
-			$texts  = array( __( 'Vote Down', 'wp-postratings' ), __( 'Vote Up', 'wp-postratings' ) );
+		/*
+		 * What the screen already has, rather than defaults for everything.
+		 *
+		 * Adding or removing a step re-renders this table, and rebuilding it
+		 * from defaults would throw away every label, value and colour the site
+		 * had typed -- for the rows that are not changing as well as the one that
+		 * is. So the current state comes with the request and is padded or
+		 * trimmed to the new length.
+		 */
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- check_ajax_referer() ran at the top of this handler.
+		$texts      = isset( $_GET['text'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_GET['text'] ) ) : array();
+		$values     = isset( $_GET['value'] ) ? array_map( 'intval', (array) wp_unslash( $_GET['value'] ) ) : array();
+		$colors     = isset( $_GET['color'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_GET['color'] ) ) : array();
+		$colors_off = isset( $_GET['color_off'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_GET['color_off'] ) ) : array();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $is_updown ) {
+			$texts = array_pad( array_slice( $texts, 0, 2 ), 2, '' );
+
+			// Signed, not 1 and 2: an up/down vote is a direction, so the average
+			// of a post's votes is meaningful -- -1 is unanimously down, +1
+			// unanimously up, and zero is even. On a scale of 1 and 2 the same
+			// numbers say nothing without knowing the scale.
 			$values = array( -1, 1 );
-		} else {
-			$texts  = array();
-			$values = array();
 
-			for ( $i = 1; $i <= $max; $i++ ) {
-				$texts[] = 1 === $i
-					/* translators: %s: number of stars. */
-					? sprintf( __( '%s Star', 'wp-postratings' ), number_format_i18n( $i ) )
-					/* translators: %s: number of stars. */
-					: sprintf( __( '%s Stars', 'wp-postratings' ), number_format_i18n( $i ) );
-
-				$values[] = $i;
+			if ( '' === $texts[0] ) {
+				$texts[0] = __( 'Vote Down', 'wp-postratings' );
 			}
+
+			if ( '' === $texts[1] ) {
+				$texts[1] = __( 'Vote Up', 'wp-postratings' );
+			}
+		} else {
+			for ( $i = 1; $i <= $max; $i++ ) {
+				if ( ! isset( $texts[ $i - 1 ] ) || '' === $texts[ $i - 1 ] ) {
+					/* translators: %s: position on the rating scale. */
+					$texts[ $i - 1 ] = sprintf( _n( '%s Star', '%s Stars', $i, 'wp-postratings' ), number_format_i18n( $i ) );
+				}
+
+				if ( ! isset( $values[ $i - 1 ] ) || 0 === $values[ $i - 1 ] ) {
+					$values[ $i - 1 ] = $i;
+				}
+			}
+
+			$texts  = array_slice( $texts, 0, $max );
+			$values = array_slice( $values, 0, $max );
 		}
 
-		self::render_rating_fields( $custom, $max, $image, $texts, $values );
+		self::render_rating_fields(
+			$is_updown ? 1 : 0,
+			$max,
+			$image,
+			$texts,
+			$values,
+			array_slice( $colors, 0, $max ),
+			array_slice( $colors_off, 0, $max )
+		);
 
 		// wp_die() rather than exit: an AJAX handler ending in a bare exit is
 		// untestable, because it takes the test runner with it. With no message
