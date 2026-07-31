@@ -83,12 +83,12 @@ class WP_PostRatings_Comments {
 	 * @return int
 	 */
 	public static function rating_for( $comment_author ) {
-		$logging_method = (int) WP_PostRatings_Options::get( 'logging_method' );
+		$check_method = (int) WP_PostRatings_Options::get( 'check_method' );
 
 		$rating = isset( self::$ratings[ $comment_author ] ) ? (int) self::$ratings[ $comment_author ] : 0;
 
-		// Logging by username means the IP was never recorded to match against.
-		if ( 4 === $logging_method || 0 !== $rating ) {
+		// Checking by username means the IP was never matched against.
+		if ( 4 === $check_method || 0 !== $rating ) {
 			return $rating;
 		}
 

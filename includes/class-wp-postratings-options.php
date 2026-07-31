@@ -99,7 +99,7 @@ class WP_PostRatings_Options {
 			'postratings_max'                   => array( 'max' ),
 			'postratings_customrating'          => array( 'customrating' ),
 			'postratings_allowtorate'           => array( 'allowtorate' ),
-			'postratings_logging_method'        => array( 'logging_method' ),
+			'postratings_logging_method'        => array( 'check_method' ),
 			'postratings_ratingstext'           => array( 'ratings', 'text' ),
 			'postratings_ratingsvalue'          => array( 'ratings', 'value' ),
 			'postratings_template_vote'         => array( 'templates', 'vote' ),
@@ -344,7 +344,7 @@ class WP_PostRatings_Options {
 			'max'              => 5,
 			'customrating'     => 0,
 			'allowtorate'      => 2,
-			'logging_method'   => 3,
+			'check_method'     => 3,
 			'ip_header'        => '',
 			'schema_type'      => '',
 			// The plugin's half of the WP-Stats contract. Its own setting now,
@@ -577,9 +577,9 @@ class WP_PostRatings_Options {
 			$clean['allowtorate'] = in_array( $allowtorate, array( 0, 1, 2, 3 ), true ) ? $allowtorate : $defaults['allowtorate'];
 		}
 
-		if ( isset( $options['logging_method'] ) ) {
-			$logging_method          = (int) $options['logging_method'];
-			$clean['logging_method'] = in_array( $logging_method, array( 0, 1, 2, 3, 4 ), true ) ? $logging_method : $defaults['logging_method'];
+		if ( isset( $options['check_method'] ) ) {
+			$check_method          = (int) $options['check_method'];
+			$clean['check_method'] = in_array( $check_method, array( 0, 1, 2, 3, 4 ), true ) ? $check_method : $defaults['check_method'];
 		}
 
 		if ( isset( $options['ip_header'] ) ) {
@@ -811,6 +811,24 @@ class WP_PostRatings_Options {
 			}
 
 			unset( $merged['image'] );
+		}
+
+		/*
+		 * And 'check_method' now, not 'logging_method'.
+		 *
+		 * Same case as 'image' above: the released row is
+		 * postratings_logging_method, which legacy_map() folds straight into the
+		 * new key, so this catches only a 2.0.0 beta. The numbers are unchanged
+		 * -- what moved is the name, because the setting never chose whether to
+		 * log anything. Left behind, the site would silently fall back to
+		 * checking by cookie and IP.
+		 */
+		if ( isset( $merged['logging_method'] ) ) {
+			if ( ! isset( $merged['check_method'] ) ) {
+				$merged['check_method'] = $merged['logging_method'];
+			}
+
+			unset( $merged['logging_method'] );
 		}
 
 		// The 16 image folders became 9 SVG shapes in 2.0.0, and the colour and

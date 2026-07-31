@@ -90,7 +90,7 @@ class WP_PostRatings_Rating {
 	public static function has_rated( $post_id ) {
 		$rated = false;
 
-		switch ( (int) WP_PostRatings_Options::get( 'logging_method' ) ) {
+		switch ( (int) WP_PostRatings_Options::get( 'check_method' ) ) {
 			case 0:
 				// Do not log.
 				$rated = false;
@@ -202,8 +202,17 @@ class WP_PostRatings_Rating {
 	/**
 	 * The visitor's address, before hashing.
 	 *
-	 * Only a header the site has explicitly named is trusted; left blank -- the
-	 * default -- nothing but REMOTE_ADDR is consulted.
+	 * REMOTE_ADDR unless the site says otherwise, because a proxy header is
+	 * whatever the client typed into it: a visitor who can vary X-Forwarded-For
+	 * can vote as many times as they can be bothered to, and the repeat check
+	 * that reads this is the only thing standing in the way.
+	 *
+	 * A site genuinely behind a proxy opts in the same three ways as the other
+	 * plugins in this collection: by naming the header on the settings screen,
+	 * by defining WP_POSTRATINGS_TRUST_PROXY, or through the
+	 * wp_postratings_trust_proxy filter. Naming the header is the narrow
+	 * version -- exactly one header, the one the site's own load balancer sets
+	 * -- and the constant is the broad one, meaning "the usual seven".
 	 *
 	 * @return string
 	 */
@@ -217,11 +226,53 @@ class WP_PostRatings_Rating {
 
 		$ip_header = (string) WP_PostRatings_Options::get( 'ip_header' );
 
+		/**
+		 * Filters whether the usual proxy headers may be trusted.
+		 *
+		 * Lets the decision be made per request -- trusting the header only when
+		 * the request actually arrives from a known load balancer, say -- rather
+		 * than once in wp-config.php.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param bool $trust Defaults to the WP_POSTRATINGS_TRUST_PROXY constant.
+		 */
+		$trust_proxy = (bool) apply_filters(
+			'wp_postratings_trust_proxy',
+			defined( 'WP_POSTRATINGS_TRUST_PROXY' ) && WP_POSTRATINGS_TRUST_PROXY
+		);
+
 		if ( '' !== $ip_header && ! empty( $_SERVER[ $ip_header ] ) ) {
 			$forwarded = self::parse_ip_header( sanitize_text_field( wp_unslash( $_SERVER[ $ip_header ] ) ) );
 
 			if ( '' !== $forwarded ) {
 				$ip = $forwarded;
+			}
+		} elseif ( $trust_proxy ) {
+			// The named header wins when there is one: it is the site telling us
+			// exactly which hop to believe, and guessing after that would be
+			// second-guessing an answer we already have.
+			$headers = array(
+				'HTTP_CF_CONNECTING_IP',
+				'HTTP_CLIENT_IP',
+				'HTTP_X_FORWARDED_FOR',
+				'HTTP_X_FORWARDED',
+				'HTTP_X_CLUSTER_CLIENT_IP',
+				'HTTP_FORWARDED_FOR',
+				'HTTP_FORWARDED',
+			);
+
+			foreach ( $headers as $name ) {
+				if ( empty( $_SERVER[ $name ] ) ) {
+					continue;
+				}
+
+				$candidate = self::parse_ip_header( sanitize_text_field( wp_unslash( $_SERVER[ $name ] ) ) );
+
+				if ( '' !== $candidate ) {
+					$ip = $candidate;
+					break;
+				}
 			}
 		}
 
@@ -522,9 +573,16 @@ class WP_PostRatings_Rating {
 		 */
 		$rate_userid = apply_filters( 'wp_postratings_process_ratings_userid', get_current_user_id() );
 
-		$logging_method = (int) WP_PostRatings_Options::get( 'logging_method' );
+		$check_method = (int) WP_PostRatings_Options::get( 'check_method' );
 
-		if ( 1 === $logging_method || 3 === $logging_method ) {
+		/*
+		 * headers_sent() as well as the setting: a cookie cannot be set once
+		 * anything has been written to the response, so the call is guaranteed to
+		 * fail and its only effect is a "headers already sent" warning. A theme
+		 * or another plugin echoing before this runs is enough to trigger it, and
+		 * a warning printed into a JSON response is what breaks the vote.
+		 */
+		if ( ( 1 === $check_method || 3 === $check_method ) && ! headers_sent() ) {
 			/**
 			 * Filters when the "already rated" cookie expires.
 			 *
@@ -546,16 +604,37 @@ class WP_PostRatings_Rating {
 			setcookie( 'rated_' . $post_id, $rating_value, $expiration, $cookie_path );
 		}
 
-		/**
-		 * Filters whether to write a log row whatever the logging method says.
+		/*
+		 * Every vote is recorded, whatever the repeat-vote check is set to.
 		 *
-		 * @since 1.87
+		 * Those were one setting until 2.0.0: choosing "Do Not Log" or "Logged
+		 * By Cookie" -- now "Nothing" and "Cookie" -- meant no row was written,
+		 * so the ratings log, the logs screen and the WP-Stats numbers were all
+		 * empty on a site that had simply picked a lighter check. The two are
+		 * not the same question. What a returning visitor is matched against is
+		 * a matter of how strict the site wants to be; whether its votes are
+		 * recorded at all is not something that should follow from it.
 		 *
-		 * @param bool $always_log Whether to log unconditionally.
+		 * The 1.87 filter wp_postratings_always_log asked for exactly this and
+		 * is gone: it is now the behaviour, and a filter that forces the default
+		 * is a filter that does nothing. The one below is its opposite, for
+		 * sites that would rather not keep the record.
 		 */
-		$always_log = apply_filters( 'wp_postratings_always_log', false );
 
-		if ( $logging_method > 1 || $always_log ) {
+		/**
+		 * Filters whether this vote is written to the ratings log.
+		 *
+		 * The post's own score and vote count are post meta and are updated
+		 * either way; this is the per-vote row behind the logs screen, the
+		 * IP and username checks, and the WP-Stats figures. Returning false
+		 * leaves those without anything to read.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param bool $log     Whether to record the vote.
+		 * @param int  $post_id Post being rated.
+		 */
+		if ( apply_filters( 'wp_postratings_log_rating', true, $post_id ) ) {
 			$wpdb->query(
 				$wpdb->prepare(
 					"INSERT INTO {$wpdb->ratings} VALUES (%d, %d, %s, %d, %d, %s, %s, %s, %d)",

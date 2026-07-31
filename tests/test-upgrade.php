@@ -89,7 +89,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( '5', $options['max'] );
 		$this->assertSame( '1', $options['allowtorate'] );
-		$this->assertSame( '2', $options['logging_method'] );
+		$this->assertSame( '2', $options['check_method'] );
 		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $options['ip_header'] );
 		// The two rich snippet toggles are gone, and an install that had them on
 		// lands on "No" rather than being given a type it never chose. The old

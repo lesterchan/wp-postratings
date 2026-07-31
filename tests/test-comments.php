@@ -124,7 +124,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_username_ignores_the_ip() {
-		$this->set_option( 'logging_method', 4 );
+		$this->set_option( 'check_method', 4 );
 
 		$this->log_rating( $this->post_id, 5, 'Guest', '203.0.113.50' );
 		$this->enter_loop( $this->post_id );

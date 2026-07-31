@@ -111,15 +111,15 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		global $wpdb;
 
 		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$other = $this->make_site();
 
 		switch_to_blog( $other );
 		WP_PostRatings_Install::install();
-		$options                   = WP_PostRatings_Options::get();
-		$options['allowtorate']    = 2;
-		$options['logging_method'] = 2;
+		$options                 = WP_PostRatings_Options::get();
+		$options['allowtorate']  = 2;
+		$options['check_method'] = 2;
 		WP_PostRatings_Options::update( $options );
 
 		$post_id = $this->make_rated_post( 0, 0 );

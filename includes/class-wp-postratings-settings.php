@@ -210,7 +210,7 @@ class WP_PostRatings_Settings {
 		$fields = array(
 			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
-			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
+			array( 'check_method', __( 'Check For Repeat Votes:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'schema_type', __( 'Show ratings in Google results?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
 			array( 'stats_display', __( 'Show A Ratings Section On The Stats Page?', 'wp-postratings' ), self::SECTION_STATS, $settings ),
@@ -476,18 +476,39 @@ class WP_PostRatings_Settings {
 	/**
 	 * How a repeat vote is recognised.
 	 *
+	 * Called the "Ratings Logging Method" until 2.0.0, with choices reading "Do
+	 * Not Log" and "Logged By Cookie". It never chose whether to log: it chose
+	 * what a returning visitor is matched against, and "Do Not Log" meant "let
+	 * everyone vote as often as they like". The two readings pointed opposite
+	 * ways -- a site that wanted a record of its votes picked the setting that
+	 * stopped the plugin keeping one.
+	 *
 	 * @return void
 	 */
-	public static function field_logging_method() {
-		$current = (int) WP_PostRatings_Options::get( 'logging_method' );
+	public static function field_check_method() {
+		$current = (int) WP_PostRatings_Options::get( 'check_method' );
+
+		// The stored numbers are unchanged: 1 has meant the cookie and 2 the
+		// address since long before this screen was rewritten, and renumbering
+		// them would quietly reinterpret the setting on every existing site.
+		$methods = array(
+			0 => __( 'Do Not Check', 'wp-postratings' ),
+			1 => __( 'Check By Cookie', 'wp-postratings' ),
+			2 => __( 'Check By IP Address', 'wp-postratings' ),
+			3 => __( 'Check By Cookie And IP Address', 'wp-postratings' ),
+			4 => __( 'Check By Username', 'wp-postratings' ),
+		);
 		?>
-		<select id="wp_postratings_logging_method" name="<?php echo esc_attr( self::name( 'logging_method' ) ); ?>">
-			<option value="0" <?php selected( $current, 0 ); ?>><?php esc_html_e( 'Do Not Log', 'wp-postratings' ); ?></option>
-			<option value="1" <?php selected( $current, 1 ); ?>><?php esc_html_e( 'Logged By Cookie', 'wp-postratings' ); ?></option>
-			<option value="2" <?php selected( $current, 2 ); ?>><?php esc_html_e( 'Logged By IP', 'wp-postratings' ); ?></option>
-			<option value="3" <?php selected( $current, 3 ); ?>><?php esc_html_e( 'Logged By Cookie And IP', 'wp-postratings' ); ?></option>
-			<option value="4" <?php selected( $current, 4 ); ?>><?php esc_html_e( 'Logged By Username', 'wp-postratings' ); ?></option>
+		<select id="wp_postratings_check_method" name="<?php echo esc_attr( self::name( 'check_method' ) ); ?>">
+			<?php foreach ( $methods as $value => $label ) : ?>
+				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current, $value ); ?>>
+					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
 		</select>
+		<p class="description">
+			<?php esc_html_e( 'Every vote is recorded in the ratings log whichever of these is chosen. This decides only what a returning visitor is matched against. Do Not Check lets anyone rate a post as often as they like.', 'wp-postratings' ); ?>
+		</p>
 		<?php
 	}
 
@@ -505,10 +526,11 @@ class WP_PostRatings_Settings {
 			<br />
 			<?php
 			printf(
-				/* translators: 1, 2: example header names, wrapped in <code>. */
-				esc_html__( 'Example: %1$s or %2$s.', 'wp-postratings' ),
+				/* translators: 1: an example header name, 2: the WP_POSTRATINGS_TRUST_PROXY constant, 3: the wp_postratings_trust_proxy filter, all in code spans. */
+				esc_html__( 'Example: %1$s. You can also opt in with the %2$s constant or the %3$s filter, which trust the usual proxy headers instead of one you name.', 'wp-postratings' ),
 				'<code>HTTP_X_FORWARDED_FOR</code>',
-				'<code>HTTP_CF_CONNECTING_IP</code>'
+				'<code>WP_POSTRATINGS_TRUST_PROXY</code>',
+				'<code>wp_postratings_trust_proxy</code>'
 			);
 			?>
 			<br />

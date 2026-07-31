@@ -70,7 +70,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 'thumb', $options['shape'], 'the up/down set did not map to its shape' );
 		$this->assertSame( '2', $options['max'] );
-		$this->assertSame( '4', $options['logging_method'] );
+		$this->assertSame( '4', $options['check_method'] );
 		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'] );
 		$this->assertSame( array( -1, 1 ), $options['ratings']['value'] );
 	}
@@ -232,14 +232,14 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	public function test_enumerated_settings_are_constrained() {
 		$clean = WP_PostRatings_Options::sanitize(
 			array(
-				'allowtorate'    => 99,
-				'logging_method' => 99,
-				'max'            => -5,
+				'allowtorate'  => 99,
+				'check_method' => 99,
+				'max'          => -5,
 			)
 		);
 
 		$this->assertSame( 2, $clean['allowtorate'] );
-		$this->assertSame( 3, $clean['logging_method'] );
+		$this->assertSame( 3, $clean['check_method'] );
 		$this->assertSame( WP_PostRatings_Options::MIN_SCALE, $clean['max'], 'a negative scale was not floored at the minimum' );
 	}
 

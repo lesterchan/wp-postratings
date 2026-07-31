@@ -190,7 +190,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_rated_visitor_sees_results() {
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$post_id = $this->make_rated_post( 1, 4 );
 		$this->log_rating( $post_id, 4, 'Guest', '203.0.113.1' );

@@ -26,7 +26,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		parent::set_up();
 
 		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'logging_method', 0 );
+		$this->set_option( 'check_method', 0 );
 	}
 
 	/**
@@ -165,7 +165,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_ip_blocks_a_repeat_vote() {
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
@@ -184,7 +184,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_ip_allows_a_different_address() {
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
@@ -204,7 +204,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_the_log_row_stores_a_hashed_address() {
 		global $wpdb;
 
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
@@ -216,18 +216,69 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * "Do not log" writes no row and does not block a repeat.
+	 * "Do Not Check" lets a visitor rate again, and still records both votes.
+	 *
+	 * Until 2.0.0 these were one setting: the lighter checks wrote no row, so a
+	 * site that only wanted repeat voting allowed also lost its ratings log, its
+	 * logs screen and its WP-Stats figures, with nothing on the screen saying so.
 	 *
 	 * @return void
 	 */
-	public function test_not_logging_writes_no_row() {
+	public function test_not_checking_allows_a_repeat_and_logs_both() {
 		global $wpdb;
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
+		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
-		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
+		$this->assertStringNotContainsString( 'Already Rated', $output, 'not checking still blocked a repeat vote' );
+		$this->assertSame( 2, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'both votes should be in the log' );
+	}
+
+	/**
+	 * A row is written whatever the repeat-vote check is set to.
+	 *
+	 * @return void
+	 */
+	public function test_every_check_method_logs_the_vote() {
+		global $wpdb;
+
+		foreach ( array( 0, 1, 2, 3, 4 ) as $method ) {
+			$this->set_option( 'check_method', $method );
+
+			$wpdb->query( "DELETE FROM {$wpdb->ratings}" );
+
+			$post_id = $this->make_rated_post( 0, 0 );
+
+			WP_PostRatings_Rating::process_vote( $post_id, 4 );
+
+			$this->assertSame(
+				1,
+				(int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ),
+				'check method ' . $method . ' wrote no log row'
+			);
+		}
+	}
+
+	/**
+	 * A site that would rather not keep the record can say so.
+	 *
+	 * @return void
+	 */
+	public function test_the_log_filter_can_turn_the_row_off() {
+		global $wpdb;
+
+		add_filter( 'wp_postratings_log_rating', '__return_false' );
+
+		$post_id = $this->make_rated_post( 0, 0 );
+
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
+
+		remove_filter( 'wp_postratings_log_rating', '__return_false' );
+
+		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'the filter did not stop the log row' );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'the vote itself should still count' );
 	}
 
 	/**
@@ -236,7 +287,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_username_blocks_the_same_user() {
-		$this->set_option( 'logging_method', 4 );
+		$this->set_option( 'check_method', 4 );
 		wp_set_current_user( self::factory()->user->create() );
 
 		$post_id = $this->make_rated_post( 0, 0 );
@@ -259,7 +310,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_the_logged_title_is_not_double_slashed() {
 		global $wpdb;
 
-		$this->set_option( 'logging_method', 2 );
+		$this->set_option( 'check_method', 2 );
 
 		$post_id = self::factory()->post->create(
 			array(
