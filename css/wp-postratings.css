@@ -34,6 +34,23 @@
 	padding-inline-start: 8px;
 }
 
+/* The picker compares shapes, so the previews use the built-in colours whatever
+   the ratings below have been set to -- otherwise every row is the colour of
+   the current rating and the one thing being chosen is the one thing not shown.
+
+   Literals, not var( ..., fallback ): the strip carries the rating's colour as
+   an inline custom property, which would win over any fallback. These have to
+   stay equal to WP_PostRatings_Options::COLOR_RATED and COLOR_UNRATED, and
+   test_the_built_in_colours_match_the_stylesheet holds them there. */
+.wp-postratings-shape-preview .wp-postratings-track {
+	color: #d4d4d8;
+}
+
+.wp-postratings-shape-preview .wp-postratings-fill,
+.wp-postratings-shape-preview .wp-postratings-single {
+	color: #f5a623;
+}
+
 /* The shape picker on the settings screen: one shape per line.
    No display of its own. A <p> is already block-level, so the rows separate
    without help -- they only ever shared a line because .wp-postratings used to

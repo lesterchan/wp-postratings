@@ -280,6 +280,14 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			$css,
 			'the unrated fallback in the stylesheet does not match the constant'
 		);
+
+		// The picker's previews pin the same two colours as literals, because an
+		// inline custom property on the strip would win over a var() fallback.
+		$preview = substr( $css, strpos( $css, '.wp-postratings-shape-preview' ) );
+		$preview = substr( $preview, 0, strpos( $preview, '.wp-postratings-shape-row' ) );
+
+		$this->assertStringContainsString( 'color: ' . WP_PostRatings_Options::COLOR_UNRATED . ';', $preview, 'the picker preview unrated colour drifted from the constant' );
+		$this->assertStringContainsString( 'color: ' . WP_PostRatings_Options::COLOR_RATED . ';', $preview, 'the picker preview rated colour drifted from the constant' );
 	}
 
 	/**

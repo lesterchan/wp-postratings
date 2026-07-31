@@ -52,6 +52,15 @@ class WP_PostRatings_Settings {
 	const SECTION_RATINGS = 'wp_postratings_ratings';
 
 	/**
+	 * How many steps a shape is previewed at in the picker.
+	 *
+	 * Fixed, so the rows differ only by shape.
+	 *
+	 * @var int
+	 */
+	const PREVIEW_STEPS = 5;
+
+	/**
 	 * What happens while a vote is in flight.
 	 */
 
@@ -204,7 +213,6 @@ class WP_PostRatings_Settings {
 
 		$fields = array(
 			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
-			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
@@ -252,7 +260,16 @@ class WP_PostRatings_Settings {
 	 * @return void
 	 */
 	public static function section_ratings() {
-		echo '<p>' . esc_html__( 'What each step on the scale is called, and what it is worth.', 'wp-postratings' ) . '</p>';
+		echo '<p>' . esc_html__( 'What each step on the scale is called, what it is worth, and how it looks.', 'wp-postratings' ) . '</p>';
+
+		/*
+		 * Rendered here rather than as a settings field, so it is not a row of
+		 * the form-table and does not sit squeezed into the value column beside
+		 * an empty label. It is a table of its own with six columns; the label
+		 * "Rating Text / Value:" beside it said less than the column headings
+		 * already do.
+		 */
+		self::field_ratings();
 	}
 
 	/**
@@ -369,18 +386,26 @@ class WP_PostRatings_Settings {
 				esc_attr( $is_updown ? 2 : $max )
 			);
 
-			// The preview keeps its own .wp-postratings wrapper, which is
-			// inline-flex and is what lays the glyphs out. The row around it is a
-			// separate flex container -- putting both classes on one element made
-			// the row's display win and the shapes vanished.
-			echo '<span class="wp-postratings">';
+			/*
+			 * The preview keeps its own .wp-postratings wrapper, which is
+			 * inline-flex and is what lays the glyphs out. The row around it is a
+			 * separate flex container -- putting both classes on one element made
+			 * the row's display win and the shapes vanished.
+			 *
+			 * Always five steps, in the built-in colours. This is a comparison of
+			 * shapes, so every row has to differ only by shape: drawing each at
+			 * the site's own scale and colours made a three step set look shorter
+			 * than a five step one and both look like whatever had been chosen,
+			 * which is the one thing the picker is not asking about.
+			 */
+			echo '<span class="wp-postratings wp-postratings-shape-preview">';
 
 			if ( $is_updown ) {
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' ) );
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' ) );
 			} else {
 				// Filled to 60% so the preview shows both states at once.
-				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' ) );
+				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, self::PREVIEW_STEPS, self::PREVIEW_STEPS * 0.6, $name, '' ) );
 			}
 
 			echo '</span>';
@@ -408,9 +433,6 @@ class WP_PostRatings_Settings {
 	public static function field_ratings() {
 		$options = WP_PostRatings_Options::get();
 		?>
-		<p>
-			<span class="spinner" id="wp-postratings-spinner"></span>
-		</p>
 		<div id="wp-postratings-rating-fields"
 			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
 			<?php
@@ -929,6 +951,13 @@ class WP_PostRatings_Settings {
 			<button type="button" class="button" id="wp-postratings-reset-colors">
 				<?php esc_html_e( 'Reset to default', 'wp-postratings' ); ?>
 			</button>
+			<?php
+			// Beside the buttons that cause the rebuild, rather than in a
+			// paragraph of its own above the table -- where it was an empty line
+			// on every page load, since a spinner is invisible until the script
+			// marks it active.
+			?>
+			<span class="spinner" id="wp-postratings-spinner"></span>
 		</p>
 		<?php if ( $is_updown ) : ?>
 			<p class="description">
