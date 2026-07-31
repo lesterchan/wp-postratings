@@ -240,7 +240,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 2, $clean['allowtorate'] );
 		$this->assertSame( 3, $clean['logging_method'] );
-		$this->assertSame( 1, $clean['max'] );
+		$this->assertSame( WP_PostRatings_Options::MIN_SCALE, $clean['max'], 'a negative scale was not floored at the minimum' );
 	}
 
 	/**
@@ -325,7 +325,9 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'max' => 0 ) );
 
-		$this->assertSame( 1, $clean['max'], 'a scale of zero was not floored at one' );
+		// Three, not one: one or two points is not a scale. Two opposing actions
+		// is an up/down rating, which is a type of its own.
+		$this->assertSame( WP_PostRatings_Options::MIN_SCALE, $clean['max'], 'a scale of zero was not floored at the minimum' );
 	}
 
 	/**
@@ -675,5 +677,40 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		// Five in the track and five in the fill.
 		$this->assertSame( 10, substr_count( $html, 'wp-postratings-item' ), 'the scale no longer draws a glyph per step' );
+	}
+	/**
+	 * An up/down rating is always two, whatever the form posts.
+	 *
+	 * It is a pair of opposing actions, so there is nothing to choose. The Max
+	 * field is readonly for it on the screen, and this is the half that holds
+	 * when the form is posted by something other than the screen.
+	 */
+	public function test_an_up_down_rating_is_always_two_steps() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape' => 'thumb',
+				'max'   => 7,
+			)
+		);
+
+		$this->assertSame( 2, $clean['max'], 'an up/down rating accepted a scale' );
+	}
+
+	/**
+	 * Every shape belongs to exactly one of the two rating types.
+	 *
+	 * The type is derived from the shape and never stored beside it, so this is
+	 * what makes that derivation total: a shape registered through
+	 * wp_postratings_shapes without a type would otherwise silently become a
+	 * scale.
+	 */
+	public function test_every_shape_has_a_rating_type() {
+		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
+			$this->assertContains(
+				$shape['type'],
+				array( WP_PostRatings_Shapes::SCALE, WP_PostRatings_Shapes::UPDOWN ),
+				$name . ' has no rating type'
+			);
+		}
 	}
 }

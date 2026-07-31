@@ -116,6 +116,50 @@
 		}
 	} );
 
+	/**
+	 * Show only the shapes belonging to the chosen rating type.
+	 *
+	 * The type is not stored: a shape knows whether it is a scale or a pair of
+	 * opposing actions, so choosing a type is really choosing among that type's
+	 * shapes. Picking one selects the first of them, which keeps the form
+	 * consistent with itself without a second setting to disagree with.
+	 *
+	 * @param {string} type The chosen type.
+	 * @return {void}
+	 */
+	function showShapesOfType( type ) {
+		let first = null;
+
+		Array.prototype.forEach.call(
+			document.querySelectorAll( '.wp-postratings-shape-row' ),
+			function( row ) {
+				const matches = row.dataset.ratingType === type;
+
+				row.hidden = ! matches;
+
+				if ( matches && ! first ) {
+					first = row.querySelector( '.wp-postratings-shape-choice' );
+				}
+			},
+		);
+
+		const checked = document.querySelector( '.wp-postratings-shape-choice:checked' );
+
+		if ( first && ( ! checked || checked.closest( '.wp-postratings-shape-row' ).hidden ) ) {
+			first.checked = true;
+			applyImageChoice( first );
+			refreshRatingFields();
+		}
+	}
+
+	document.addEventListener( 'change', function( event ) {
+		const type = event.target.closest( '.wp-postratings-rating-type' );
+
+		if ( type ) {
+			showShapesOfType( type.value );
+		}
+	} );
+
 	// The scale is a number input, so it changes without a click.
 	document.addEventListener( 'change', function( event ) {
 		if ( event.target.closest( '#wp_postratings_max' ) ) {

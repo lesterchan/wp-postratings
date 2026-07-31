@@ -210,6 +210,18 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * The smallest scale a rating may use.
+	 *
+	 * Three. One or two points is not a scale -- two opposing actions is an
+	 * up/down set, which is a different rating type with its own shapes and its
+	 * own renderer, and offering it here as "a scale of 2" is the misreading
+	 * that had a two step rating drawn as a strip of identical thumbs.
+	 *
+	 * @var int
+	 */
+	const MIN_SCALE = 3;
+
+	/**
 	 * The largest scale a rating may use.
 	 *
 	 * Ten by default. Every point on the scale is a glyph the visitor has to
@@ -415,7 +427,18 @@ class WP_PostRatings_Options {
 		}
 
 		if ( isset( $options['max'] ) ) {
-			$clean['max'] = max( 1, min( self::max_scale(), (int) $options['max'] ) );
+			/*
+			 * An up/down set is always two: it is a pair of opposing actions, so
+			 * there is nothing to choose. A scale starts at three, because one or
+			 * two points is not a scale.
+			 */
+			$shape = isset( $clean['shape'] ) ? (string) $clean['shape'] : (string) self::get( 'shape' );
+
+			if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $shape ) ) ) {
+				$clean['max'] = 2;
+			} else {
+				$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), (int) $options['max'] ) );
+			}
 		}
 
 		if ( isset( $options['allowtorate'] ) ) {

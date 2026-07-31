@@ -318,12 +318,49 @@ class WP_PostRatings_Settings {
 		$selected = WP_PostRatings_Template::resolve_shape( $options['shape'] );
 		$max      = max( 1, (int) $options['max'] );
 
+		/*
+		 * The type is derived from the chosen shape, never stored beside it.
+		 * A shape already knows whether it is a scale or a pair of opposing
+		 * actions, and two places holding one fact is how they end up
+		 * disagreeing.
+		 */
+		$current_type = WP_PostRatings_Shapes::is_updown( $selected )
+			? WP_PostRatings_Shapes::UPDOWN
+			: WP_PostRatings_Shapes::SCALE;
+
+		$types = array(
+			WP_PostRatings_Shapes::SCALE  => __( 'Scale', 'wp-postratings' ),
+			WP_PostRatings_Shapes::UPDOWN => __( 'Up or down', 'wp-postratings' ),
+		);
+
+		echo '<p class="wp-postratings-type-choice">';
+
+		foreach ( $types as $type => $label ) {
+			printf(
+				'<label><input type="radio" name="wp-postratings-rating-type" value="%1$s" class="wp-postratings-rating-type"%2$s /> %3$s</label> ',
+				esc_attr( $type ),
+				checked( $current_type, $type, false ),
+				esc_html( $label )
+			);
+		}
+
+		echo '</p>';
+
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'A scale rates out of several points. Up or down is a pair of opposing actions, so it is always two and shows one glyph.', 'wp-postratings' )
+		);
+
 		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
 			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
 
 			// Wrapped in .wp-postratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
-			echo '<p class="wp-postratings-shape-row">';
+			printf(
+				'<p class="wp-postratings-shape-row" data-rating-type="%1$s"%2$s>',
+				esc_attr( $shape['type'] ),
+				$shape['type'] === $current_type ? '' : ' hidden'
+			);
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />',
 				esc_attr( self::name( 'shape' ) ),
@@ -362,7 +399,8 @@ class WP_PostRatings_Settings {
 	public static function field_max() {
 		$options = WP_PostRatings_Options::get();
 		?>
-		<input type="number" min="1" max="<?php echo esc_attr( WP_PostRatings_Options::max_scale() ); ?>"
+		<input type="number" min="<?php echo esc_attr( WP_PostRatings_Options::MIN_SCALE ); ?>"
+			max="<?php echo esc_attr( WP_PostRatings_Options::max_scale() ); ?>"
 			id="wp_postratings_max" name="<?php echo esc_attr( self::name( 'max' ) ); ?>"
 			value="<?php echo esc_attr( $options['max'] ); ?>" class="small-text"
 			<?php echo $options['customrating'] ? 'readonly="readonly"' : ''; ?> />
@@ -371,8 +409,9 @@ class WP_PostRatings_Settings {
 		<p class="description">
 			<?php
 			printf(
-				/* translators: %s: the largest scale allowed. */
-				esc_html__( 'Between 1 and %s. Fixed at two for an up/down shape, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ),
+				/* translators: 1: smallest scale, 2: largest scale. */
+				esc_html__( 'Between %1$s and %2$s. Fixed at two for an up or down rating, which is a pair of opposing actions rather than a scale.', 'wp-postratings' ),
+				esc_html( number_format_i18n( WP_PostRatings_Options::MIN_SCALE ) ),
 				esc_html( number_format_i18n( WP_PostRatings_Options::max_scale() ) )
 			);
 			?>
