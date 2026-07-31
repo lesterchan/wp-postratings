@@ -328,9 +328,9 @@ class WP_PostRatings_Settings {
 
 			// Wrapped in .wp-postratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
-			echo '<p class="wp-postratings">';
+			echo '<p class="wp-postratings wp-postratings-shape-row">';
 			printf(
-				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />&nbsp;&nbsp;&nbsp;',
+				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />',
 				esc_attr( self::name( 'shape' ) ),
 				esc_attr( $name ),
 				checked( $selected, $name, false ),
@@ -346,7 +346,7 @@ class WP_PostRatings_Settings {
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' ) );
 			}
 
-			echo '&nbsp;&nbsp;&nbsp;' . esc_html( $shape['label'] );
+			echo '<span>' . esc_html( $shape['label'] ) . '</span>';
 			echo '</p>' . "\n";
 		}
 	}

@@ -57,26 +57,31 @@ class WP_PostRatings_Admin {
 	 * @return void
 	 */
 	public static function menu() {
+		/*
+		 * Settings first, the log second.
+		 *
+		 * The usual arrangement in this collection is the data screen first and
+		 * Settings last, which is right when the data screen is the thing you
+		 * came for -- Manage Polls, the download list. This one is not: it is a
+		 * record of who rated what, useful for spotting abuse and for little
+		 * else, while the settings are what a site owner actually opens. So the
+		 * menu opens on the settings, and the log is named for what it is.
+		 *
+		 * The parent slug is the settings page, which is what puts it first;
+		 * WordPress orders submenus by registration and the parent's own entry
+		 * is always registered first.
+		 */
 		$hook = add_menu_page(
-			__( 'Ratings', 'wp-postratings' ),
+			__( 'Ratings Settings', 'wp-postratings' ),
 			self::menu_title(),
 			WP_PostRatings_Settings::capability(),
-			self::PAGE,
-			array( __CLASS__, 'render_manage' ),
+			WP_PostRatings_Settings::page(),
+			array( 'WP_PostRatings_Settings', 'render' ),
 			'dashicons-star-filled'
 		);
 
 		add_submenu_page(
-			self::PAGE,
-			__( 'Manage Ratings', 'wp-postratings' ),
-			__( 'Manage Ratings', 'wp-postratings' ),
-			WP_PostRatings_Settings::capability(),
-			self::PAGE,
-			array( __CLASS__, 'render_manage' )
-		);
-
-		add_submenu_page(
-			self::PAGE,
+			WP_PostRatings_Settings::page(),
 			__( 'Ratings Settings', 'wp-postratings' ),
 			__( 'Settings', 'wp-postratings' ),
 			WP_PostRatings_Settings::capability(),
@@ -84,7 +89,18 @@ class WP_PostRatings_Admin {
 			array( 'WP_PostRatings_Settings', 'render' )
 		);
 
-		add_action( 'load-' . $hook, array( __CLASS__, 'load_manage' ) );
+		$logs = add_submenu_page(
+			WP_PostRatings_Settings::page(),
+			__( 'Ratings Logs', 'wp-postratings' ),
+			__( 'Logs', 'wp-postratings' ),
+			WP_PostRatings_Settings::capability(),
+			self::PAGE,
+			array( __CLASS__, 'render_manage' )
+		);
+
+		unset( $hook );
+
+		add_action( 'load-' . $logs, array( __CLASS__, 'load_manage' ) );
 	}
 
 	/**

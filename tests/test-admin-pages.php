@@ -303,4 +303,48 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 'highest_rated', $instance['type'] );
 	}
+	/**
+	 * Settings comes first and the log second, both under one menu.
+	 *
+	 * The reverse of the arrangement everywhere else in this collection, and
+	 * deliberately so: the log records who rated what, which is for spotting
+	 * abuse, while the settings are what a site owner actually opens. Asserted
+	 * because menu order is registration order, and registration order is the
+	 * kind of thing an edit reshuffles without anyone noticing.
+	 */
+	public function test_settings_comes_before_the_log() {
+		global $menu, $submenu;
+
+		$menu    = array();
+		$submenu = array();
+
+		// add_submenu_page() returns false and registers nothing when the current
+		// user lacks the capability, so the entries this asserts on only exist for
+		// somebody who may see them. The capability is the plugin's own.
+		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
+		wp_set_current_user( $user );
+
+		// menu() is called directly, not through do_action( 'admin_menu' ):
+		// WP_PostRatings_Admin::init() is behind is_admin(), which is false under
+		// PHPUnit, so the action has nothing hooked to it here.
+		WP_PostRatings_Admin::menu();
+
+		$parent = WP_PostRatings_Settings::page();
+
+		$this->assertArrayHasKey( $parent, $submenu, 'the plugin registered no submenu under its settings page' );
+
+		$slugs = wp_list_pluck( $submenu[ $parent ], 2 );
+
+		$this->assertSame(
+			array( $parent, WP_PostRatings_Admin::PAGE ),
+			array_values( $slugs ),
+			'Settings must come first and the log second'
+		);
+
+		$labels = wp_list_pluck( $submenu[ $parent ], 0 );
+
+		$this->assertSame( 'Settings', $labels[0], 'the first entry is not Settings' );
+		$this->assertSame( 'Logs', $labels[1], 'the log is not called Logs' );
+	}
 }

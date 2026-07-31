@@ -27,6 +27,14 @@
 	gap: 0.5em;
 }
 
+/* The shape picker on the settings screen: one shape per line.
+   .wp-postratings is inline-flex so a rating sits in a line of text, which puts
+   every shape in the picker on the same line. This wins by coming after it. */
+.wp-postratings-shape-row {
+	display: flex;
+	margin-block: 0.5em;
+}
+
 /* --- the shape itself ---------------------------------------------------- */
 
 .wp-postratings-item {

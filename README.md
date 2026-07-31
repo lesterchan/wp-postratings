@@ -628,6 +628,14 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 **The settings screen moved.** It is at **Ratings -> Settings** now, and what used to be two menu entries — Ratings Options and Ratings Templates — are two tabs of that one page. Any bookmark to `admin.php?page=wp-postratings-options` should become `admin.php?page=wp-postratings-settings`. The capability is unchanged: it is still `manage_ratings`.
 
+**Google rich snippets are off, and now have a type to choose.** The two settings — "Enable Google Rich Snippets?" and "Enable Ratings In Rich Snippets?" — are one setting, **Show ratings in Google results?**, and it starts at **No**.
+
+They had become the same decision, and the markup they produced could not do what it promised. It declared `schema.org/Article`, and Google shows a rating only for Book, Course, Event, Local Business, Movie, Organization, Product, Recipe, Software App and a few subtypes. Article, BlogPosting and NewsArticle are not on that list, so on an ordinary post it never produced a rich result at all. Nothing that worked is being taken away.
+
+**Unless you filtered `wp_postratings_schema_itemtype`.** If you used that filter to declare a supported type — a recipe blog pointing it at `Recipe`, a review site at `Product` — you *were* getting a real rich result, and it stops until you pick that same type in the new setting. The filter still runs and still has the last word, so an existing filter keeps working as long as the setting is not left at No.
+
+Pick a type only if your posts genuinely are that thing. Structured data has to describe the page, and marking a blog post as a `Product` to collect stars is what Google calls spammy structured markup — it costs a manual action, not a ranking.
+
 **Your rating images are replaced by shapes.** The 16 image sets are now 9 shapes drawn with CSS. Whichever set you had chosen is mapped to the matching shape automatically. If you had added your own folder of images, it falls back to stars — the FAQ shows how to register a shape instead, which survives updates.
 
 **Custom CSS almost certainly needs updating.** Every class and id now starts with the plugin slug:
