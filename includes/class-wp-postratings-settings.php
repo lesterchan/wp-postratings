@@ -404,7 +404,17 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * The per-rating text and value table, plus its refresh button.
+	 * The per-rating text and value table.
+	 *
+	 * There is no rebuild button. The table follows the shape and the scale on
+	 * its own, because it has no independent meaning: a five point scale needs
+	 * five rows and a thumbs up/down needs two, so a table that disagrees with
+	 * the shape above it is simply wrong. Asking somebody to press a button to
+	 * make one part of a form agree with another is asking them to do the
+	 * form's job.
+	 *
+	 * The nonce moves onto the container the rows are written into, since that
+	 * is what is left for the script to find.
 	 *
 	 * @return void
 	 */
@@ -412,13 +422,10 @@ class WP_PostRatings_Settings {
 		$options = WP_PostRatings_Options::get();
 		?>
 		<p>
-			<button type="button" class="button" id="wp-postratings-refresh-ratings"
-				data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
-				<?php esc_html_e( 'Rebuild this table for the chosen shape and scale', 'wp-postratings' ); ?>
-			</button>
 			<span class="spinner" id="wp-postratings-spinner"></span>
 		</p>
-		<div id="wp-postratings-rating-fields">
+		<div id="wp-postratings-rating-fields"
+			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
 			<?php
 			self::render_rating_fields(
 				$options['customrating'],

@@ -15,11 +15,10 @@
 	 * @return {void}
 	 */
 	function refreshRatingFields() {
-		const button = document.getElementById( 'wp-postratings-refresh-ratings' );
 		const target = document.getElementById( 'wp-postratings-rating-fields' );
 		const image = document.querySelector( 'input[name$="[shape]"]:checked' );
 
-		if ( ! button || ! target || ! image ) {
+		if ( ! target || ! image ) {
 			return;
 		}
 
@@ -33,7 +32,7 @@
 
 		const query = new URLSearchParams( {
 			action: 'wp_postratings_rating_fields',
-			_ajax_nonce: button.dataset.nonce,
+			_ajax_nonce: target.dataset.nonce,
 			custom: custom ? custom.value : '0',
 			max: max ? max.value : '0',
 			shape: image.value,
@@ -82,6 +81,13 @@
 		}
 	}
 
+	// The scale is a number input, so it changes without a click.
+	document.addEventListener( 'change', function( event ) {
+		if ( event.target.closest( '#wp_postratings_max' ) ) {
+			refreshRatingFields();
+		}
+	} );
+
 	document.addEventListener( 'click', function( event ) {
 		const restore = event.target.closest( '.wp-postratings-restore-template' );
 
@@ -99,16 +105,11 @@
 			return;
 		}
 
-		if ( event.target.closest( '#wp-postratings-refresh-ratings' ) ) {
-			event.preventDefault();
-			refreshRatingFields();
-			return;
-		}
-
 		const imageChoice = event.target.closest( '.wp-postratings-shape-choice' );
 
 		if ( imageChoice ) {
 			applyImageChoice( imageChoice );
+			refreshRatingFields();
 			return;
 		}
 

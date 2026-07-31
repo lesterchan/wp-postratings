@@ -36,9 +36,8 @@ describe( 'wp-postratings settings screen', () => {
 				<input type="hidden" id="wp_postratings_customrating" value="0" />
 
 
-				<button type="button" id="wp-postratings-refresh-ratings" data-nonce="nonce123"></button>
 				<span class="spinner" id="wp-postratings-spinner"></span>
-				<div id="wp-postratings-rating-fields">old rows</div>
+				<div id="wp-postratings-rating-fields" data-nonce="nonce123">old rows</div>
 
 				<textarea id="wp_postratings_template_vote">CUSTOM VOTE</textarea>
 				<textarea id="wp_postratings_template_text">CUSTOM TEXT</textarea>
@@ -119,10 +118,10 @@ describe( 'wp-postratings settings screen', () => {
 		expect( document.getElementById( 'wp_postratings_template_vote' ).value ).toBe( 'CUSTOM VOTE' );
 	} );
 
-	// --- the rating fields refresh ----------------------------------------
+	// --- the rating fields follow the shape and the scale ------------------
 
 	it( 'requests rebuilt rating rows', async () => {
-		click( '#wp-postratings-refresh-ratings' );
+		click( '.wp-postratings-shape-choice' );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
@@ -138,7 +137,7 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'swaps the response into the table', async () => {
-		click( '#wp-postratings-refresh-ratings' );
+		click( '.wp-postratings-shape-choice' );
 
 		await vi.waitFor( () =>
 			expect( document.getElementById( 'wp-postratings-rating-fields' ).innerHTML ).toBe(
@@ -148,10 +147,9 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'sends the shape that is actually selected', async () => {
-		document.querySelector( 'input[value="thumbs"]' ).checked = true;
-		document.querySelector( 'input[value="stars"]' ).checked = false;
-
-		click( '#wp-postratings-refresh-ratings' );
+		// Click the thumbs radio itself: clicking a radio is what selects it, so
+		// choosing a shape and rebuilding for it are one gesture now.
+		click( 'input[value="thumbs"]' );
 
 		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
@@ -163,7 +161,7 @@ describe( 'wp-postratings settings screen', () => {
 	it( 'shows the spinner while the request is in flight and hides it after', async () => {
 		const spinner = document.getElementById( 'wp-postratings-spinner' );
 
-		click( '#wp-postratings-refresh-ratings' );
+		click( '.wp-postratings-shape-choice' );
 
 		expect( spinner.classList.contains( 'is-active' ) ).toBe( true );
 
@@ -175,19 +173,36 @@ describe( 'wp-postratings settings screen', () => {
 
 		const spinner = document.getElementById( 'wp-postratings-spinner' );
 
-		click( '#wp-postratings-refresh-ratings' );
+		click( '.wp-postratings-shape-choice' );
 
 		await vi.waitFor( () => expect( spinner.classList.contains( 'is-active' ) ).toBe( false ) );
 	} );
 
 	it( 'does nothing when no shape is selected', () => {
+		// Driven through the scale, not through a shape: clicking a shape is what
+		// selects it, so that path can never find nothing checked. Changing the
+		// scale can.
 		document.querySelectorAll( 'input[name="postratings_options[shape]"]' ).forEach( ( input ) => {
 			input.checked = false;
 		} );
 
-		click( '#wp-postratings-refresh-ratings' );
+		const max = document.getElementById( 'wp_postratings_max' );
+		max.value = '7';
+		max.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
 
 		expect( window.fetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'rebuilds when the scale changes', async () => {
+		const max = document.getElementById( 'wp_postratings_max' );
+		max.value = '7';
+		max.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		const url = new URL( window.fetch.mock.calls[ 0 ][ 0 ] );
+
+		expect( url.searchParams.get( 'max' ) ).toBe( '7' );
 	} );
 
 	// --- choosing a shape --------------------------------------------
