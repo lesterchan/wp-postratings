@@ -302,4 +302,27 @@ describe( 'wp-postratings settings screen', () => {
 		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [] );
 		expect( url.searchParams.getAll( 'value[]' ) ).toEqual( [] );
 	} );
+
+	it( 'resets to the new type\'s length when the type changes', async () => {
+		// Three rows on screen and a five step default, so switching from the
+		// up/down set back to a scale asks for five rather than three.
+		click( 'input[value="thumbs"]' );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		expect(
+			new URL( window.fetch.mock.calls[ 0 ][ 0 ] ).searchParams.get( 'max' )
+		).toBe( '2' );
+
+		window.fetch.mockClear();
+
+		click( 'input[value="stars"]' );
+
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		expect(
+			new URL( window.fetch.mock.calls[ 0 ][ 0 ] ).searchParams.get( 'max' )
+		).toBe( '5' );
+	} );
+
 } );

@@ -25,6 +25,17 @@
 	 * @return {number} The number of steps to render.
 	 */
 	function steps( delta ) {
+		const chosen = document.querySelector( '.wp-postratings-shape-choice:checked' );
+
+		// A type change starts the new type from its own default length -- five
+		// for a scale, two for an up/down pair -- rather than from however many
+		// rows the old type happened to have. Anything else keeps what is on
+		// screen, so changing one scale's shape for another does not throw the
+		// table away.
+		if ( 'reset' === delta ) {
+			return chosen ? Number( chosen.dataset.max ) : 0;
+		}
+
 		const target = document.getElementById( 'wp-postratings-rating-fields' );
 		const rows = target ? target.querySelectorAll( 'tbody tr' ).length : 0;
 
@@ -65,7 +76,7 @@
 		 * the two types, different values: an up/down vote is signed, so carrying
 		 * its -1 into a scale left the first row at -1.
 		 */
-		if ( 'number' === typeof delta ) {
+		if ( 'reset' !== delta ) {
 			[ 'text', 'value', 'color', 'color_off' ].forEach( function( field ) {
 				Array.prototype.forEach.call(
 					target.querySelectorAll( '[name$="[' + field + '][]"]' ),
@@ -115,16 +126,13 @@
 	 */
 	function applyImageChoice( input ) {
 		const custom = document.getElementById( 'wp_postratings_customrating' );
-		const max = document.getElementById( 'wp_postratings_max' );
+		const changedType = custom && custom.value !== input.dataset.custom;
 
 		if ( custom ) {
 			custom.value = input.dataset.custom;
 		}
 
-		if ( max ) {
-			max.value = input.dataset.max;
-			max.readOnly = '1' === input.dataset.custom;
-		}
+		return changedType;
 	}
 
 	/**
@@ -193,8 +201,10 @@
 
 		if ( first && ( ! checked || checked.closest( '.wp-postratings-shape-row' ).hidden ) ) {
 			first.checked = true;
+			// Always a reset: this only runs when the chosen type has no shape
+			// selected, which is exactly the type change.
 			applyImageChoice( first );
-			refreshRatingFields();
+			refreshRatingFields( 'reset' );
 		}
 	}
 
@@ -226,8 +236,9 @@
 		const imageChoice = event.target.closest( '.wp-postratings-shape-choice' );
 
 		if ( imageChoice ) {
-			applyImageChoice( imageChoice );
-			refreshRatingFields();
+			const changedType = applyImageChoice( imageChoice );
+
+			refreshRatingFields( changedType ? 'reset' : 0 );
 			return;
 		}
 

@@ -176,6 +176,40 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * Everything a rating type starts with.
+	 *
+	 * One definition, used when a type is chosen and when the table is rebuilt,
+	 * so the screen and the saved settings cannot start from different places.
+	 *
+	 * @param string $shape Shape name, already resolved.
+	 *
+	 * @return array The 'max' and the whole 'ratings' array.
+	 */
+	public static function defaults_for_type( $shape ) {
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return array(
+				'max'     => 2,
+				'ratings' => array(
+					'text'      => array( __( 'Vote Down', 'wp-postratings' ), __( 'Vote Up', 'wp-postratings' ) ),
+					// Signed: a direction, not a position, so the average of a
+					// post's votes runs from -1 to +1 with zero in the middle.
+					'value'     => array( -1, 1 ),
+					// Empty, so the built-in green and red apply.
+					'color'     => array( '', '' ),
+					'color_off' => array( '', '' ),
+				),
+			);
+		}
+
+		$defaults = self::defaults();
+
+		return array(
+			'max'     => $defaults['max'],
+			'ratings' => $defaults['ratings'],
+		);
+	}
+
+	/**
 	 * The colour a step uses, stored or built in.
 	 *
 	 * One place answers this, because the settings screen and the renderer both
@@ -427,14 +461,18 @@ class WP_PostRatings_Options {
 		}
 
 		/*
-		 * Changing the rating type discards what belonged to the old one.
+		 * Changing the rating type starts the new one from its own defaults.
 		 *
-		 * A scale and an up/down pair do not share labels, values or colours: "1
-		 * Star" means nothing on a thumbs set, an up/down vote is signed where a
-		 * scale is not, and the built-in green and red only apply to one of them.
+		 * Not a merge, and not a partial clear: everything the table holds
+		 * belongs to one type or the other. "1 Star" means nothing on a thumbs
+		 * set, an up/down vote is signed where a scale is not, and green and red
+		 * are the built-ins for one while orange is the built-in for the other.
 		 * Carrying any of it across is what left a scale's first row at -1 after
-		 * switching away from thumbs, and left an up/down pair showing the star
-		 * colours it had inherited.
+		 * switching away from thumbs, and left an up/down pair wearing the
+		 * colours its stars had.
+		 *
+		 * So both directions reset: to Vote Down and Vote Up at -1 and +1 with
+		 * green and red, or to a five point scale with orange.
 		 *
 		 * The screen rebuilds the table on a shape change and posts the new
 		 * defaults, so this is the half that holds when the shape is changed by
@@ -444,10 +482,12 @@ class WP_PostRatings_Options {
 		$now = isset( $clean['shape'] ) ? $clean['shape'] : $was;
 
 		if ( WP_PostRatings_Shapes::is_updown( $was ) !== WP_PostRatings_Shapes::is_updown( $now ) ) {
-			unset( $clean['ratings']['color'], $clean['ratings']['color_off'] );
+			$fresh = self::defaults_for_type( $now );
 
-			$clean['ratings']['color']     = array();
-			$clean['ratings']['color_off'] = array();
+			$clean['ratings'] = $fresh['ratings'];
+			$clean['max']     = $fresh['max'];
+
+			return $clean;
 		}
 
 		/*

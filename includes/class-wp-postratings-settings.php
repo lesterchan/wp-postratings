@@ -383,7 +383,7 @@ class WP_PostRatings_Settings {
 				esc_attr( $name ),
 				checked( $selected, $name, false ),
 				$is_updown ? 1 : 0,
-				esc_attr( $is_updown ? 2 : $max )
+				esc_attr( WP_PostRatings_Options::defaults_for_type( $name )['max'] )
 			);
 
 			/*
@@ -1038,21 +1038,16 @@ class WP_PostRatings_Settings {
 		$colors_off = isset( $_GET['color_off'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_GET['color_off'] ) ) : array();
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
+		$fresh = WP_PostRatings_Options::defaults_for_type( $image );
+
 		if ( $is_updown ) {
-			$texts = array_pad( array_slice( $texts, 0, 2 ), 2, '' );
+			$texts  = array_pad( array_slice( $texts, 0, 2 ), 2, '' );
+			$values = $fresh['ratings']['value'];
 
-			// Signed, not 1 and 2: an up/down vote is a direction, so the average
-			// of a post's votes is meaningful -- -1 is unanimously down, +1
-			// unanimously up, and zero is even. On a scale of 1 and 2 the same
-			// numbers say nothing without knowing the scale.
-			$values = array( -1, 1 );
-
-			if ( '' === $texts[0] ) {
-				$texts[0] = __( 'Vote Down', 'wp-postratings' );
-			}
-
-			if ( '' === $texts[1] ) {
-				$texts[1] = __( 'Vote Up', 'wp-postratings' );
+			foreach ( array( 0, 1 ) as $step ) {
+				if ( '' === $texts[ $step ] ) {
+					$texts[ $step ] = $fresh['ratings']['text'][ $step ];
+				}
 			}
 		} else {
 			for ( $i = 1; $i <= $max; $i++ ) {

@@ -812,25 +812,48 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		);
 	}
 	/**
-	 * Changing the rating type discards the old type's colours.
+	 * Changing the rating type starts the new one from its own defaults.
 	 *
-	 * A scale's colours mean nothing on an up/down pair -- and worse, they hide
-	 * the built-in green and red, so switching to thumbs kept whatever the stars
-	 * had been given. The same leak in the other direction put -1 in a scale's
-	 * first row.
+	 * Everything the table holds belongs to one type or the other, so this is a
+	 * reset rather than a merge: labels, values and colours all come from the
+	 * type being switched to. Carrying any of it across is what left a scale's
+	 * first row at -1, and left an up/down pair wearing its stars' colours.
+	 *
+	 * @dataProvider data_type_switches
+	 *
+	 * @param string $from  Shape switched away from.
+	 * @param string $to    Shape switched to.
+	 * @param int    $max   Steps expected afterwards.
+	 * @param string $text  First label expected.
+	 * @param int    $value First value expected.
 	 */
-	public function test_changing_the_rating_type_clears_the_old_colours() {
+	public function test_changing_the_rating_type_resets_to_its_defaults( $from, $to, $max, $text, $value ) {
 		$options                         = WP_PostRatings_Options::get();
-		$options['shape']                = 'star';
-		$options['max']                  = 5;
+		$options['shape']                = $from;
 		$options['ratings']['color']     = array_fill( 0, 5, '#e32400' );
-		$options['ratings']['color_off'] = array_fill( 0, 5, '#d4d4d8' );
+		$options['ratings']['color_off'] = array_fill( 0, 5, '#cccccc' );
 		WP_PostRatings_Options::update( $options );
 
-		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'thumb' ) );
+		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => $to ) );
 
-		$this->assertSame( array(), $clean['ratings']['color'], 'the old rated colours survived a type change' );
-		$this->assertSame( array(), $clean['ratings']['color_off'], 'the old unrated colours survived a type change' );
+		$this->assertSame( $max, $clean['max'], 'the scale did not reset' );
+		$this->assertSame( $text, $clean['ratings']['text'][0], 'the labels did not reset' );
+		$this->assertSame( $value, $clean['ratings']['value'][0], 'the values did not reset' );
+		$this->assertSame( '', $clean['ratings']['color'][0], 'a colour survived the type change' );
+		$this->assertSame( '', $clean['ratings']['color_off'][0], 'a colour survived the type change' );
+		$this->assertCount( $max, $clean['ratings']['color'], 'the colours are not one per step' );
+	}
+
+	/**
+	 * Both directions.
+	 *
+	 * @return array
+	 */
+	public function data_type_switches() {
+		return array(
+			'scale to up/down' => array( 'star', 'thumb', 2, 'Vote Down', -1 ),
+			'up/down to scale' => array( 'thumb', 'star', 5, '1 Star', 1 ),
+		);
 	}
 
 	/**
