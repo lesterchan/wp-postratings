@@ -286,7 +286,7 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 	public function test_every_directory_has_an_index_php() {
 		$root = dirname( __DIR__ );
 
-		$directories = array( '', '/bin', '/css', '/includes', '/js', '/tests', '/tests/js' );
+		$directories = array( '', '/bin', '/css', '/includes', '/js', '/tests', '/tests/e2e', '/tests/js' );
 
 		foreach ( $directories as $directory ) {
 			$this->assertFileExists( $root . $directory . '/index.php', ( '' === $directory ? '/' : $directory ) . ' has no index.php' );

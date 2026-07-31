@@ -7,7 +7,7 @@
 #
 #   bin/test-e2e.sh                       # the whole suite, headless
 #   bin/test-e2e.sh --headed              # watch it happen
-#   bin/test-e2e.sh settings.spec.js      # one file
+#   bin/test-e2e.sh admin.spec.js         # one file
 #   bin/test-e2e.sh --debug               # step through it
 #
 set -euo pipefail
@@ -15,7 +15,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # The tests environment, not the development one: the suite creates posts and
-# saves settings, and doing that to the environment somebody is looking at is
+# changes settings, and doing that to the environment somebody is looking at is
 # rude. The port comes from .wp-env.json, so a second checkout on other ports
 # needs no edit here.
 PORT=$(node -p "require('./.wp-env.json').testsPort")
@@ -40,15 +40,18 @@ npx --yes @wordpress/env run tests-cli wp plugin activate "$SLUG"
 # And a theme, for the same reason. The tests environment ships with every
 # bundled theme installed and none of them active, because PHPUnit does not
 # render a page -- so the front end answers 200 with an empty body, and a
-# browser test looking for the rating control waits for something that was
-# never going to arrive.
+# browser test looking for anything on it waits for something that was never
+# going to arrive.
 #
-# A classic theme on purpose: the rating is a shortcode in post content, and
-# twentytwentyone puts that in one predictable .entry-content rather than
-# through a block template.
+# A classic theme on purpose: it puts post content in one predictable
+# .entry-content rather than through a block template.
 echo "==> Activating a theme in the tests environment"
 npx --yes @wordpress/env run tests-cli wp theme activate twentytwentyone
 
+# Running PHPUnit reinstalls this same database, which takes the plugin, the
+# theme and the logged-in session with it. Both steps above are therefore run
+# every time rather than once, so the suite repairs whatever the last command
+# left behind.
 echo "==> Installing the browser if it is missing"
 npx playwright install chromium
 
