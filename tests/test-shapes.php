@@ -255,34 +255,50 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 */
 
 	/**
-	 * The colours ship as a setting, with sensible defaults.
+	 * The built-in colours are hex, and match the stylesheet's own fallbacks.
+	 *
+	 * There is no site-wide colour setting any more -- a colour per rating says
+	 * everything it said. These constants are what an untouched swatch shows and
+	 * what an empty rating colour falls back to, so they have to agree with the
+	 * var() fallbacks in the stylesheet or the screen lies about the front end.
 	 *
 	 * @return void
 	 */
-	public function test_the_colours_are_a_setting() {
-		$colors = WP_PostRatings_Options::get( 'colors' );
+	public function test_the_built_in_colours_match_the_stylesheet() {
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_RATED );
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_UNRATED );
 
-		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['on'] );
-		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{3,6}$/i', $colors['off'] );
+		$css = file_get_contents( dirname( __DIR__ ) . '/css/wp-postratings.css' );
+
+		$this->assertStringContainsString(
+			'var( --wp-postratings-color-on, ' . WP_PostRatings_Options::COLOR_RATED . ' )',
+			$css,
+			'the rated fallback in the stylesheet does not match the constant'
+		);
+		$this->assertStringContainsString(
+			'var( --wp-postratings-color-off, ' . WP_PostRatings_Options::COLOR_UNRATED . ' )',
+			$css,
+			'the unrated fallback in the stylesheet does not match the constant'
+		);
 	}
 
 	/**
-	 * A chosen colour is stored.
+	 * A chosen colour is stored, per rating.
 	 *
 	 * @return void
 	 */
 	public function test_a_chosen_colour_is_stored() {
 		$clean = WP_PostRatings_Options::sanitize(
 			array(
-				'colors' => array(
-					'on'  => '#e5484d',
-					'off' => '#eeeeee',
+				'ratings' => array(
+					'color'     => array( '#e5484d' ),
+					'color_off' => array( '#eeeeee' ),
 				),
 			)
 		);
 
-		$this->assertSame( '#e5484d', $clean['colors']['on'] );
-		$this->assertSame( '#eeeeee', $clean['colors']['off'] );
+		$this->assertSame( array( '#e5484d' ), $clean['ratings']['color'] );
+		$this->assertSame( array( '#eeeeee' ), $clean['ratings']['color_off'] );
 	}
 
 	/**
@@ -316,30 +332,28 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The chosen colours reach the page as custom properties.
+	 * The colours reach the page from the rating, not from a site-wide row.
 	 *
-	 * Emitted once as inline CSS rather than on every element, so a page with
-	 * fifty ratings carries one declaration rather than fifty.
+	 * There is no inline stylesheet any more: a colour per rating says
+	 * everything the old site-wide pair said, so it is written onto the strip
+	 * being rendered and the stylesheet's var() fallbacks cover the rest.
 	 *
 	 * @return void
 	 */
 	public function test_the_colours_reach_the_page() {
-		$this->set_option(
-			'colors',
-			array(
-				'on'  => '#e5484d',
-				'off' => '#eeeeee',
-			)
-		);
+		$options                     = WP_PostRatings_Options::get();
+		$options['ratings']['color'] = array( '', '#e5484d', '', '', '' );
+		WP_PostRatings_Options::update( $options );
 
-		$css = WP_PostRatings::color_css();
+		$html = WP_PostRatings_Template::ratings_images( 0, 5, 2, 'star', '' );
 
-		$this->assertStringContainsString( '--wp-postratings-color-on: #e5484d', $css );
-		$this->assertStringContainsString( '--wp-postratings-color-off: #eeeeee', $css );
+		$this->assertStringContainsString( '--wp-postratings-color-on:#e5484d', $html, 'the rating colour did not reach the strip' );
 
-		// Scoped to the wrapper, as wp-polls does, not to :root.
-		$this->assertStringContainsString( '.wp-postratings {', $css );
-		$this->assertStringNotContainsString( ':root', $css );
+		// Nothing is emitted for a step with no colour of its own, so the
+		// stylesheet's own fallback stands.
+		$html = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'star', '' );
+
+		$this->assertStringNotContainsString( '--wp-postratings-color-on', $html, 'a step with no colour of its own emitted one' );
 	}
 
 	/**

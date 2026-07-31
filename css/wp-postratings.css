@@ -27,16 +27,29 @@
 	gap: 0.5em;
 }
 
+/* The rating table's first column holds a preview, and .wp-postratings is
+   inline-flex with no padding of its own, so the glyphs sat flush against the
+   cell edge while every other column had the table's own padding. */
+.wp-postratings-rating-preview {
+	padding-inline-start: 8px;
+}
+
 /* The shape picker on the settings screen: one shape per line.
-   Its own element, not .wp-postratings with an extra class. That wrapper is
-   inline-flex because a rating sits in a line of text, and it is what lays the
-   glyphs out -- overriding its display to get the rows onto separate lines took
-   the shapes with it. */
+   No display of its own. A <p> is already block-level, so the rows separate
+   without help -- they only ever shared a line because .wp-postratings used to
+   be on the <p> itself, and that is inline-flex. Putting display:flex here
+   instead made every child a flex item, including the preview, which is its own
+   flex container and stopped drawing. The lesson twice over: leave the rating
+   wrapper's layout alone. */
 .wp-postratings-shape-row {
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
 	margin-block: 0.5em;
+}
+
+/* The parts of a picker row sit on the text baseline, so the preview needs
+   aligning to the radio and the label beside it. */
+.wp-postratings-shape-row .wp-postratings {
+	vertical-align: middle;
+	margin-inline: 0.5em;
 }
 
 /* --- the shape itself ---------------------------------------------------- */

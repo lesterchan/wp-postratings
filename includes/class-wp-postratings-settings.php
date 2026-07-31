@@ -205,7 +205,6 @@ class WP_PostRatings_Settings {
 		$fields = array(
 			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'max', __( 'Max Ratings:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
-			array( 'colors', __( 'Ratings Colour:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
@@ -382,32 +381,6 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * The two rating colours.
-	 *
-	 * @return void
-	 */
-	public static function field_colors() {
-		$colors = (array) WP_PostRatings_Options::get( 'colors' );
-		?>
-		<p>
-			<label for="wp_postratings_color_on"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></label><br />
-			<input type="color" id="wp_postratings_color_on"
-				name="<?php echo esc_attr( self::name( 'colors', 'on' ) ); ?>"
-				value="<?php echo esc_attr( $colors['on'] ); ?>" />
-		</p>
-		<p>
-			<label for="wp_postratings_color_off"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></label><br />
-			<input type="color" id="wp_postratings_color_off"
-				name="<?php echo esc_attr( self::name( 'colors', 'off' ) ); ?>"
-				value="<?php echo esc_attr( $colors['off'] ); ?>" />
-		</p>
-		<p class="description">
-			<?php esc_html_e( 'Replaces the old colour variants of the image sets. Hovering uses the rated colour; override --wp-postratings-color-hover in your theme to tell them apart.', 'wp-postratings' ); ?>
-		</p>
-		<?php
-	}
-
-	/**
 	 * The per-rating text and value table.
 	 *
 	 * There is no rebuild button. The table follows the shape and the scale on
@@ -437,7 +410,8 @@ class WP_PostRatings_Settings {
 				$options['shape'],
 				(array) $options['ratings']['text'],
 				(array) $options['ratings']['value'],
-				(array) ( $options['ratings']['color'] ?? array() )
+				(array) ( $options['ratings']['color'] ?? array() ),
+				(array) ( $options['ratings']['color_off'] ?? array() )
 			);
 			?>
 		</div>
@@ -819,14 +793,29 @@ class WP_PostRatings_Settings {
 	 * @param string $image  Shape name.
 	 * @param array  $texts  Per-rating labels.
 	 * @param array  $values Per-rating scores.
-	 * @param array  $colors Per-rating colours, each '' to use the rated colour.
+	 * @param array  $colors     Per-rating rated colours, each '' for the site-wide one.
+	 * @param array  $colors_off Per-rating unrated colours, same convention.
 	 *
 	 * @return void
 	 */
-	public static function render_rating_fields( $custom, $max, $image, $texts, $values, $colors = array() ) {
-		// What an empty per-rating colour falls back to, and what the disabled
-		// input shows so the swatch is never misleadingly black.
-		$rated_color = (string) WP_PostRatings_Options::get( 'colors' )['on'];
+	public static function render_rating_fields( $custom, $max, $image, $texts, $values, $colors = array(), $colors_off = array() ) {
+		/*
+		 * What an empty per-rating colour falls back to, and what an untouched
+		 * swatch shows -- a colour input cannot be empty, and one left at #000000
+		 * reads as a choice nobody made. These match the stylesheet's own var()
+		 * fallbacks, so an empty value and the swatch agree.
+		 *
+		 * The swatches are always enabled. They used to be disabled beside a
+		 * "Default" checkbox, which meant clicking the thing that looks like a
+		 * colour picker did nothing at all. One Reset button below the table
+		 * puts every row back to the built-in colours instead.
+		 *
+		 * There is no site-wide pair any more: a colour per rating says
+		 * everything the pair did and more, and two ways to set the same thing is
+		 * how a screen ends up with a setting that quietly loses.
+		 */
+		$rated_color   = WP_PostRatings_Options::COLOR_RATED;
+		$unrated_color = WP_PostRatings_Options::COLOR_UNRATED;
 		?>
 		<table class="widefat striped">
 			<thead>
@@ -834,7 +823,8 @@ class WP_PostRatings_Settings {
 					<th scope="col"><?php esc_html_e( 'Rating', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Rating Text', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></th>
-					<th scope="col"><?php esc_html_e( 'Colour', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -842,12 +832,13 @@ class WP_PostRatings_Settings {
 					<?php
 					// Raising Max Ratings leaves these arrays shorter than the
 					// loop, so neither index is guaranteed to exist.
-					$text  = isset( $texts[ $i - 1 ] ) ? $texts[ $i - 1 ] : '';
-					$value = isset( $values[ $i - 1 ] ) ? (int) $values[ $i - 1 ] : $i;
-					$color = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
+					$text      = isset( $texts[ $i - 1 ] ) ? $texts[ $i - 1 ] : '';
+					$value     = isset( $values[ $i - 1 ] ) ? (int) $values[ $i - 1 ] : $i;
+					$color     = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
+					$color_off = isset( $colors_off[ $i - 1 ] ) ? (string) $colors_off[ $i - 1 ] : '';
 					?>
 					<tr>
-						<td class="wp-postratings">
+						<td class="wp-postratings wp-postratings-rating-preview">
 							<?php
 							// Preview of this step: an up/down set shows the one
 							// glyph for this position, anything else shows the
@@ -872,22 +863,28 @@ class WP_PostRatings_Settings {
 								value="<?php echo esc_attr( $value ); ?>" class="small-text" />
 						</td>
 						<td>
-							<label class="screen-reader-text" for="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Colour', 'wp-postratings' ); ?></label>
+							<label class="screen-reader-text" for="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></label>
 							<input type="color" id="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"
+								class="wp-postratings-color" data-default="<?php echo esc_attr( $rated_color ); ?>"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color][]"
-								value="<?php echo esc_attr( '' !== $color ? $color : $rated_color ); ?>"
-								<?php disabled( '' === $color ); ?> />
-							<label>
-								<input type="checkbox" class="wp-postratings-color-default"
-									name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color_default][]"
-									value="<?php echo esc_attr( $i ); ?>" <?php checked( '' === $color ); ?> />
-								<?php esc_html_e( 'Default', 'wp-postratings' ); ?>
-							</label>
+								value="<?php echo esc_attr( '' !== $color ? $color : $rated_color ); ?>" />
+						</td>
+						<td>
+							<label class="screen-reader-text" for="wp_postratings_ratingscoloroff_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></label>
+							<input type="color" id="wp_postratings_ratingscoloroff_<?php echo esc_attr( $i ); ?>"
+								class="wp-postratings-color" data-default="<?php echo esc_attr( $unrated_color ); ?>"
+								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color_off][]"
+								value="<?php echo esc_attr( '' !== $color_off ? $color_off : $unrated_color ); ?>" />
 						</td>
 					</tr>
 				<?php endfor; ?>
 			</tbody>
 		</table>
+		<p>
+			<button type="button" class="button" id="wp-postratings-reset-colors">
+				<?php esc_html_e( 'Reset colours to the site-wide ones', 'wp-postratings' ); ?>
+			</button>
+		</p>
 		<?php
 	}
 

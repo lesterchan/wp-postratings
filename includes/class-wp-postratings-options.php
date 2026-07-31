@@ -112,6 +112,22 @@ class WP_PostRatings_Options {
 	}
 
 	/**
+	 * The colour a rated glyph uses unless a rating overrides it.
+	 *
+	 * Matches the fallback in the stylesheet's var(), so the two cannot drift.
+	 *
+	 * @var string
+	 */
+	const COLOR_RATED = '#f5a623';
+
+	/**
+	 * The colour an unrated glyph uses unless a rating overrides it.
+	 *
+	 * @var string
+	 */
+	const COLOR_UNRATED = '#d4d4d8';
+
+	/**
 	 * The schema.org types Google will show a rating for.
 	 *
 	 * Not an arbitrary list: these are the types Google documents as eligible
@@ -193,28 +209,21 @@ class WP_PostRatings_Options {
 			// not a slice of a row six plugins wrote to at once.
 			'stats_display'    => 1,
 			'stats_most_limit' => 10,
-			// The colour used to be chosen by picking a whole image set:
-			// stars_crystal and stars_dark were the same star in another
-			// colour. Collapsing those into CSS would have left the choice
-			// only to people who write CSS, so it is a setting instead.
-			'colors'           => array(
-				'on'  => '#f5a623',
-				'off' => '#d4d4d8',
-			),
 			'ratings'          => array(
-				'text'  => array(
+				'text'      => array(
 					__( '1 Star', 'wp-postratings' ),
 					__( '2 Stars', 'wp-postratings' ),
 					__( '3 Stars', 'wp-postratings' ),
 					__( '4 Stars', 'wp-postratings' ),
 					__( '5 Stars', 'wp-postratings' ),
 				),
-				'value' => array( 1, 2, 3, 4, 5 ),
+				'value'     => array( 1, 2, 3, 4, 5 ),
 				// One per step, empty meaning "use the rated colour above". A
 				// two step scale is the case this exists for: an up vote and a
 				// down vote are opposite actions and want opposite colours,
 				// which one shared colour cannot express.
-				'color' => array( '', '', '', '', '' ),
+				'color'     => array( '', '', '', '', '' ),
+				'color_off' => array( '', '', '', '', '' ),
 			),
 			'templates'        => array(
 				'vote'         => '%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%)<br />%RATINGS_TEXT%',
@@ -301,7 +310,7 @@ class WP_PostRatings_Options {
 	private static function merge( array $defaults, array $stored ) {
 		$merged = array_merge( $defaults, $stored );
 
-		foreach ( array( 'colors', 'ratings', 'templates' ) as $group ) {
+		foreach ( array( 'ratings', 'templates' ) as $group ) {
 			if ( isset( $stored[ $group ] ) && is_array( $stored[ $group ] ) ) {
 				$merged[ $group ] = array_merge( $defaults[ $group ], $stored[ $group ] );
 			} else {
@@ -386,23 +395,6 @@ class WP_PostRatings_Options {
 			$clean['stats_most_limit'] = max( 1, (int) $options['stats_most_limit'] );
 		}
 
-		if ( isset( $options['colors'] ) && is_array( $options['colors'] ) ) {
-			foreach ( array( 'on', 'off' ) as $key ) {
-				if ( ! isset( $options['colors'][ $key ] ) ) {
-					continue;
-				}
-
-				// sanitize_hex_color() returns null for anything that is not a
-				// hex colour, which would blank the property and render the
-				// shapes invisible; the stored value stands instead.
-				$color = sanitize_hex_color( trim( (string) $options['colors'][ $key ] ) );
-
-				if ( null !== $color && '' !== $color ) {
-					$clean['colors'][ $key ] = $color;
-				}
-			}
-		}
-
 		if ( isset( $options['ratings'] ) && is_array( $options['ratings'] ) ) {
 			if ( isset( $options['ratings']['text'] ) && is_array( $options['ratings']['text'] ) ) {
 				$clean['ratings']['text'] = array_values(
@@ -420,37 +412,27 @@ class WP_PostRatings_Options {
 			}
 
 			/*
-			 * A colour input cannot be empty, so "use the rated colour" is a
-			 * checkbox beside it and the posted swatch is discarded for any step
-			 * whose box is ticked. Without this an untouched row would store
-			 * whatever the disabled input happened to show.
+			 * Both swatches are always enabled and pre-filled with the site-wide
+			 * colour, so an untouched row saves that colour rather than staying
+			 * empty. Empty is still accepted -- a row that has never been
+			 * rendered has no value -- and still means "use the site-wide one".
 			 */
-			$defaulted = array();
+			foreach ( array( 'color', 'color_off' ) as $key ) {
+				if ( ! isset( $options['ratings'][ $key ] ) || ! is_array( $options['ratings'][ $key ] ) ) {
+					continue;
+				}
 
-			if ( isset( $options['ratings']['color_default'] ) && is_array( $options['ratings']['color_default'] ) ) {
-				$defaulted = array_map( 'absint', $options['ratings']['color_default'] );
-			}
-
-			if ( isset( $options['ratings']['color'] ) && is_array( $options['ratings']['color'] ) ) {
-				$step = 0;
-
-				$clean['ratings']['color'] = array_values(
+				$clean['ratings'][ $key ] = array_values(
 					array_map(
-						static function ( $color ) use ( &$step, $defaulted ) {
-							++$step;
-
-							if ( in_array( $step, $defaulted, true ) ) {
-								return '';
-							}
-
+						static function ( $color ) {
 							// sanitize_hex_color() returns null for anything that
-							// is not a hex colour, and '' is a legitimate value
-							// here: it means "inherit the rated colour".
+							// is not a hex colour, and '' is legitimate here: it
+							// means "use the site-wide colour".
 							$color = sanitize_hex_color( trim( (string) $color ) );
 
 							return null === $color ? '' : $color;
 						},
-						$options['ratings']['color']
+						$options['ratings'][ $key ]
 					)
 				);
 			}
@@ -582,6 +564,34 @@ class WP_PostRatings_Options {
 		 * that wants it back styles .wp-postratings[aria-busy="true"].
 		 */
 		unset( $merged['ajax_style'] );
+
+		/*
+		 * The one site-wide pair of colours becomes a pair per rating.
+		 *
+		 * A site that chose its own colours keeps them: they are copied onto
+		 * every step before the row is dropped, so nothing looks different
+		 * afterwards. Copying rather than leaving the steps empty is the point --
+		 * empty means "use the built-in colour", which would silently discard the
+		 * choice.
+		 */
+		if ( isset( $merged['colors'] ) && is_array( $merged['colors'] ) ) {
+			$steps = max( 1, (int) ( $merged['max'] ?? 5 ) );
+
+			foreach ( array(
+				'on'  => 'color',
+				'off' => 'color_off',
+			) as $from => $to ) {
+				$color = isset( $merged['colors'][ $from ] ) ? (string) $merged['colors'][ $from ] : '';
+
+				if ( '' === $color || ! empty( $merged['ratings'][ $to ] ) ) {
+					continue;
+				}
+
+				$merged['ratings'][ $to ] = array_fill( 0, $steps, $color );
+			}
+
+			unset( $merged['colors'] );
+		}
 
 		/*
 		 * The key is 'shape' now, not 'image'.

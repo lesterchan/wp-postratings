@@ -384,23 +384,24 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * A ticked Default box discards whatever the disabled swatch was showing.
+	 * An empty per-rating colour is accepted and means "use the built-in one".
 	 *
-	 * A colour input cannot be empty, so the checkbox is what expresses
-	 * "inherit". Without honouring it, an untouched row would store the colour
-	 * the input happened to display.
+	 * A colour input cannot be empty, so in the screen every swatch is filled --
+	 * but a step that has never been rendered has no value at all, and that has
+	 * to survive the sanitiser rather than becoming #000000.
 	 */
-	public function test_the_default_checkbox_clears_a_rating_colour() {
+	public function test_an_empty_rating_colour_survives() {
 		$clean = WP_PostRatings_Options::sanitize(
 			array(
 				'ratings' => array(
-					'color'         => array( '#00ff00', '#ff0000' ),
-					'color_default' => array( 2 ),
+					'color'     => array( '#00ff00', '' ),
+					'color_off' => array( '', '#eeeeee' ),
 				),
 			)
 		);
 
-		$this->assertSame( array( '#00ff00', '' ), $clean['ratings']['color'], 'the ticked step kept a colour' );
+		$this->assertSame( array( '#00ff00', '' ), $clean['ratings']['color'], 'an empty rated colour was not kept empty' );
+		$this->assertSame( array( '', '#eeeeee' ), $clean['ratings']['color_off'], 'an empty unrated colour was not kept empty' );
 	}
 
 	/**
@@ -416,5 +417,36 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( '--wp-postratings-color-on:#ff0000', WP_PostRatings_Template::rating_color_style( 1.8 ), 'a fractional rating did not round to its step' );
 		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 3 ), 'a step with no colour of its own emitted one' );
 		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 0 ), 'an unrated post emitted a colour' );
+	}
+	/**
+	 * A site-wide colour is carried onto every rating rather than dropped.
+	 *
+	 * This is the data-loss case. The one site-wide pair became a pair per
+	 * rating, and a site that had chosen its own colours has to look identical
+	 * afterwards -- leaving the steps empty would mean "use the built-in
+	 * colour", silently discarding the choice.
+	 */
+	public function test_a_site_wide_colour_is_carried_onto_every_rating() {
+		delete_option( WP_PostRatings_Options::OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
+
+		update_option(
+			WP_PostRatings_Options::OPTION,
+			array(
+				'max'    => 3,
+				'colors' => array(
+					'on'  => '#e5484d',
+					'off' => '#eeeeee',
+				),
+			)
+		);
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$ratings = WP_PostRatings_Options::get( 'ratings' );
+
+		$this->assertSame( array( '#e5484d', '#e5484d', '#e5484d' ), $ratings['color'], 'the chosen rated colour was lost' );
+		$this->assertSame( array( '#eeeeee', '#eeeeee', '#eeeeee' ), $ratings['color_off'], 'the chosen unrated colour was lost' );
+		$this->assertArrayNotHasKey( 'colors', WP_PostRatings_Options::get(), 'the retired site-wide row survived' );
 	}
 }

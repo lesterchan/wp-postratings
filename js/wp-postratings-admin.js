@@ -113,6 +113,21 @@
 			return;
 		}
 
+		if ( event.target.closest( '#wp-postratings-reset-colors' ) ) {
+			event.preventDefault();
+
+			// Each swatch carries the built-in colour it resets to, so this needs
+			// to know nothing about which column it is putting back.
+			Array.prototype.forEach.call(
+				document.querySelectorAll( '.wp-postratings-color' ),
+				function( input ) {
+					input.value = input.dataset.default;
+				},
+			);
+
+			return;
+		}
+
 		const deleteButton = event.target.closest( '#wp-postratings-delete-data' );
 
 		// eslint-disable-next-line no-alert -- Deleting rating data is irreversible.

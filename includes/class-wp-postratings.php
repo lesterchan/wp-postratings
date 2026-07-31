@@ -115,7 +115,6 @@ class WP_PostRatings {
 		// No separate RTL stylesheet since 2.0.0: the rules use logical
 		// properties, so direction is handled by the browser.
 		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'wp-postratings.css' ), array(), WP_POSTRATINGS_VERSION );
-		wp_add_inline_style( 'wp-postratings', self::color_css() );
 
 		// The empty dependency array is the point: the script is vanilla
 		// ES2017 and asks for nothing since 2.0.0.
@@ -138,38 +137,6 @@ class WP_PostRatings {
 				'textWait' => __( 'Please rate only 1 item at a time.', 'wp-postratings' ),
 			)
 		);
-	}
-
-	/**
-	 * The chosen colours, as a custom property declaration.
-	 *
-	 * Emitted once as inline CSS rather than on every rating element, so a page
-	 * with fifty ratings carries one declaration rather than fifty.
-	 *
-	 * Scoped to the wrapper rather than :root, matching wp-polls. The
-	 * stylesheet carries its defaults as var() fallbacks at each use site, so
-	 * there is nothing here to lose a specificity contest against -- which is
-	 * exactly what went wrong when the defaults sat on .wp-postratings and this
-	 * was injected on :root -- and the plugin's properties stay off every other
-	 * element on the page.
-	 *
-	 * @return string
-	 */
-	public static function color_css() {
-		$colors = (array) WP_PostRatings_Options::get( 'colors' );
-
-		$on  = isset( $colors['on'] ) ? $colors['on'] : '';
-		$off = isset( $colors['off'] ) ? $colors['off'] : '';
-
-		if ( '' === $on && '' === $off ) {
-			return '';
-		}
-
-		$css  = '.wp-postratings {' . "\n";
-		$css .= '' !== $on ? "\t" . '--wp-postratings-color-on: ' . $on . ';' . "\n" : '';
-		$css .= '' !== $off ? "\t" . '--wp-postratings-color-off: ' . $off . ';' . "\n" : '';
-
-		return $css . '}' . "\n";
 	}
 
 	/**

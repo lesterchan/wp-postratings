@@ -460,8 +460,6 @@ class WP_PostRatings_Admin {
 			WP_POSTRATINGS_VERSION
 		);
 
-		wp_add_inline_style( 'wp-postratings', WP_PostRatings::color_css() );
-
 		// There is no separate admin stylesheet: postratings-admin-css.css had
 		// been an empty file since 2020 and was still being requested on every
 		// screen this plugin owns.

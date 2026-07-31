@@ -38,6 +38,9 @@ describe( 'wp-postratings settings screen', () => {
 
 				<span class="spinner" id="wp-postratings-spinner"></span>
 				<div id="wp-postratings-rating-fields" data-nonce="nonce123">old rows</div>
+				<input type="color" class="wp-postratings-color" data-default="#f5a623" value="#000000" />
+				<input type="color" class="wp-postratings-color" data-default="#d4d4d8" value="#ffffff" />
+				<button type="button" id="wp-postratings-reset-colors"></button>
 
 				<textarea id="wp_postratings_template_vote">CUSTOM VOTE</textarea>
 				<textarea id="wp_postratings_template_text">CUSTOM TEXT</textarea>
@@ -248,4 +251,18 @@ describe( 'wp-postratings settings screen', () => {
 
 		expect( event.defaultPrevented ).toBe( false );
 	} );
+
+	it( 'resets every colour to the built-in one', () => {
+		const swatches = document.querySelectorAll( '.wp-postratings-color' );
+
+		expect( swatches[ 0 ].value ).toBe( '#000000' );
+
+		click( '#wp-postratings-reset-colors' );
+
+		// Each swatch carries its own default, so one button resets both columns
+		// without knowing which is which.
+		expect( swatches[ 0 ].value ).toBe( '#f5a623' );
+		expect( swatches[ 1 ].value ).toBe( '#d4d4d8' );
+	} );
+
 } );
