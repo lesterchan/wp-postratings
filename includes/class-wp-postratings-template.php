@@ -138,6 +138,72 @@ class WP_PostRatings_Template {
 	}
 
 	/**
+	 * The one glyph an up/down rating is shown as.
+	 *
+	 * An up/down set is not a one-point-out-of-two scale, it is a pair of
+	 * opposing actions, so a rating on one is a direction rather than a
+	 * position. Drawing it as a strip of $max glyphs is what produced two
+	 * thumbs up for a two step shape: the strip repeats one shape $max times,
+	 * and for an up/down set that shape is the up one.
+	 *
+	 * @param string $shape     Shape name, already resolved.
+	 * @param string $direction Either 'up' or 'down'.
+	 * @param string $image_alt Text describing the rating.
+	 *
+	 * @return string
+	 */
+	private static function single_glyph( $shape, $direction, $image_alt ) {
+		$style = self::style_for(
+			$shape,
+			'up' === $direction ? 2 : 1,
+			array( '--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')' )
+		);
+
+		// A single glyph in normal flow, not the track-and-fill overlay: the fill
+		// layer is absolutely positioned, so on its own it leaves the strip with
+		// no intrinsic size and nothing renders.
+		return '<span class="wp-postratings-strip wp-postratings-single wp-postratings-shape-' . esc_attr( $shape ) . '"' .
+			' style="' . esc_attr( $style ) . '"' .
+			( '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"' ) .
+			'>' . self::row( 1 ) . '</span>';
+	}
+
+	/**
+	 * The inline style a rating surface carries.
+	 *
+	 * The single place a rating's appearance is composed. There are four
+	 * renderers -- the read-only strip, the single glyph a comment or a settings
+	 * preview shows, the up/down buttons and the scale's radios -- and each used
+	 * to build this string itself. That is exactly how the settings preview
+	 * stayed orange after every other surface had learned about per-rating
+	 * colours: the colour was added to one renderer and forgotten in another,
+	 * and nothing could notice, because each was correct on its own terms.
+	 *
+	 * @param string $shape Shape name, already resolved.
+	 * @param int    $step  Position on the scale, or 0 for no particular step.
+	 * @param array  $extra Further declarations, already built.
+	 *
+	 * @return string
+	 */
+	private static function style_for( $shape, $step = 0, array $extra = array() ) {
+		$declarations = array();
+
+		if ( '' !== $shape ) {
+			$declarations[] = self::shape_style( $shape );
+		}
+
+		if ( $step > 0 ) {
+			$declarations[] = self::rating_color_style( $step );
+		}
+
+		foreach ( $extra as $declaration ) {
+			$declarations[] = $declaration;
+		}
+
+		return implode( ';', array_filter( $declarations ) );
+	}
+
+	/**
 	 * The colour a given rating is shown in, if it has one of its own.
 	 *
 	 * Empty means "use the rated colour", which is what the stylesheet already
@@ -207,18 +273,17 @@ class WP_PostRatings_Template {
 		 * @param string $image_alt Text such as "4 votes, average: 3.70 out of 5".
 		 */
 		$image_alt = apply_filters( 'wp_postratings_ratings_image_alt', $image_alt );
-		$fill      = self::fill_percentage( $post_rating, $ratings_max );
-
-		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
-		$rated = self::rating_color_style( $post_rating );
-
-		if ( '' !== $rated ) {
-			$style .= ';' . $rated;
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			// Which side won, not how far along a scale: step 2 is the up vote,
+			// so an average at or above the midpoint reads as up.
+			return self::single_glyph( $shape, (float) $post_rating >= 1.5 ? 'up' : 'down', $image_alt );
 		}
 
-		$item_style = WP_PostRatings_Shapes::is_updown( $shape )
-			? '--wp-postratings-shape:var(--wp-postratings-shape-up)'
-			: '';
+		$fill = self::fill_percentage( $post_rating, $ratings_max );
+
+		$style = self::style_for( $shape, (int) round( (float) $post_rating ), array( '--wp-postratings-fill:' . $fill . '%' ) );
+
+		$item_style = '';
 
 		$html  = '<span class="wp-postratings-strip wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '"';
@@ -260,7 +325,7 @@ class WP_PostRatings_Template {
 		$post_id       = (int) $post_id;
 		$ratings_max   = max( 1, (int) $ratings_max );
 		$ratings_texts = (array) $ratings_texts;
-		$style         = self::shape_style( $shape );
+		$style         = self::style_for( $shape );
 
 		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
 			return self::updown_control( $post_id, $shape, $style, $ratings_texts );
@@ -309,7 +374,7 @@ class WP_PostRatings_Template {
 			$html .= ' value="' . esc_attr( $i ) . '" data-rating="' . esc_attr( $i ) . '" />';
 			// Each step carries its own colours, for the reason given in
 			// updown_control(): every step of the scale is on screen at once.
-			$label_style = self::rating_color_style( $i );
+			$label_style = self::style_for( '', $i );
 
 			$html .= '<label for="' . esc_attr( $id ) . '"';
 			$html .= '' !== $label_style ? ' style="' . esc_attr( $label_style ) . '"' : '';
@@ -363,7 +428,7 @@ class WP_PostRatings_Template {
 			 * the post's current rating -- which is what the read-only strip
 			 * does -- could only ever paint them the same.
 			 */
-			$button_style = self::rating_color_style( $value );
+			$button_style = self::style_for( '', $value );
 
 			$html .= '<button type="button" class="wp-postratings-' . esc_attr( $direction ) . '"';
 
@@ -397,16 +462,7 @@ class WP_PostRatings_Template {
 		// An up/down vote is one glyph, not a strip: the author voted one way
 		// or the other.
 		if ( WP_PostRatings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
-			$direction = $comment_author_rating > 0 ? 'up' : 'down';
-			$style     = self::shape_style( $shape ) . ';--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')';
-
-			// A single glyph in normal flow, not the track-and-fill overlay: the
-			// fill layer is absolutely positioned, so on its own it leaves the
-			// strip with no intrinsic size and nothing renders.
-			return '<span class="wp-postratings-strip wp-postratings-single wp-postratings-shape-' . esc_attr( $shape ) . '"' .
-				' style="' . esc_attr( $style ) . '" role="img" aria-label="' . esc_attr( $image_alt ) . '">' .
-				self::row( 1 ) .
-				'</span>';
+			return self::single_glyph( $shape, $comment_author_rating > 0 ? 'up' : 'down', $image_alt );
 		}
 
 		return self::ratings_images( 0, $ratings_max, $comment_author_rating, $shape, $image_alt );

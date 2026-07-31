@@ -587,4 +587,93 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			'the stored colour lost to the built-in one'
 		);
 	}
+	/**
+	 * The settings table's preview shows the colour the swatch beside it shows.
+	 *
+	 * Asserted against the rendered table, not against rating_color_style().
+	 * That function returned the right answer throughout while nothing called it
+	 * from the single-glyph renderer, so the screen stayed orange and every test
+	 * passed.
+	 */
+	public function test_the_table_preview_matches_its_swatch() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'thumb';
+		$options['max']                  = 2;
+		$options['ratings']['color']     = array( '', '' );
+		$options['ratings']['color_off'] = array( '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		ob_start();
+		WP_PostRatings_Settings::field_ratings();
+		$html = ob_get_clean();
+
+		preg_match_all(
+			'~<td class="wp-postratings wp-postratings-rating-preview">.*?--wp-postratings-color-on:(\#[0-9a-f]{6})~s',
+			$html,
+			$previews
+		);
+
+		$this->assertSame(
+			array( WP_PostRatings_Options::COLOR_DOWN, WP_PostRatings_Options::COLOR_UP ),
+			$previews[1],
+			'the preview glyphs do not carry the colours the swatches offer'
+		);
+	}
+	/**
+	 * An up/down rating shows one glyph, pointing whichever way won.
+	 *
+	 * The bug: a two step shape was drawn as a strip of $max glyphs, and the
+	 * strip repeats one shape -- the up one -- so rating a post produced two
+	 * thumbs up. An up/down set is a pair of opposing actions, not a
+	 * one-out-of-two scale, so a rating on it is a direction.
+	 *
+	 * @dataProvider data_updown_averages
+	 *
+	 * @param float  $average   Stored average.
+	 * @param string $direction Glyph that should be shown.
+	 * @param string $colour    Colour it should carry.
+	 */
+	public function test_an_up_down_rating_shows_one_glyph( $average, $direction, $colour ) {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'thumb';
+		$options['max']                  = 2;
+		$options['ratings']['color']     = array( '', '' );
+		$options['ratings']['color_off'] = array( '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$html = WP_PostRatings_Template::ratings_images( 0, 2, $average, 'thumb', 'x' );
+
+		$this->assertSame( 1, substr_count( $html, 'wp-postratings-item' ), 'an up/down rating drew more than one glyph' );
+		$this->assertStringContainsString( 'shape-' . $direction . ')', $html, 'the glyph points the wrong way' );
+		$this->assertStringContainsString( '--wp-postratings-color-on:' . $colour, $html, 'the glyph is the wrong colour' );
+	}
+
+	/**
+	 * Averages either side of the midpoint.
+	 *
+	 * @return array
+	 */
+	public function data_updown_averages() {
+		return array(
+			'all up'      => array( 2.0, 'up', WP_PostRatings_Options::COLOR_UP ),
+			'mostly up'   => array( 1.6, 'up', WP_PostRatings_Options::COLOR_UP ),
+			'mostly down' => array( 1.4, 'down', WP_PostRatings_Options::COLOR_DOWN ),
+			'all down'    => array( 1.0, 'down', WP_PostRatings_Options::COLOR_DOWN ),
+		);
+	}
+
+	/**
+	 * A scale still draws one glyph per step.
+	 */
+	public function test_a_scale_still_draws_a_glyph_per_step() {
+		$options          = WP_PostRatings_Options::get();
+		$options['shape'] = 'star';
+		$options['max']   = 5;
+		WP_PostRatings_Options::update( $options );
+
+		$html = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'star', 'x' );
+
+		// Five in the track and five in the fill.
+		$this->assertSame( 10, substr_count( $html, 'wp-postratings-item' ), 'the scale no longer draws a glyph per step' );
+	}
 }
