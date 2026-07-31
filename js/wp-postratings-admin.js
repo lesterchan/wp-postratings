@@ -1,7 +1,7 @@
 /**
  * WP-PostRatings settings screen.
  *
- * Delegated listeners for the "Restore Default" template buttons, the rating
+ * Delegated listeners for the template reset buttons, the rating
  * text/value table refresh, and the rich snippet toggle.
  */
 ( function() {
@@ -9,11 +9,6 @@
 
 	const l10n = window.wpPostRatingsL10n || {};
 
-	/**
-	 * Rebuild the rating text/value table for the selected shape.
-	 *
-	 * @return {void}
-	 */
 	/**
 	 * How many steps the table should have after a change.
 	 *
@@ -42,27 +37,38 @@
 		return rows + ( delta || 0 );
 	}
 
+	/**
+	 * Rebuild the rating text/value table for the selected shape.
+	 *
+	 * @param {number|string} delta   Steps to add, a negative number to remove,
+	 *                                or 'reset' to start the shape from its own
+	 *                                defaults.
+	 * @param {number}        removed Index of the row being removed, if any.
+	 * @return {void}
+	 */
 	function refreshRatingFields( delta, removed ) {
 		const target = document.getElementById( 'wp-postratings-rating-fields' );
-		const image = document.querySelector( 'input[name$="[shape]"]:checked' );
+		const shape = document.querySelector( '.wp-postratings-shape-choice:checked' );
 
-		if ( ! target || ! image ) {
+		if ( ! target || ! shape ) {
 			return;
 		}
 
 		const spinner = document.getElementById( 'wp-postratings-spinner' );
-		const custom = document.getElementById( 'wp_postratings_customrating' );
 
 		if ( spinner ) {
 			spinner.classList.add( 'is-active' );
 		}
 
+		// The shape is the whole request. Whether the rating is a scale or an
+		// up/down pair follows from it, and it used to be sent alongside as a
+		// separate "custom" flag read from a hidden field -- which was removed
+		// with the Max field, leaving the flag permanently saying "scale".
 		const query = new URLSearchParams( {
 			action: 'wp_postratings_rating_fields',
 			_ajax_nonce: target.dataset.nonce,
-			custom: custom ? custom.value : '0',
 			max: String( steps( delta ) ),
-			shape: image.value,
+			shape: shape.value,
 		} );
 
 		/*
@@ -114,25 +120,6 @@
 					spinner.classList.remove( 'is-active' );
 				}
 			} );
-	}
-
-	/**
-	 * Apply the chosen shape to the Max Ratings field.
-	 *
-	 * A custom set fixes the number of steps, so the field is made read only.
-	 *
-	 * @param {Element} input The radio that was chosen.
-	 * @return {void}
-	 */
-	function applyImageChoice( input ) {
-		const custom = document.getElementById( 'wp_postratings_customrating' );
-		const changedType = custom && custom.value !== input.dataset.custom;
-
-		if ( custom ) {
-			custom.value = input.dataset.custom;
-		}
-
-		return changedType;
 	}
 
 	/**
@@ -201,9 +188,6 @@
 
 		if ( first && ( ! checked || checked.closest( '.wp-postratings-shape-row' ).hidden ) ) {
 			first.checked = true;
-			// Always a reset: this only runs when the chosen type has no shape
-			// selected, which is exactly the type change.
-			applyImageChoice( first );
 			refreshRatingFields( 'reset' );
 		}
 	}
@@ -223,7 +207,7 @@
 			event.preventDefault();
 
 			const name = restore.dataset.template;
-			const set = 'updown' === restore.dataset.variant ? l10n.updownTemplates : l10n.defaultTemplates;
+			const set = ( l10n.templates || {} )[ restore.dataset.variant ];
 			const textarea = document.getElementById( 'wp_postratings_template_' + name );
 
 			if ( textarea && set && set[ name ] ) {
@@ -233,12 +217,13 @@
 			return;
 		}
 
-		const imageChoice = event.target.closest( '.wp-postratings-shape-choice' );
-
-		if ( imageChoice ) {
-			const changedType = applyImageChoice( imageChoice );
-
-			refreshRatingFields( changedType ? 'reset' : 0 );
+		if ( event.target.closest( '.wp-postratings-shape-choice' ) ) {
+			// Every shape change resets the table. A shape decides how many steps
+			// there are and what they are called, so the labels, values and
+			// colours belonging to the previous one have nothing to say about the
+			// new one -- and carrying them is what put a scale's orange on a
+			// thumbs pair and -1 in a scale's first row.
+			refreshRatingFields( 'reset' );
 			return;
 		}
 

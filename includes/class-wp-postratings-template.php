@@ -17,6 +17,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_PostRatings_Template {
 
 	/**
+	 * Where a glyph's colours come from.
+	 *
+	 * Three surfaces draw the same shapes and disagree about this, which is why
+	 * it is a parameter rather than something each renderer decides:
+	 *
+	 * - STORED, the front end: the colours the site saved for this rating.
+	 * - BUILTIN, the shape picker: the colours a shape has before anybody
+	 *   chooses any, so the rows differ only by shape.
+	 * - NONE, the settings table: no colours at all, because the cell around
+	 *   each preview carries the ones being edited and has to win.
+	 *
+	 * @var string
+	 */
+	const COLORS_STORED  = 'stored';
+	const COLORS_BUILTIN = 'builtin';
+	const COLORS_NONE    = 'none';
+
+	/**
 	 * Echo markup this plugin built itself.
 	 *
 	 * The one place the plugin prints rendered markup, and therefore the one
@@ -149,14 +167,16 @@ class WP_PostRatings_Template {
 	 * @param string $shape     Shape name, already resolved.
 	 * @param string $direction Either 'up' or 'down'.
 	 * @param string $image_alt Text describing the rating.
+	 * @param string $colors    One of the COLORS_* constants.
 	 *
 	 * @return string
 	 */
-	private static function single_glyph( $shape, $direction, $image_alt ) {
+	private static function single_glyph( $shape, $direction, $image_alt, $colors = self::COLORS_STORED ) {
 		$style = self::style_for(
 			$shape,
 			'up' === $direction ? 2 : 1,
-			array( '--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')' )
+			array( '--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')' ),
+			$colors
 		);
 
 		// A single glyph in normal flow, not the track-and-fill overlay: the fill
@@ -179,21 +199,22 @@ class WP_PostRatings_Template {
 	 * colours: the colour was added to one renderer and forgotten in another,
 	 * and nothing could notice, because each was correct on its own terms.
 	 *
-	 * @param string $shape Shape name, already resolved.
-	 * @param int    $step  Position on the scale, or 0 for no particular step.
-	 * @param array  $extra Further declarations, already built.
+	 * @param string $shape  Shape name, already resolved.
+	 * @param int    $step   Position on the scale, or 0 for no particular step.
+	 * @param array  $extra  Further declarations, already built.
+	 * @param string $colors One of the COLORS_* constants.
 	 *
 	 * @return string
 	 */
-	private static function style_for( $shape, $step = 0, array $extra = array() ) {
+	private static function style_for( $shape, $step = 0, array $extra = array(), $colors = self::COLORS_STORED ) {
 		$declarations = array();
 
 		if ( '' !== $shape ) {
 			$declarations[] = self::shape_style( $shape );
 		}
 
-		if ( $step > 0 ) {
-			$declarations[] = self::rating_color_style( $step );
+		if ( $step > 0 && self::COLORS_NONE !== $colors ) {
+			$declarations[] = self::rating_color_style( $step, $shape, $colors );
 		}
 
 		foreach ( $extra as $declaration ) {
@@ -215,18 +236,31 @@ class WP_PostRatings_Template {
 	 * reader is looking at. On a two step up/down set that makes step 1 the
 	 * down vote and step 2 the up vote, which is the case this exists for.
 	 *
-	 * @param float $rating Rating being displayed.
+	 * @param float  $rating Rating being displayed.
+	 * @param string $shape  Shape being drawn, or '' for the one the site saved.
+	 * @param string $colors One of the COLORS_* constants.
 	 *
 	 * @return string CSS declarations, or '' to leave the built-in colours alone.
 	 */
-	public static function rating_color_style( $rating ) {
+	public static function rating_color_style( $rating, $shape = '', $colors = self::COLORS_STORED ) {
 		$step = (int) round( (float) $rating );
 
 		if ( $step < 1 ) {
 			return '';
 		}
 
-		$shape = self::resolve_shape( (string) WP_PostRatings_Options::get( 'shape' ) );
+		/*
+		 * The shape being drawn, not the shape that is saved.
+		 *
+		 * These are the same thing on the front end and different on the
+		 * settings screen, which draws shapes the site has not chosen: the
+		 * picker previews all of them, and switching type rebuilds the table
+		 * before anything is saved. Reading the saved shape here asked whether
+		 * the site's rating is an up/down pair when the question was whether
+		 * this glyph is, so a pair of thumbs previewed under a saved star scale
+		 * got the scale's colour and came out orange.
+		 */
+		$shape = self::resolve_shape( '' !== $shape ? $shape : (string) WP_PostRatings_Options::get( 'shape' ) );
 
 		// Both colours, not just the rated one. A step that sets neither, and has
 		// no built-in of its own, emits nothing and the stylesheet decides.
@@ -238,7 +272,9 @@ class WP_PostRatings_Template {
 		$declarations = array();
 
 		foreach ( $properties as $key => $property ) {
-			$color = WP_PostRatings_Options::rating_color( $step, $key, $shape );
+			$color = self::COLORS_BUILTIN === $colors
+				? WP_PostRatings_Options::builtin_color( $step, $key, $shape )
+				: WP_PostRatings_Options::rating_color( $step, $key, $shape );
 
 			if ( '' !== $color ) {
 				$declarations[] = $property . ':' . $color;
@@ -290,17 +326,94 @@ class WP_PostRatings_Template {
 
 		$style = self::style_for( $shape, (int) round( (float) $post_rating ), array( '--wp-postratings-fill:' . $fill . '%' ) );
 
+		return self::strip( $shape, $ratings_max, $style, $image_alt );
+	}
+
+	/**
+	 * The track-and-fill markup a scale is drawn with.
+	 *
+	 * @param string $shape     Shape name, already resolved.
+	 * @param int    $steps     Number of points on the scale.
+	 * @param string $style     Inline style the strip carries.
+	 * @param string $image_alt Accessible label, or '' to hide the strip.
+	 *
+	 * @return string
+	 */
+	private static function strip( $shape, $steps, $style, $image_alt ) {
 		$item_style = '';
 
 		$html  = '<span class="wp-postratings-strip wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '"';
 		$html .= '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"';
 		$html .= '>';
-		$html .= '<span class="wp-postratings-track" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
-		$html .= '<span class="wp-postratings-fill" aria-hidden="true">' . self::row( $ratings_max, $item_style ) . '</span>';
+		$html .= '<span class="wp-postratings-track" aria-hidden="true">' . self::row( $steps, $item_style ) . '</span>';
+		$html .= '<span class="wp-postratings-fill" aria-hidden="true">' . self::row( $steps, $item_style ) . '</span>';
 		$html .= '</span>';
 
 		return $html;
+	}
+
+	/**
+	 * One shape as the picker shows it, in its built-in colours.
+	 *
+	 * The picker asks which shape, and nothing else, so every row has to differ
+	 * only by shape: the same number of steps and the same colours throughout.
+	 * Drawing them at the site's own scale and colours made a three step set
+	 * look shorter than a five step one and made a pair of thumbs orange,
+	 * because the colours saved for a five star scale are still in the row when
+	 * the shape being previewed is not that scale.
+	 *
+	 * @param string $shape Shape name.
+	 * @param int    $steps Points to draw a scale with; ignored by an up/down pair.
+	 *
+	 * @return string
+	 */
+	public static function shape_preview( $shape, $steps ) {
+		$shape = self::resolve_shape( $shape );
+
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return self::single_glyph( $shape, 'up', '', self::COLORS_BUILTIN ) .
+				self::single_glyph( $shape, 'down', '', self::COLORS_BUILTIN );
+		}
+
+		// Filled to 60% so the preview shows both states at once.
+		$style = self::style_for( $shape, 0, array( '--wp-postratings-fill:60%' ), self::COLORS_BUILTIN );
+
+		return self::strip( $shape, max( 1, (int) $steps ), $style, '' );
+	}
+
+	/**
+	 * One row of the settings table's rating preview.
+	 *
+	 * Shape only, no colour: the cell around this carries both custom
+	 * properties, built from the two colour inputs in the same row, and the
+	 * script repaints them as the picker moves. A colour emitted here would sit
+	 * on the inner element and win, which is how a row that had a colour saved
+	 * stopped following its own swatch.
+	 *
+	 * @param string $shape Shape name.
+	 * @param int    $steps Points on the scale.
+	 * @param int    $step  Position this row is for, counting from one.
+	 *
+	 * @return string
+	 */
+	public static function step_preview( $shape, $steps, $step ) {
+		$shape = self::resolve_shape( $shape );
+		$step  = max( 1, (int) $step );
+
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return self::single_glyph( $shape, 2 === $step ? 'up' : 'down', '', self::COLORS_NONE );
+		}
+
+		$steps = max( 1, (int) $steps );
+		$style = self::style_for(
+			$shape,
+			0,
+			array( '--wp-postratings-fill:' . self::fill_percentage( $step, $steps ) . '%' ),
+			self::COLORS_NONE
+		);
+
+		return self::strip( $shape, $steps, $style, '' );
 	}
 
 	/**

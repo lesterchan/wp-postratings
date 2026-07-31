@@ -11,13 +11,15 @@ describe( 'wp-postratings settings screen', () => {
 	beforeAll( () => {
 		window.wpPostRatingsL10n = {
 			ajaxUrl: 'https://example.com/wp-admin/admin-ajax.php',
-			defaultTemplates: {
-				vote: 'DEFAULT VOTE %RATINGS_IMAGES_VOTE%',
-				text: 'DEFAULT TEXT %RATINGS_IMAGES%',
-			},
-			updownTemplates: {
-				vote: 'UPDOWN VOTE %RATINGS_IMAGES_VOTE%',
-				text: 'UPDOWN TEXT %RATINGS_IMAGES%',
+			templates: {
+				scale: {
+					vote: 'SCALE VOTE %RATINGS_IMAGES_VOTE%',
+					text: 'SCALE TEXT %RATINGS_IMAGES%',
+				},
+				updown: {
+					vote: 'UPDOWN VOTE %RATINGS_IMAGES_VOTE%',
+					text: 'UPDOWN TEXT %RATINGS_IMAGES%',
+				},
 			},
 		};
 
@@ -54,11 +56,11 @@ describe( 'wp-postratings settings screen', () => {
 				<textarea id="wp_postratings_template_vote">CUSTOM VOTE</textarea>
 				<textarea id="wp_postratings_template_text">CUSTOM TEXT</textarea>
 				<button type="button" class="wp-postratings-restore-template"
-					data-template="vote" data-variant="default">Default</button>
+					data-template="vote" data-variant="scale">Scale</button>
 				<button type="button" class="wp-postratings-restore-template"
 					data-template="vote" data-variant="updown">Up/Down</button>
 				<button type="button" class="wp-postratings-restore-template"
-					data-template="text" data-variant="default">Default text</button>
+					data-template="text" data-variant="scale">Scale text</button>
 
 				<button type="submit" id="wp-postratings-delete-data"
 					data-confirm="Are you sure?">Delete</button>
@@ -89,10 +91,10 @@ describe( 'wp-postratings settings screen', () => {
 	// --- restoring templates ----------------------------------------------
 
 	it( 'restores the normal default template', () => {
-		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="default"]' );
+		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="scale"]' );
 
 		expect( document.getElementById( 'wp_postratings_template_vote' ).value ).toBe(
-			'DEFAULT VOTE %RATINGS_IMAGES_VOTE%',
+			'SCALE VOTE %RATINGS_IMAGES_VOTE%',
 		);
 	} );
 
@@ -105,14 +107,14 @@ describe( 'wp-postratings settings screen', () => {
 	} );
 
 	it( 'restores only the template the button names', () => {
-		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="default"]' );
+		click( '.wp-postratings-restore-template[data-template="vote"][data-variant="scale"]' );
 
 		expect( document.getElementById( 'wp_postratings_template_text' ).value ).toBe( 'CUSTOM TEXT' );
 	} );
 
 	it( 'does not submit the form when restoring', () => {
 		const button = document.querySelector(
-			'.wp-postratings-restore-template[data-template="vote"][data-variant="default"]',
+			'.wp-postratings-restore-template[data-template="vote"][data-variant="scale"]',
 		);
 		const event = new window.MouseEvent( 'click', { bubbles: true, cancelable: true } );
 
@@ -144,9 +146,13 @@ describe( 'wp-postratings settings screen', () => {
 		expect( url.searchParams.get( 'action' ) ).toBe( 'wp_postratings_rating_fields' );
 		expect( url.searchParams.get( '_ajax_nonce' ) ).toBe( 'nonce123' );
 		expect( url.searchParams.get( 'shape' ) ).toBe( 'stars' );
-		// Three rows on screen, and no step being added or removed.
-		expect( url.searchParams.get( 'max' ) ).toBe( '3' );
-		expect( url.searchParams.get( 'custom' ) ).toBe( '0' );
+		// The chosen shape's own default length: a shape change is a reset, so
+		// the rows on screen do not carry over.
+		expect( url.searchParams.get( 'max' ) ).toBe( '5' );
+		// Nothing else. The rating type used to travel beside the shape as a
+		// "custom" flag, read from a hidden field that no longer exists, so it
+		// said "scale" whatever was chosen. The shape already answers it.
+		expect( url.searchParams.get( 'custom' ) ).toBeNull();
 	} );
 
 	it( 'swaps the response into the table', async () => {
@@ -238,17 +244,28 @@ describe( 'wp-postratings settings screen', () => {
 
 	// --- choosing a shape --------------------------------------------
 
-	it( 'marks an up/down shape as one that fixes its own steps', () => {
+	it( 'resets the table on any shape change, to that shape\'s own length', async () => {
 		click( 'input[value="thumbs"]' );
 
-		expect( document.getElementById( 'wp_postratings_customrating' ).value ).toBe( '1' );
-	} );
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
 
-	it( 'clears that again for a scale', () => {
-		click( 'input[value="thumbs"]' );
+		let url = new URL( window.fetch.mock.calls[ 0 ][ 0 ] );
+
+		// The shape's own default length, and nothing carried: a shape decides
+		// how many steps there are and what they are called.
+		expect( url.searchParams.get( 'max' ) ).toBe( '2' );
+		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [] );
+
+		window.fetch.mockClear();
+
 		click( 'input[value="stars"]' );
 
-		expect( document.getElementById( 'wp_postratings_customrating' ).value ).toBe( '0' );
+		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
+
+		url = new URL( window.fetch.mock.calls[ 0 ][ 0 ] );
+
+		expect( url.searchParams.get( 'max' ) ).toBe( '5' );
+		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [] );
 	} );
 
 	// --- the destructive button -------------------------------------------
@@ -302,27 +319,4 @@ describe( 'wp-postratings settings screen', () => {
 		expect( url.searchParams.getAll( 'text[]' ) ).toEqual( [] );
 		expect( url.searchParams.getAll( 'value[]' ) ).toEqual( [] );
 	} );
-
-	it( 'resets to the new type\'s length when the type changes', async () => {
-		// Three rows on screen and a five step default, so switching from the
-		// up/down set back to a scale asks for five rather than three.
-		click( 'input[value="thumbs"]' );
-
-		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
-
-		expect(
-			new URL( window.fetch.mock.calls[ 0 ][ 0 ] ).searchParams.get( 'max' )
-		).toBe( '2' );
-
-		window.fetch.mockClear();
-
-		click( 'input[value="stars"]' );
-
-		await vi.waitFor( () => expect( window.fetch ).toHaveBeenCalled() );
-
-		expect(
-			new URL( window.fetch.mock.calls[ 0 ][ 0 ] ).searchParams.get( 'max' )
-		).toBe( '5' );
-	} );
-
 } );

@@ -926,7 +926,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Options::update( $options );
 
 		ob_start();
-		WP_PostRatings_Settings::render_rating_fields( 1, 2, 'thumb', array( 'Down', 'Up' ), array( -1, 1 ), array(), array() );
+		WP_PostRatings_Settings::render_rating_fields( 2, 'thumb', array( 'Down', 'Up' ), array( -1, 1 ), array(), array() );
 		$html = ob_get_clean();
 
 		preg_match_all( '~data-default="(\#[0-9a-f]{6})"[^>]*data-property="--wp-postratings-color-on"~', $html, $swatches );
@@ -936,5 +936,108 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( $expected, $swatches[1], 'the swatches kept the old type\'s colours' );
 		$this->assertSame( $expected, $previews[1], 'the previews kept the old type\'s colours' );
+	}
+	/**
+	 * The customrating flag is derived from the shape, never posted.
+	 *
+	 * It records whether the rating is an up/down pair, which the shape already
+	 * says. It used to arrive as a hidden field beside Max Ratings, and when
+	 * that field was removed the value silently stopped being submitted -- so
+	 * the screen went on treating a thumbs set as a scale and carried its
+	 * colours across.
+	 */
+	public function test_customrating_follows_the_shape() {
+		$this->assertSame( 1, WP_PostRatings_Options::sanitize( array( 'shape' => 'thumb' ) )['customrating'], 'an up/down shape did not set customrating' );
+		$this->assertSame( 0, WP_PostRatings_Options::sanitize( array( 'shape' => 'star' ) )['customrating'], 'a scale did not clear customrating' );
+	}
+
+	/**
+	 * Each rating type starts from one definition, and they differ where it
+	 * matters: length, labels, values and colours.
+	 */
+	public function test_each_type_has_its_own_defaults() {
+		$scale  = WP_PostRatings_Options::defaults_for_type( 'star' );
+		$updown = WP_PostRatings_Options::defaults_for_type( 'thumb' );
+
+		$this->assertSame( 5, $scale['max'], 'a scale does not default to five steps' );
+		$this->assertSame( 2, $updown['max'], 'an up/down pair is not two steps' );
+
+		$this->assertSame( '1 Star', $scale['ratings']['text'][0], 'a scale does not start at 1 Star' );
+		$this->assertSame( 'Vote Down', $updown['ratings']['text'][0], 'an up/down pair does not start at Vote Down' );
+
+		$this->assertSame( array( 1, 2, 3, 4, 5 ), $scale['ratings']['value'], 'a scale is not 1 to 5' );
+		$this->assertSame( array( -1, 1 ), $updown['ratings']['value'], 'an up/down pair is not signed' );
+
+		// Both leave the colours empty, so the built-ins apply -- orange for a
+		// scale, green and red for the pair.
+		$this->assertSame( array_fill( 0, 5, '' ), $scale['ratings']['color'], 'a scale stores a colour it was never given' );
+		$this->assertSame( array( '', '' ), $updown['ratings']['color'], 'an up/down pair stores a colour it was never given' );
+	}
+
+	/**
+	 * The first save after a type change keeps what was typed into it.
+	 *
+	 * The screen rebuilds the table as soon as the type changes, so the rows
+	 * that arrive with the new shape are already the new type's -- including any
+	 * colour chosen before pressing Save. Resetting them because the type had
+	 * changed discarded exactly one submission's worth of edits, every time, and
+	 * it was the submission where the site had just picked its colours.
+	 */
+	public function test_the_first_save_after_a_type_change_keeps_its_colours() {
+		WP_PostRatings_Options::update(
+			array_merge(
+				WP_PostRatings_Options::defaults(),
+				array( 'shape' => 'star' )
+			)
+		);
+
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'thumb',
+				'ratings' => array(
+					'text'      => array( 'Nope', 'Yep' ),
+					'value'     => array( -1, 1 ),
+					'color'     => array( '#111111', '#222222' ),
+					'color_off' => array( '#333333', '#444444' ),
+				),
+			)
+		);
+
+		$this->assertSame( 2, $clean['max'], 'switching to an up/down shape did not give two steps' );
+		$this->assertSame( array( 'Nope', 'Yep' ), $clean['ratings']['text'], 'the labels typed alongside the switch were discarded' );
+		$this->assertSame( array( '#111111', '#222222' ), $clean['ratings']['color'], 'the rated colours chosen alongside the switch were discarded' );
+		$this->assertSame( array( '#333333', '#444444' ), $clean['ratings']['color_off'], 'the unrated colours chosen alongside the switch were discarded' );
+	}
+
+	/**
+	 * A form that never saw the change still resets.
+	 *
+	 * Without the script -- or from a page opened before the shape changed --
+	 * the table posted is the old type's, and a five row scale is not a rating
+	 * an up/down shape can describe.
+	 */
+	public function test_a_table_from_the_old_type_is_still_reset() {
+		WP_PostRatings_Options::update(
+			array_merge(
+				WP_PostRatings_Options::defaults(),
+				array( 'shape' => 'star' )
+			)
+		);
+
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'shape'   => 'thumb',
+				'ratings' => array(
+					'text'  => array( '1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars' ),
+					'value' => array( 1, 2, 3, 4, 5 ),
+					'color' => array_fill( 0, 5, '#f5a623' ),
+				),
+			)
+		);
+
+		$this->assertSame( 2, $clean['max'], 'a scale posted against an up/down shape was not reset' );
+		$this->assertSame( 'Vote Down', $clean['ratings']['text'][0], 'the reset did not use the up/down labels' );
+		$this->assertSame( array( -1, 1 ), $clean['ratings']['value'], 'the reset did not use signed values' );
+		$this->assertSame( array( '', '' ), $clean['ratings']['color'], 'the scale colours survived a reset' );
 	}
 }

@@ -61,10 +61,6 @@ class WP_PostRatings_Settings {
 	const PREVIEW_STEPS = 5;
 
 	/**
-	 * What happens while a vote is in flight.
-	 */
-
-	/**
 	 * Who may rate, and how repeat votes are detected.
 	 */
 	const SECTION_VOTING = 'wp_postratings_voting';
@@ -344,14 +340,9 @@ class WP_PostRatings_Settings {
 			? WP_PostRatings_Shapes::UPDOWN
 			: WP_PostRatings_Shapes::SCALE;
 
-		$types = array(
-			WP_PostRatings_Shapes::SCALE  => __( 'Scale', 'wp-postratings' ),
-			WP_PostRatings_Shapes::UPDOWN => __( 'Up or down', 'wp-postratings' ),
-		);
-
 		echo '<p class="wp-postratings-type-choice">';
 
-		foreach ( $types as $type => $label ) {
+		foreach ( self::rating_types() as $type => $label ) {
 			printf(
 				'<label><input type="radio" name="wp-postratings-rating-type" value="%1$s" class="wp-postratings-rating-type"%2$s /> %3$s</label> ',
 				esc_attr( $type ),
@@ -400,13 +391,7 @@ class WP_PostRatings_Settings {
 			 */
 			echo '<span class="wp-postratings wp-postratings-shape-preview">';
 
-			if ( $is_updown ) {
-				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' ) );
-				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' ) );
-			} else {
-				// Filled to 60% so the preview shows both states at once.
-				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, self::PREVIEW_STEPS, self::PREVIEW_STEPS * 0.6, $name, '' ) );
-			}
+			WP_PostRatings_Template::render( WP_PostRatings_Template::shape_preview( $name, self::PREVIEW_STEPS ) );
 
 			echo '</span>';
 
@@ -437,7 +422,6 @@ class WP_PostRatings_Settings {
 			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_postratings_rating_fields' ) ); ?>">
 			<?php
 			self::render_rating_fields(
-				$options['customrating'],
 				(int) $options['max'],
 				$options['shape'],
 				(array) $options['ratings']['text'],
@@ -669,14 +653,24 @@ class WP_PostRatings_Settings {
 			<?php endforeach; ?>
 		</p>
 		<p>
-			<button type="button" class="button wp-postratings-restore-template"
-				data-template="<?php echo esc_attr( $key ); ?>" data-variant="default">
-				<?php esc_html_e( 'Restore Default (Normal Rating)', 'wp-postratings' ); ?>
-			</button>
-			<button type="button" class="button wp-postratings-restore-template"
-				data-template="<?php echo esc_attr( $key ); ?>" data-variant="updown">
-				<?php esc_html_e( 'Restore Default (Up/Down Rating)', 'wp-postratings' ); ?>
-			</button>
+			<?php
+			/*
+			 * Named for the two rating types, in the same words the type chooser
+			 * uses and keyed on the same values it stores. They were "Normal
+			 * Rating" and "Up/Down Rating" here, "Scale" and "Up or down" up
+			 * there, and 'default' and 'updown' in the markup -- three vocabularies
+			 * for one distinction, on one screen.
+			 */
+			foreach ( self::rating_types() as $type => $label ) :
+				?>
+				<button type="button" class="button wp-postratings-restore-template"
+					data-template="<?php echo esc_attr( $key ); ?>" data-variant="<?php echo esc_attr( $type ); ?>">
+					<?php
+					/* translators: %s: rating type, such as "Scale" or "Up or down". */
+					printf( esc_html__( 'Reset to default (%s)', 'wp-postratings' ), esc_html( $label ) );
+					?>
+				</button>
+			<?php endforeach; ?>
 		</p>
 		<?php
 	}
@@ -684,9 +678,41 @@ class WP_PostRatings_Settings {
 	// --- shared data ------------------------------------------------------
 
 	/**
-	 * The default templates for an up/down (two point) scale.
+	 * The two rating types, as the screen names them.
 	 *
-	 * Offered beside the normal defaults by the "Restore Default" buttons.
+	 * One list, because the words appear in the type chooser, on the template
+	 * reset buttons and in the script's data, and a screen that calls the same
+	 * thing three names is a screen nobody can follow.
+	 *
+	 * @return array Type constant => label.
+	 */
+	public static function rating_types() {
+		return array(
+			WP_PostRatings_Shapes::SCALE  => __( 'Scale', 'wp-postratings' ),
+			WP_PostRatings_Shapes::UPDOWN => __( 'Up or down', 'wp-postratings' ),
+		);
+	}
+
+	/**
+	 * The default templates for a rating type.
+	 *
+	 * Named to match WP_PostRatings_Options::defaults_for_type(), which answers
+	 * the same question about the rating itself.
+	 *
+	 * @param string $type Either WP_PostRatings_Shapes::SCALE or ::UPDOWN.
+	 *
+	 * @return array Template key => markup.
+	 */
+	public static function templates_for_type( $type ) {
+		if ( WP_PostRatings_Shapes::UPDOWN !== $type ) {
+			return WP_PostRatings_Options::defaults()['templates'];
+		}
+
+		return self::updown_templates();
+	}
+
+	/**
+	 * The default templates for an up/down pair.
 	 *
 	 * @return array
 	 */
@@ -820,17 +846,16 @@ class WP_PostRatings_Settings {
 	 * the scale, so it is a small data table inside a field, not a second
 	 * settings form. do_settings_sections() owns the form-table on this screen.
 	 *
-	 * @param int    $custom Whether the set is an up/down one.
-	 * @param int    $max    Number of steps on the scale.
-	 * @param string $image  Shape name.
-	 * @param array  $texts  Per-rating labels.
-	 * @param array  $values Per-rating scores.
-	 * @param array  $colors     Per-rating rated colours, each '' for the site-wide one.
+	 * @param int    $max        Number of steps on the scale.
+	 * @param string $image      Shape name.
+	 * @param array  $texts      Per-rating labels.
+	 * @param array  $values     Per-rating scores.
+	 * @param array  $colors     Per-rating rated colours, each '' for the built-in one.
 	 * @param array  $colors_off Per-rating unrated colours, same convention.
 	 *
 	 * @return void
 	 */
-	public static function render_rating_fields( $custom, $max, $image, $texts, $values, $colors = array(), $colors_off = array() ) {
+	public static function render_rating_fields( $max, $image, $texts, $values, $colors = array(), $colors_off = array() ) {
 		/*
 		 * What an empty per-rating colour falls back to, and what an untouched
 		 * swatch shows -- a colour input cannot be empty, and one left at #000000
@@ -916,12 +941,9 @@ class WP_PostRatings_Settings {
 							<?php
 							// Preview of this step: an up/down set shows the one
 							// glyph for this position, anything else shows the
-							// strip lit up to it.
-							if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $image ) ) ) {
-								WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 2 === $i ? 1 : -1, $image, '' ) );
-							} else {
-								WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $i, $image, '' ) );
-							}
+							// strip lit up to it. Its colours come from the cell
+							// above, which is fed by the two inputs in this row.
+							WP_PostRatings_Template::render( WP_PostRatings_Template::step_preview( $image, $max, $i ) );
 							?>
 						</td>
 						<td>
@@ -1008,10 +1030,9 @@ class WP_PostRatings_Settings {
 			wp_die( -1, 403 );
 		}
 
-		$custom = isset( $_GET['custom'] ) ? (int) $_GET['custom'] : 0;
-		$max    = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
-		$image  = isset( $_GET['shape'] ) ? sanitize_text_field( wp_unslash( $_GET['shape'] ) ) : '';
-		$image  = WP_PostRatings_Template::resolve_shape_strict( $image );
+		$max   = isset( $_GET['max'] ) ? (int) $_GET['max'] : 0;
+		$image = isset( $_GET['shape'] ) ? sanitize_text_field( wp_unslash( $_GET['shape'] ) ) : '';
+		$image = WP_PostRatings_Template::resolve_shape_strict( $image );
 
 		if ( '' === $image ) {
 			wp_die( -1, 400 );
@@ -1066,7 +1087,6 @@ class WP_PostRatings_Settings {
 		}
 
 		self::render_rating_fields(
-			$is_updown ? 1 : 0,
 			$max,
 			$image,
 			$texts,

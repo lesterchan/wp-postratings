@@ -481,13 +481,21 @@ class WP_PostRatings_Admin {
 			true
 		);
 
+		// Keyed by rating type, so a button carrying data-variant="updown" is
+		// looked up with the value the markup already holds rather than through a
+		// branch that has to be kept in step with it.
+		$templates = array();
+
+		foreach ( array_keys( WP_PostRatings_Settings::rating_types() ) as $type ) {
+			$templates[ $type ] = WP_PostRatings_Settings::templates_for_type( $type );
+		}
+
 		wp_localize_script(
 			'wp-postratings-admin',
 			'wpPostRatingsL10n',
 			array(
-				'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
-				'defaultTemplates' => WP_PostRatings_Options::defaults()['templates'],
-				'updownTemplates'  => WP_PostRatings_Settings::updown_templates(),
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'templates' => $templates,
 			)
 		);
 	}

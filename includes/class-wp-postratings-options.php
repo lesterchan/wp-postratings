@@ -232,6 +232,52 @@ class WP_PostRatings_Options {
 			return $stored;
 		}
 
+		return self::builtin_color( $step, $key, $shape );
+	}
+
+	/**
+	 * Whether a submitted rating table is the right length for a rating type.
+	 *
+	 * The length is the only thing that can be checked: a two row table is an
+	 * up/down pair and nothing else, and a table of three to ten rows is a
+	 * scale. What the rows say is the site's business.
+	 *
+	 * @param array  $options Raw submitted options.
+	 * @param string $shape   Shape the submission is for, already resolved.
+	 *
+	 * @return bool
+	 */
+	private static function table_fits_type( $options, $shape ) {
+		if ( ! isset( $options['ratings']['text'] ) || ! is_array( $options['ratings']['text'] ) ) {
+			return false;
+		}
+
+		$rows = count( $options['ratings']['text'] );
+
+		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
+			return 2 === $rows;
+		}
+
+		return $rows >= self::MIN_SCALE && $rows <= self::max_scale();
+	}
+
+	/**
+	 * The colour a step of a shape has before anybody chooses one.
+	 *
+	 * Separate from rating_color() because there is one caller that must not
+	 * consult the stored colours at all: the shape picker, which compares shapes
+	 * against each other and so has to draw every one of them the same way. It
+	 * asked rating_color() once, and a site with an orange five star scale saved
+	 * got an orange pair of thumbs -- the stored colour for steps one and two,
+	 * which belong to a rating that is not the one being previewed.
+	 *
+	 * @param int    $step  Position on the scale, counting from one.
+	 * @param string $key   Either 'color' or 'color_off'.
+	 * @param string $shape Shape being drawn.
+	 *
+	 * @return string A colour, or '' to leave it to the stylesheet.
+	 */
+	public static function builtin_color( $step, $key, $shape = '' ) {
 		// Only the rated colour has a built-in worth writing out, and only for an
 		// up/down pair: two opposing actions conventionally read green and red,
 		// where no convention says the third star differs from the fourth. The
@@ -451,9 +497,19 @@ class WP_PostRatings_Options {
 			$clean['shape'] = '' !== $shape ? $shape : $current['shape'];
 		}
 
-		if ( isset( $options['customrating'] ) ) {
-			$clean['customrating'] = empty( $options['customrating'] ) ? 0 : 1;
-		}
+		/*
+		 * Derived from the shape, never posted.
+		 *
+		 * It records whether the rating is an up/down pair, which the shape
+		 * already says. It used to arrive as a hidden field, and when the field
+		 * it lived beside was removed the value silently stopped being submitted
+		 * -- so the screen went on thinking a thumbs set was a scale.
+		 */
+		$clean['customrating'] = WP_PostRatings_Shapes::is_updown(
+			WP_PostRatings_Template::resolve_shape(
+				isset( $clean['shape'] ) ? $clean['shape'] : (string) self::get( 'shape' )
+			)
+		) ? 1 : 0;
 
 		if ( isset( $options['schema_type'] ) ) {
 			$type                 = (string) $options['schema_type'];
@@ -474,14 +530,20 @@ class WP_PostRatings_Options {
 		 * So both directions reset: to Vote Down and Vote Up at -1 and +1 with
 		 * green and red, or to a five point scale with orange.
 		 *
-		 * The screen rebuilds the table on a shape change and posts the new
-		 * defaults, so this is the half that holds when the shape is changed by
-		 * anything else -- including a page that was open before the change.
+		 * But only when the table posted with it still belongs to the old type.
+		 * The screen rebuilds the table the moment the shape changes, so a normal
+		 * submit arrives carrying rows that already belong to the new type -- and
+		 * resetting those threw away the first edit made after every switch,
+		 * which is where the colours a site had just chosen went. A table the
+		 * right length for the type it arrived with is the new type's table, and
+		 * is sanitized like any other. One that is not came from a form that
+		 * never saw the change: no script, or a page opened beforehand.
 		 */
 		$was = WP_PostRatings_Template::resolve_shape( (string) self::get( 'shape' ) );
 		$now = isset( $clean['shape'] ) ? $clean['shape'] : $was;
 
-		if ( WP_PostRatings_Shapes::is_updown( $was ) !== WP_PostRatings_Shapes::is_updown( $now ) ) {
+		if ( WP_PostRatings_Shapes::is_updown( $was ) !== WP_PostRatings_Shapes::is_updown( $now )
+			&& ! self::table_fits_type( $options, $now ) ) {
 			$fresh = self::defaults_for_type( $now );
 
 			$clean['ratings'] = $fresh['ratings'];
