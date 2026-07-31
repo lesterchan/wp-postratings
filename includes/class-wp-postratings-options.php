@@ -121,6 +121,22 @@ class WP_PostRatings_Options {
 	const COLOR_RATED = '#f5a623';
 
 	/**
+	 * The colour an up vote uses unless the rating overrides it.
+	 *
+	 * Matches the stylesheet's own fallback, as COLOR_RATED does.
+	 *
+	 * @var string
+	 */
+	const COLOR_UP = '#2e9e4f';
+
+	/**
+	 * The colour a down vote uses unless the rating overrides it.
+	 *
+	 * @var string
+	 */
+	const COLOR_DOWN = '#e5484d';
+
+	/**
 	 * The colour an unrated glyph uses unless a rating overrides it.
 	 *
 	 * @var string

@@ -488,10 +488,12 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * that way could only ever paint both the same.
 	 */
 	public function test_an_up_down_control_carries_a_colour_per_step() {
-		$options                         = WP_PostRatings_Options::get();
-		$options['shape']                = 'thumb';
-		$options['max']                  = 2;
-		$options['ratings']['color']     = array( '#00ff00', '#ff0000' );
+		$options          = WP_PostRatings_Options::get();
+		$options['shape'] = 'thumb';
+		$options['max']   = 2;
+		// Down is red and up is green, which is the convention the built-in
+		// colours already follow.
+		$options['ratings']['color']     = array( '#ff0000', '#00ff00' );
 		$options['ratings']['color_off'] = array( '', '' );
 		WP_PostRatings_Options::update( $options );
 
@@ -499,14 +501,31 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		// Step 1 is the down vote and step 2 the up vote.
 		$this->assertMatchesRegularExpression(
-			'/class="wp-postratings-down"[^>]*style="[^"]*--wp-postratings-color-on:#00ff00/',
+			'/class="wp-postratings-down"[^>]*style="[^"]*--wp-postratings-color-on:#ff0000/',
 			$html,
 			'the down vote did not take step 1\'s colour'
 		);
 		$this->assertMatchesRegularExpression(
-			'/class="wp-postratings-up"[^>]*style="[^"]*--wp-postratings-color-on:#ff0000/',
+			'/class="wp-postratings-up"[^>]*style="[^"]*--wp-postratings-color-on:#00ff00/',
 			$html,
 			'the up vote did not take step 2\'s colour'
+		);
+	}
+	/**
+	 * The built-in up and down colours match the stylesheet, and go the right way.
+	 */
+	public function test_the_built_in_up_and_down_colours_match_the_stylesheet() {
+		$css = file_get_contents( dirname( __DIR__ ) . '/css/wp-postratings.css' );
+
+		$this->assertStringContainsString(
+			'var( --wp-postratings-color-up, ' . WP_PostRatings_Options::COLOR_UP . ' )',
+			$css,
+			'the up fallback in the stylesheet does not match the constant'
+		);
+		$this->assertStringContainsString(
+			'var( --wp-postratings-color-down, ' . WP_PostRatings_Options::COLOR_DOWN . ' )',
+			$css,
+			'the down fallback in the stylesheet does not match the constant'
 		);
 	}
 }

@@ -816,6 +816,13 @@ class WP_PostRatings_Settings {
 		 */
 		$rated_color   = WP_PostRatings_Options::COLOR_RATED;
 		$unrated_color = WP_PostRatings_Options::COLOR_UNRATED;
+
+		// An up/down pair is two opposing actions, not two points on a scale, and
+		// the convention for them is green up and red down -- which is what the
+		// stylesheet already falls back to on hover. So the table offers those as
+		// the defaults rather than the one rated colour twice, which would have
+		// shown a pair of identical swatches for the case this column exists for.
+		$is_updown = WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $image ) );
 		?>
 		<table class="widefat striped">
 			<thead>
@@ -836,6 +843,13 @@ class WP_PostRatings_Settings {
 					$value     = isset( $values[ $i - 1 ] ) ? (int) $values[ $i - 1 ] : $i;
 					$color     = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
 					$color_off = isset( $colors_off[ $i - 1 ] ) ? (string) $colors_off[ $i - 1 ] : '';
+
+					// Step 1 is the down vote and step 2 the up vote.
+					$step_default = $rated_color;
+
+					if ( $is_updown ) {
+						$step_default = 2 === $i ? WP_PostRatings_Options::COLOR_UP : WP_PostRatings_Options::COLOR_DOWN;
+					}
 					?>
 					<tr>
 						<td class="wp-postratings wp-postratings-rating-preview">
@@ -865,10 +879,10 @@ class WP_PostRatings_Settings {
 						<td>
 							<label class="screen-reader-text" for="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></label>
 							<input type="color" id="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"
-								class="wp-postratings-color" data-default="<?php echo esc_attr( $rated_color ); ?>"
+								class="wp-postratings-color" data-default="<?php echo esc_attr( $step_default ); ?>"
 								data-property="--wp-postratings-color-on"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color][]"
-								value="<?php echo esc_attr( '' !== $color ? $color : $rated_color ); ?>" />
+								value="<?php echo esc_attr( '' !== $color ? $color : $step_default ); ?>" />
 						</td>
 						<td>
 							<label class="screen-reader-text" for="wp_postratings_ratingscoloroff_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></label>
