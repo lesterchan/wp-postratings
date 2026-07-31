@@ -215,6 +215,11 @@ class WP_PostRatings_Options {
 					__( '5 Stars', 'wp-postratings' ),
 				),
 				'value' => array( 1, 2, 3, 4, 5 ),
+				// One per step, empty meaning "use the rated colour above". A
+				// two step scale is the case this exists for: an up vote and a
+				// down vote are opposite actions and want opposite colours,
+				// which one shared colour cannot express.
+				'color' => array( '', '', '', '', '' ),
 			),
 			'templates'        => array(
 				'vote'         => '%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%)<br />%RATINGS_TEXT%',
@@ -425,6 +430,42 @@ class WP_PostRatings_Options {
 
 			if ( isset( $options['ratings']['value'] ) && is_array( $options['ratings']['value'] ) ) {
 				$clean['ratings']['value'] = array_values( array_map( 'intval', $options['ratings']['value'] ) );
+			}
+
+			/*
+			 * A colour input cannot be empty, so "use the rated colour" is a
+			 * checkbox beside it and the posted swatch is discarded for any step
+			 * whose box is ticked. Without this an untouched row would store
+			 * whatever the disabled input happened to show.
+			 */
+			$defaulted = array();
+
+			if ( isset( $options['ratings']['color_default'] ) && is_array( $options['ratings']['color_default'] ) ) {
+				$defaulted = array_map( 'absint', $options['ratings']['color_default'] );
+			}
+
+			if ( isset( $options['ratings']['color'] ) && is_array( $options['ratings']['color'] ) ) {
+				$step = 0;
+
+				$clean['ratings']['color'] = array_values(
+					array_map(
+						static function ( $color ) use ( &$step, $defaulted ) {
+							++$step;
+
+							if ( in_array( $step, $defaulted, true ) ) {
+								return '';
+							}
+
+							// sanitize_hex_color() returns null for anything that
+							// is not a hex colour, and '' is a legitimate value
+							// here: it means "inherit the rated colour".
+							$color = sanitize_hex_color( trim( (string) $color ) );
+
+							return null === $color ? '' : $color;
+						},
+						$options['ratings']['color']
+					)
+				);
 			}
 		}
 

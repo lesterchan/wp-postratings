@@ -364,4 +364,57 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			$this->assertSame( '', WP_PostRatings_Options::sanitize( array( 'schema_type' => $type ) )['schema_type'], $type . ' was accepted and Google shows no rating for it' );
 		}
 	}
+	/**
+	 * A rating can carry its own colour, and empty means "use the rated colour".
+	 *
+	 * A two step scale is the case this exists for: an up vote and a down vote
+	 * are opposite actions and want opposite colours, which one shared setting
+	 * cannot express.
+	 */
+	public function test_a_rating_can_carry_its_own_colour() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'ratings' => array(
+					'color' => array( '#00ff00', '#ff0000', 'not a colour', '' ),
+				),
+			)
+		);
+
+		$this->assertSame( array( '#00ff00', '#ff0000', '', '' ), $clean['ratings']['color'], 'the per-rating colours were not cleaned' );
+	}
+
+	/**
+	 * A ticked Default box discards whatever the disabled swatch was showing.
+	 *
+	 * A colour input cannot be empty, so the checkbox is what expresses
+	 * "inherit". Without honouring it, an untouched row would store the colour
+	 * the input happened to display.
+	 */
+	public function test_the_default_checkbox_clears_a_rating_colour() {
+		$clean = WP_PostRatings_Options::sanitize(
+			array(
+				'ratings' => array(
+					'color'         => array( '#00ff00', '#ff0000' ),
+					'color_default' => array( 2 ),
+				),
+			)
+		);
+
+		$this->assertSame( array( '#00ff00', '' ), $clean['ratings']['color'], 'the ticked step kept a colour' );
+	}
+
+	/**
+	 * The strip carries the colour of the step being shown, and nothing when
+	 * that step has none.
+	 */
+	public function test_the_strip_carries_the_step_colour() {
+		$options                     = WP_PostRatings_Options::get();
+		$options['ratings']['color'] = array( '#00ff00', '#ff0000', '', '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame( '--wp-postratings-color-on:#ff0000', WP_PostRatings_Template::rating_color_style( 2 ), 'step 2 did not get its own colour' );
+		$this->assertSame( '--wp-postratings-color-on:#ff0000', WP_PostRatings_Template::rating_color_style( 1.8 ), 'a fractional rating did not round to its step' );
+		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 3 ), 'a step with no colour of its own emitted one' );
+		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 0 ), 'an unrated post emitted a colour' );
+	}
 }

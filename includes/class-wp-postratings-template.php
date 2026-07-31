@@ -138,6 +138,35 @@ class WP_PostRatings_Template {
 	}
 
 	/**
+	 * The colour a given rating is shown in, if it has one of its own.
+	 *
+	 * Empty means "use the rated colour", which is what the stylesheet already
+	 * does, so nothing is emitted and the site-wide setting stands.
+	 *
+	 * The step is the rating rounded to the nearest whole one, because that is
+	 * what the scale actually offers: a 3.4 average is drawn as three lit
+	 * glyphs and a partial fourth, and it is the third step's colour that the
+	 * reader is looking at. On a two step up/down set that makes step 1 the
+	 * down vote and step 2 the up vote, which is the case this exists for.
+	 *
+	 * @param float $rating Rating being displayed.
+	 *
+	 * @return string A CSS declaration, or '' to leave the site-wide colour alone.
+	 */
+	public static function rating_color_style( $rating ) {
+		$colors = (array) ( WP_PostRatings_Options::get( 'ratings' )['color'] ?? array() );
+		$step   = (int) round( (float) $rating );
+
+		if ( $step < 1 || ! isset( $colors[ $step - 1 ] ) ) {
+			return '';
+		}
+
+		$color = (string) $colors[ $step - 1 ];
+
+		return '' === $color ? '' : '--wp-postratings-color-on:' . $color;
+	}
+
+	/**
 	 * The read-only rating strip.
 	 *
 	 * @param int    $ratings_custom Unused since 2.0.0; kept for the signature.
@@ -165,6 +194,11 @@ class WP_PostRatings_Template {
 		$fill      = self::fill_percentage( $post_rating, $ratings_max );
 
 		$style = self::shape_style( $shape ) . ';--wp-postratings-fill:' . $fill . '%';
+		$rated = self::rating_color_style( $post_rating );
+
+		if ( '' !== $rated ) {
+			$style .= ';' . $rated;
+		}
 
 		$item_style = WP_PostRatings_Shapes::is_updown( $shape )
 			? '--wp-postratings-shape:var(--wp-postratings-shape-up)'

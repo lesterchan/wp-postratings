@@ -440,7 +440,8 @@ class WP_PostRatings_Settings {
 				(int) $options['max'],
 				$options['shape'],
 				(array) $options['ratings']['text'],
-				(array) $options['ratings']['value']
+				(array) $options['ratings']['value'],
+				(array) ( $options['ratings']['color'] ?? array() )
 			);
 			?>
 		</div>
@@ -829,7 +830,7 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * The per-rating text and value table.
+	 * The per-rating text, value and colour table.
 	 *
 	 * A widefat table rather than a form-table: it lists one row per step on
 	 * the scale, so it is a small data table inside a field, not a second
@@ -840,10 +841,14 @@ class WP_PostRatings_Settings {
 	 * @param string $image  Shape name.
 	 * @param array  $texts  Per-rating labels.
 	 * @param array  $values Per-rating scores.
+	 * @param array  $colors Per-rating colours, each '' to use the rated colour.
 	 *
 	 * @return void
 	 */
-	public static function render_rating_fields( $custom, $max, $image, $texts, $values ) {
+	public static function render_rating_fields( $custom, $max, $image, $texts, $values, $colors = array() ) {
+		// What an empty per-rating colour falls back to, and what the disabled
+		// input shows so the swatch is never misleadingly black.
+		$rated_color = (string) WP_PostRatings_Options::get( 'colors' )['on'];
 		?>
 		<table class="widefat striped">
 			<thead>
@@ -851,6 +856,7 @@ class WP_PostRatings_Settings {
 					<th scope="col"><?php esc_html_e( 'Rating', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Rating Text', 'wp-postratings' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Rating Value', 'wp-postratings' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Colour', 'wp-postratings' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -860,6 +866,7 @@ class WP_PostRatings_Settings {
 					// loop, so neither index is guaranteed to exist.
 					$text  = isset( $texts[ $i - 1 ] ) ? $texts[ $i - 1 ] : '';
 					$value = isset( $values[ $i - 1 ] ) ? (int) $values[ $i - 1 ] : $i;
+					$color = isset( $colors[ $i - 1 ] ) ? (string) $colors[ $i - 1 ] : '';
 					?>
 					<tr>
 						<td class="wp-postratings">
@@ -885,6 +892,19 @@ class WP_PostRatings_Settings {
 							<input type="number" id="wp_postratings_ratingsvalue_<?php echo esc_attr( $i ); ?>"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[value][]"
 								value="<?php echo esc_attr( $value ); ?>" class="small-text" />
+						</td>
+						<td>
+							<label class="screen-reader-text" for="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Colour', 'wp-postratings' ); ?></label>
+							<input type="color" id="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"
+								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color][]"
+								value="<?php echo esc_attr( '' !== $color ? $color : $rated_color ); ?>"
+								<?php disabled( '' === $color ); ?> />
+							<label>
+								<input type="checkbox" class="wp-postratings-color-default"
+									name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color_default][]"
+									value="<?php echo esc_attr( $i ); ?>" <?php checked( '' === $color ); ?> />
+								<?php esc_html_e( 'Default', 'wp-postratings' ); ?>
+							</label>
 						</td>
 					</tr>
 				<?php endfor; ?>
