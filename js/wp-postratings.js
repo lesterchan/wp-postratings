@@ -18,25 +18,6 @@
 	const inFlight = new Set();
 
 	/**
-	 * Show or hide the loading indicator for a post.
-	 *
-	 * @param {number}  postId  Post id.
-	 * @param {boolean} visible Whether to show it.
-	 * @return {void}
-	 */
-	function toggleLoading( postId, visible ) {
-		if ( ! Number( l10n.showLoading ) ) {
-			return;
-		}
-
-		const loading = document.getElementById( 'wp-postratings-' + postId + '-loading' );
-
-		if ( loading ) {
-			loading.hidden = ! visible;
-		}
-	}
-
-	/**
 	 * Post a vote and replace the control with whatever comes back.
 	 *
 	 * @param {Element} control The fieldset or button group that was used.
@@ -67,12 +48,10 @@
 		inFlight.add( postId );
 
 		// aria-busy rather than an opacity tween: it dims the control through
-		// CSS *and* tells assistive technology the region is updating.
-		if ( Number( l10n.showFading ) ) {
-			container.setAttribute( 'aria-busy', 'true' );
-		}
-
-		toggleLoading( postId, true );
+		// CSS *and* tells assistive technology the region is updating. Always
+		// set, because the second half of that is not a preference. A site that
+		// wants no dimming styles .wp-postratings[aria-busy="true"].
+		container.setAttribute( 'aria-busy', 'true' );
 
 		const body = new URLSearchParams();
 
@@ -91,7 +70,6 @@
 				container.innerHTML = html;
 			}
 
-			toggleLoading( postId, false );
 			container.removeAttribute( 'aria-busy' );
 			inFlight.delete( postId );
 		}

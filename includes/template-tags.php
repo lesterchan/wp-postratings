@@ -40,27 +40,6 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 
 	$ratings_id = (int) $ratings_id;
 
-	$ajax_style = (array) WP_PostRatings_Options::get( 'ajax_style' );
-	$loading    = '';
-
-	if ( ! empty( $ajax_style['loading'] ) ) {
-		// The spinner is a CSS pseudo-element since 2.0.0, so there is no
-		// loading.gif to request and it inherits the surrounding text colour.
-		/**
-		 * Filters the text shown while a vote is in flight.
-		 *
-		 * @since 1.87
-		 *
-		 * @param string $loading_text Loading text.
-		 */
-		$loading_text = apply_filters( 'wp_postratings_loading_alt', esc_html__( 'Loading...', 'wp-postratings' ) );
-
-		// The hidden attribute rather than an inline style: the stylesheet owns
-		// the rule, and the script toggles the property instead of a string.
-		$loading = '<' . $start_tag . ' id="wp-postratings-' . $ratings_id . '-loading" class="wp-postratings-loading"' .
-			' role="status" hidden>' . esc_html( $loading_text ) . '</' . $start_tag . '>';
-	}
-
 	$user_voted = check_rated( $ratings_id );
 
 	$attributes = 'id="wp-postratings-' . $ratings_id . '" class="wp-postratings"';
@@ -68,19 +47,24 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 	/** This filter is documented in includes/class-wp-postratings-template.php */
 	$disable_richsnippet = apply_filters( 'wp_postratings_disable_richsnippet', false );
 
-	if ( ! $disable_richsnippet && is_singular() && WP_PostRatings_Options::get( 'richsnippet' ) ) {
+	$schema_type = (string) WP_PostRatings_Options::get( 'schema_type' );
+
+	if ( ! $disable_richsnippet && is_singular() && '' !== $schema_type ) {
 		/** This filter is documented in includes/class-wp-postratings-template.php */
-		$itemtype    = apply_filters( 'wp_postratings_schema_itemtype', 'itemscope itemtype="https://schema.org/Article"' );
+		$itemtype    = apply_filters(
+			'wp_postratings_schema_itemtype',
+			'itemscope itemtype="https://schema.org/' . $schema_type . '"'
+		);
 		$attributes .= ' ' . $itemtype;
 	}
 
 	if ( $user_voted ) {
-		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id ) . '</' . $start_tag . '>' . $loading;
+		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id ) . '</' . $start_tag . '>';
 	} elseif ( ! check_allowtorate() ) {
-		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id, 0, 0, 0, 1 ) . '</' . $start_tag . '>' . $loading;
+		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id, 0, 0, 0, 1 ) . '</' . $start_tag . '>';
 	} else {
 		$nonce  = wp_create_nonce( 'wp_postratings_' . $ratings_id . '-nonce' );
-		$output = "<$start_tag $attributes data-nonce=\"" . esc_attr( $nonce ) . '">' . the_ratings_vote( $ratings_id ) . '</' . $start_tag . '>' . $loading;
+		$output = "<$start_tag $attributes data-nonce=\"" . esc_attr( $nonce ) . '">' . the_ratings_vote( $ratings_id ) . '</' . $start_tag . '>';
 	}
 
 	if ( ! $display ) {

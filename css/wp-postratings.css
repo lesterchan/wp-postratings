@@ -243,45 +243,13 @@
 	pointer-events: none;
 }
 
-.wp-postratings-loading {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4em;
-}
-
-/* The markup ships with the hidden attribute, so the display above has to
-   yield to it; without this the loading text is visible on page load. */
-.wp-postratings-loading[hidden] {
-	display: none;
-}
-
 /* The rich snippet is <meta> elements inside a wrapper, which has to be a
    block element to be valid and so has to be taken out of flow by hand. */
 .wp-postratings-schema {
 	display: none;
 }
 
-.wp-postratings-loading::before {
-	content: "";
-	inline-size: 1em;
-	block-size: 1em;
-	border: 2px solid currentColor;
-	border-block-start-color: transparent;
-	border-radius: 50%;
-	animation: wp-postratings-spin 700ms linear infinite;
-}
-
-@keyframes wp-postratings-spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
-	.wp-postratings-loading::before {
-		animation-duration: 3s;
-	}
-
 	.wp-postratings-vote label,
 	.wp-postratings-updown button,
 	.wp-postratings {

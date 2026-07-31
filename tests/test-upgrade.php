@@ -99,7 +99,12 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$this->assertArrayNotHasKey( 'richsnippet', $options, 'the retired toggle survived the migration' );
 		$this->assertArrayNotHasKey( 'richsnippet_ratings', $options, 'the retired toggle survived the migration' );
 		$this->assertSame( array( 'Awful', 'Poor', 'OK', 'Good', 'Superb' ), $options['ratings']['text'] );
-		$this->assertSame( array( 0, 1 ), array( (int) $options['ajax_style']['loading'], (int) $options['ajax_style']['fading'] ) );
+		// The two "while a vote is in flight" settings are retired with the two
+		// rich snippet ones. The loading text is gone and the rating always dims,
+		// because dimming it is aria-busy -- which announces the update to
+		// assistive technology as well as greying it, and that is not a
+		// preference.
+		$this->assertArrayNotHasKey( 'ajax_style', $options, 'the retired AJAX style settings survived the migration' );
 	}
 
 	/**

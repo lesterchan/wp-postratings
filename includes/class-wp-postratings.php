@@ -134,10 +134,8 @@ class WP_PostRatings {
 				// Much smaller than before 2.0.0: hovering is CSS now, so the
 				// script no longer needs the image set, the extension, the
 				// scale or the plugin URL to rewrite <img> sources with.
-				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
-				'textWait'    => __( 'Please rate only 1 item at a time.', 'wp-postratings' ),
-				'showLoading' => (int) $options['ajax_style']['loading'],
-				'showFading'  => (int) $options['ajax_style']['fading'],
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				'textWait' => __( 'Please rate only 1 item at a time.', 'wp-postratings' ),
 			)
 		);
 	}

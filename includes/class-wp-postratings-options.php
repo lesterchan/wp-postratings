@@ -100,7 +100,6 @@ class WP_PostRatings_Options {
 			'postratings_customrating'          => array( 'customrating' ),
 			'postratings_allowtorate'           => array( 'allowtorate' ),
 			'postratings_logging_method'        => array( 'logging_method' ),
-			'postratings_ajax_style'            => array( 'ajax_style' ),
 			'postratings_ratingstext'           => array( 'ratings', 'text' ),
 			'postratings_ratingsvalue'          => array( 'ratings', 'value' ),
 			'postratings_template_vote'         => array( 'templates', 'vote' ),
@@ -194,10 +193,6 @@ class WP_PostRatings_Options {
 			// not a slice of a row six plugins wrote to at once.
 			'stats_display'    => 1,
 			'stats_most_limit' => 10,
-			'ajax_style'       => array(
-				'loading' => 1,
-				'fading'  => 1,
-			),
 			// The colour used to be chosen by picking a whole image set:
 			// stars_crystal and stars_dark were the same star in another
 			// colour. Collapsing those into CSS would have left the choice
@@ -306,7 +301,7 @@ class WP_PostRatings_Options {
 	private static function merge( array $defaults, array $stored ) {
 		$merged = array_merge( $defaults, $stored );
 
-		foreach ( array( 'ajax_style', 'colors', 'ratings', 'templates' ) as $group ) {
+		foreach ( array( 'colors', 'ratings', 'templates' ) as $group ) {
 			if ( isset( $stored[ $group ] ) && is_array( $stored[ $group ] ) ) {
 				$merged[ $group ] = array_merge( $defaults[ $group ], $stored[ $group ] );
 			} else {
@@ -389,14 +384,6 @@ class WP_PostRatings_Options {
 
 		if ( isset( $options['stats_most_limit'] ) ) {
 			$clean['stats_most_limit'] = max( 1, (int) $options['stats_most_limit'] );
-		}
-
-		if ( isset( $options['ajax_style'] ) && is_array( $options['ajax_style'] ) ) {
-			foreach ( array( 'loading', 'fading' ) as $key ) {
-				if ( isset( $options['ajax_style'][ $key ] ) ) {
-					$clean['ajax_style'][ $key ] = empty( $options['ajax_style'][ $key ] ) ? 0 : 1;
-				}
-			}
 		}
 
 		if ( isset( $options['colors'] ) && is_array( $options['colors'] ) ) {
@@ -585,6 +572,16 @@ class WP_PostRatings_Options {
 		 * being handed a type it never chose.
 		 */
 		unset( $merged['richsnippet'], $merged['richsnippet_ratings'] );
+
+		/*
+		 * The two "while a vote is in flight" settings are retired.
+		 *
+		 * The loading text is gone entirely and the rating always dims, because
+		 * dimming it is aria-busy, which tells assistive technology the region
+		 * is updating as well as greying it -- that is not a preference. A site
+		 * that wants it back styles .wp-postratings[aria-busy="true"].
+		 */
+		unset( $merged['ajax_style'] );
 
 		/*
 		 * The key is 'shape' now, not 'image'.

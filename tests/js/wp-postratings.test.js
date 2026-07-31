@@ -91,14 +91,17 @@ describe( 'wp-postratings front end', () => {
 		);
 	} );
 
-	it( 'shows the loading indicator while voting and hides it once the response lands', async () => {
-		const loading = document.getElementById( 'wp-postratings-4-loading' );
+	it( 'marks the rating busy while voting and clears it once the response lands', async () => {
+		const container = document.getElementById( 'wp-postratings-4' );
 
 		choose( 4 );
 
-		expect( loading.hidden ).toBe( false );
+		// aria-busy is always set now: it dims the control through CSS and tells
+		// assistive technology the region is updating, and the second half of
+		// that was never a preference worth a setting.
+		expect( container.getAttribute( 'aria-busy' ) ).toBe( 'true' );
 
-		await vi.waitFor( () => expect( loading.hidden ).toBe( true ) );
+		await vi.waitFor( () => expect( container.hasAttribute( 'aria-busy' ) ).toBe( false ) );
 	} );
 
 	// --- keyboard ---------------------------------------------------------

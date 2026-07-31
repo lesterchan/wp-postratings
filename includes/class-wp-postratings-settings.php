@@ -54,7 +54,6 @@ class WP_PostRatings_Settings {
 	/**
 	 * What happens while a vote is in flight.
 	 */
-	const SECTION_AJAX = 'wp_postratings_ajax';
 
 	/**
 	 * Who may rate, and how repeat votes are detected.
@@ -191,7 +190,6 @@ class WP_PostRatings_Settings {
 		$sections = array(
 			array( self::SECTION_APPEARANCE, __( 'Appearance', 'wp-postratings' ), $settings ),
 			array( self::SECTION_RATINGS, __( 'Individual Rating Text and Value', 'wp-postratings' ), $settings ),
-			array( self::SECTION_AJAX, __( 'While A Vote Is In Flight', 'wp-postratings' ), $settings ),
 			array( self::SECTION_VOTING, __( 'Who May Rate', 'wp-postratings' ), $settings ),
 			array( self::SECTION_SNIPPETS, __( 'Google Rich Snippets', 'wp-postratings' ), $settings ),
 			array( self::SECTION_STATS, __( 'WP-Stats', 'wp-postratings' ), $settings ),
@@ -209,8 +207,6 @@ class WP_PostRatings_Settings {
 			array( 'max', __( 'Max Ratings:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'colors', __( 'Ratings Colour:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'ratings', __( 'Rating Text / Value:', 'wp-postratings' ), self::SECTION_RATINGS, $settings ),
-			array( 'loading', __( 'Show Loading Text:', 'wp-postratings' ), self::SECTION_AJAX, $settings ),
-			array( 'fading', __( 'Fade The Rating While Voting:', 'wp-postratings' ), self::SECTION_AJAX, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'logging_method', __( 'Ratings Logging Method:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
@@ -446,24 +442,6 @@ class WP_PostRatings_Settings {
 			?>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Whether to show the loading text.
-	 *
-	 * @return void
-	 */
-	public static function field_loading() {
-		self::yes_no( 'loading', (array) WP_PostRatings_Options::get( 'ajax_style' ), 'ajax_style' );
-	}
-
-	/**
-	 * Whether to dim the rating while the vote is posted.
-	 *
-	 * @return void
-	 */
-	public static function field_fading() {
-		self::yes_no( 'fading', (array) WP_PostRatings_Options::get( 'ajax_style' ), 'ajax_style' );
 	}
 
 	/**
