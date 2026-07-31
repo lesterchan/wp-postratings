@@ -328,7 +328,7 @@ class WP_PostRatings_Settings {
 
 			// Wrapped in .wp-postratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
-			echo '<p class="wp-postratings wp-postratings-shape-row">';
+			echo '<p class="wp-postratings-shape-row">';
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />',
 				esc_attr( self::name( 'shape' ) ),
@@ -338,6 +338,12 @@ class WP_PostRatings_Settings {
 				esc_attr( $is_updown ? 2 : $max )
 			);
 
+			// The preview keeps its own .wp-postratings wrapper, which is
+			// inline-flex and is what lays the glyphs out. The row around it is a
+			// separate flex container -- putting both classes on one element made
+			// the row's display win and the shapes vanished.
+			echo '<span class="wp-postratings">';
+
 			if ( $is_updown ) {
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, 1, $name, '' ) );
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images_comment_author( 1, 2, -1, $name, '' ) );
@@ -345,6 +351,8 @@ class WP_PostRatings_Settings {
 				// Filled to 60% so the preview shows both states at once.
 				WP_PostRatings_Template::render( WP_PostRatings_Template::ratings_images( 0, $max, $max * 0.6, $name, '' ) );
 			}
+
+			echo '</span>';
 
 			echo '<span>' . esc_html( $shape['label'] ) . '</span>';
 			echo '</p>' . "\n";

@@ -28,10 +28,14 @@
 }
 
 /* The shape picker on the settings screen: one shape per line.
-   .wp-postratings is inline-flex so a rating sits in a line of text, which puts
-   every shape in the picker on the same line. This wins by coming after it. */
+   Its own element, not .wp-postratings with an extra class. That wrapper is
+   inline-flex because a rating sits in a line of text, and it is what lays the
+   glyphs out -- overriding its display to get the rows onto separate lines took
+   the shapes with it. */
 .wp-postratings-shape-row {
 	display: flex;
+	align-items: center;
+	gap: 0.5em;
 	margin-block: 0.5em;
 }
 
