@@ -264,5 +264,4 @@ describe( 'wp-postratings settings screen', () => {
 		expect( swatches[ 0 ].value ).toBe( '#f5a623' );
 		expect( swatches[ 1 ].value ).toBe( '#d4d4d8' );
 	} );
-
 } );

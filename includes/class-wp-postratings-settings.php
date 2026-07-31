@@ -866,6 +866,7 @@ class WP_PostRatings_Settings {
 							<label class="screen-reader-text" for="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Rated', 'wp-postratings' ); ?></label>
 							<input type="color" id="wp_postratings_ratingscolor_<?php echo esc_attr( $i ); ?>"
 								class="wp-postratings-color" data-default="<?php echo esc_attr( $rated_color ); ?>"
+								data-property="--wp-postratings-color-on"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color][]"
 								value="<?php echo esc_attr( '' !== $color ? $color : $rated_color ); ?>" />
 						</td>
@@ -873,6 +874,7 @@ class WP_PostRatings_Settings {
 							<label class="screen-reader-text" for="wp_postratings_ratingscoloroff_<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Not rated', 'wp-postratings' ); ?></label>
 							<input type="color" id="wp_postratings_ratingscoloroff_<?php echo esc_attr( $i ); ?>"
 								class="wp-postratings-color" data-default="<?php echo esc_attr( $unrated_color ); ?>"
+								data-property="--wp-postratings-color-off"
 								name="<?php echo esc_attr( self::name( 'ratings' ) ); ?>[color_off][]"
 								value="<?php echo esc_attr( '' !== $color_off ? $color_off : $unrated_color ); ?>" />
 						</td>
@@ -882,7 +884,7 @@ class WP_PostRatings_Settings {
 		</table>
 		<p>
 			<button type="button" class="button" id="wp-postratings-reset-colors">
-				<?php esc_html_e( 'Reset colours to the site-wide ones', 'wp-postratings' ); ?>
+				<?php esc_html_e( 'Reset to default', 'wp-postratings' ); ?>
 			</button>
 		</p>
 		<?php

@@ -418,6 +418,36 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 3 ), 'a step with no colour of its own emitted one' );
 		$this->assertSame( '', WP_PostRatings_Template::rating_color_style( 0 ), 'an unrated post emitted a colour' );
 	}
+
+	/**
+	 * The unrated colour reaches the page too.
+	 *
+	 * It was stored and offered on the screen but never rendered, so setting it
+	 * did nothing and the unrated glyphs stayed the built-in grey.
+	 */
+	public function test_the_unrated_colour_reaches_the_strip() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['ratings']['color']     = array( '', '#ff0000', '', '', '' );
+		$options['ratings']['color_off'] = array( '', '#eeeeee', '', '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame(
+			'--wp-postratings-color-on:#ff0000;--wp-postratings-color-off:#eeeeee',
+			WP_PostRatings_Template::rating_color_style( 2 ),
+			'the unrated colour did not reach the strip'
+		);
+
+		// A step that sets only one gets only that one.
+		$options['ratings']['color']     = array( '', '', '', '', '' );
+		$options['ratings']['color_off'] = array( '', '#eeeeee', '', '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$this->assertSame(
+			'--wp-postratings-color-off:#eeeeee',
+			WP_PostRatings_Template::rating_color_style( 2 ),
+			'a step with only an unrated colour emitted the rated one too'
+		);
+	}
 	/**
 	 * A site-wide colour is carried onto every rating rather than dropped.
 	 *

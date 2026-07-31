@@ -251,7 +251,20 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 	 */
 	public function test_no_jquery_is_enqueued() {
 		WP_PostRatings::get_instance()->scripts();
-		WP_PostRatings_Admin::scripts( 'toplevel_page_' . WP_PostRatings_Admin::PAGE );
+
+		// Registered first, and driven with a hook the menu actually reported.
+		// Passing a hand-built string here is how this test went on passing
+		// while the assets had stopped loading on the real screen.
+		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		WP_PostRatings_Admin::menu();
+
+		$hooks = WP_PostRatings_Admin::screen_hooks();
+
+		$this->assertNotEmpty( $hooks, 'the menu registered no screens to enqueue on' );
+
+		WP_PostRatings_Admin::scripts( $hooks[0] );
 
 		$scripts = wp_scripts();
 

@@ -347,4 +347,45 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( 'Settings', $labels[0], 'the first entry is not Settings' );
 		$this->assertSame( 'Logs', $labels[1], 'the log is not called Logs' );
 	}
+	/**
+	 * The assets load on the screens the menu actually registered.
+	 *
+	 * This has silently broken twice: once when the menu was renamed, and once
+	 * when Settings became the top-level page. Both times screen_hooks() went on
+	 * describing a menu that no longer existed, the stylesheet stopped being
+	 * enqueued, and -- because every rating shape is a CSS mask from that
+	 * stylesheet -- the shape picker rendered as a list of labels. Nothing
+	 * errored either time.
+	 *
+	 * So this does not assert the strings. It registers the menu, takes the
+	 * hooks WordPress reports for the plugin's own pages, and requires
+	 * screen_hooks() to be exactly those.
+	 */
+	public function test_the_assets_load_on_the_screens_the_menu_registered() {
+		global $menu, $submenu;
+
+		$menu    = array();
+		$submenu = array();
+
+		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
+		wp_set_current_user( $user );
+
+		WP_PostRatings_Admin::menu();
+
+		$parent   = WP_PostRatings_Settings::page();
+		$expected = array( get_plugin_page_hookname( $parent, '' ) );
+
+		foreach ( wp_list_pluck( $submenu[ $parent ], 2 ) as $slug ) {
+			$expected[] = get_plugin_page_hookname( $slug, $parent );
+		}
+
+		$expected = array_values( array_unique( $expected ) );
+		$actual   = WP_PostRatings_Admin::screen_hooks();
+
+		sort( $expected );
+		sort( $actual );
+
+		$this->assertSame( $expected, $actual, 'screen_hooks() describes a menu that is not the one registered' );
+	}
 }

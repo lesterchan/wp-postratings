@@ -151,19 +151,35 @@ class WP_PostRatings_Template {
 	 *
 	 * @param float $rating Rating being displayed.
 	 *
-	 * @return string A CSS declaration, or '' to leave the site-wide colour alone.
+	 * @return string CSS declarations, or '' to leave the built-in colours alone.
 	 */
 	public static function rating_color_style( $rating ) {
-		$colors = (array) ( WP_PostRatings_Options::get( 'ratings' )['color'] ?? array() );
-		$step   = (int) round( (float) $rating );
+		$ratings = (array) WP_PostRatings_Options::get( 'ratings' );
+		$step    = (int) round( (float) $rating );
 
-		if ( $step < 1 || ! isset( $colors[ $step - 1 ] ) ) {
+		if ( $step < 1 ) {
 			return '';
 		}
 
-		$color = (string) $colors[ $step - 1 ];
+		// Both colours, not just the rated one. A step that sets only one gets
+		// only that one, and the stylesheet's own fallback covers the other.
+		$properties = array(
+			'color'     => '--wp-postratings-color-on',
+			'color_off' => '--wp-postratings-color-off',
+		);
 
-		return '' === $color ? '' : '--wp-postratings-color-on:' . $color;
+		$declarations = array();
+
+		foreach ( $properties as $key => $property ) {
+			$colors = (array) ( $ratings[ $key ] ?? array() );
+			$color  = isset( $colors[ $step - 1 ] ) ? (string) $colors[ $step - 1 ] : '';
+
+			if ( '' !== $color ) {
+				$declarations[] = $property . ':' . $color;
+			}
+		}
+
+		return implode( ';', $declarations );
 	}
 
 	/**

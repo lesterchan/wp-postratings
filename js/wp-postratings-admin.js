@@ -81,6 +81,41 @@
 		}
 	}
 
+	/**
+	 * Paint a swatch's colour onto the preview in its own row.
+	 *
+	 * The preview is the same markup the front end renders, and it takes its
+	 * colours from two custom properties, so setting them on the cell shows the
+	 * real thing rather than an approximation of it.
+	 *
+	 * @param {Element} input The colour input that changed.
+	 * @return {void}
+	 */
+	function paintPreview( input ) {
+		const row = input.closest( 'tr' );
+
+		if ( ! row ) {
+			return;
+		}
+
+		const preview = row.querySelector( '.wp-postratings-rating-preview' );
+
+		if ( preview && input.dataset.property ) {
+			preview.style.setProperty( input.dataset.property, input.value );
+		}
+	}
+
+	// Colour inputs fire "input" continuously while the picker is open, so the
+	// preview follows the colour as it is being chosen rather than only once the
+	// picker closes.
+	document.addEventListener( 'input', function( event ) {
+		const swatch = event.target.closest( '.wp-postratings-color' );
+
+		if ( swatch ) {
+			paintPreview( swatch );
+		}
+	} );
+
 	// The scale is a number input, so it changes without a click.
 	document.addEventListener( 'change', function( event ) {
 		if ( event.target.closest( '#wp_postratings_max' ) ) {
@@ -122,6 +157,7 @@
 				document.querySelectorAll( '.wp-postratings-color' ),
 				function( input ) {
 					input.value = input.dataset.default;
+					paintPreview( input );
 				},
 			);
 

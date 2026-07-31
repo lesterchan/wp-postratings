@@ -71,7 +71,7 @@ class WP_PostRatings_Admin {
 		 * WordPress orders submenus by registration and the parent's own entry
 		 * is always registered first.
 		 */
-		$hook = add_menu_page(
+		self::$screen_hooks[] = add_menu_page(
 			__( 'Ratings Settings', 'wp-postratings' ),
 			self::menu_title(),
 			WP_PostRatings_Settings::capability(),
@@ -80,7 +80,7 @@ class WP_PostRatings_Admin {
 			'dashicons-star-filled'
 		);
 
-		add_submenu_page(
+		self::$screen_hooks[] = add_submenu_page(
 			WP_PostRatings_Settings::page(),
 			__( 'Ratings Settings', 'wp-postratings' ),
 			__( 'Settings', 'wp-postratings' ),
@@ -98,10 +98,18 @@ class WP_PostRatings_Admin {
 			array( __CLASS__, 'render_manage' )
 		);
 
-		unset( $hook );
+		self::$screen_hooks[] = $logs;
+		self::$screen_hooks   = array_values( array_unique( array_filter( self::$screen_hooks ) ) );
 
 		add_action( 'load-' . $logs, array( __CLASS__, 'load_manage' ) );
 	}
+
+	/**
+	 * The hook suffixes WordPress handed back when the menu was registered.
+	 *
+	 * @var string[]
+	 */
+	private static $screen_hooks = array();
 
 	/**
 	 * The top level menu's title, which also names every submenu's hook suffix.
@@ -118,24 +126,25 @@ class WP_PostRatings_Admin {
 	/**
 	 * The hook suffixes WordPress reports for this plugin's own admin screens.
 	 *
-	 * Derived from the menu title, never spelled out. WordPress builds a
-	 * submenu's hook suffix as sanitize_title( $menu_title ) . '_page_' . $slug,
-	 * so these strings move whenever the menu is renamed. They were hardcoded to
-	 * 'ratings_page_', and renaming the menu to WP-PostRatings silently stopped
-	 * the stylesheet loading on the settings screen -- which draws every rating
-	 * shape as a CSS mask, so the shape picker became a list of labels with
-	 * nothing beside them.
+	 * Recorded, not derived and never spelled out.
+	 *
+	 * WordPress builds a submenu's hook as sanitize_title( $menu_title ) .
+	 * '_page_' . $slug, and the top-level entry's as 'toplevel_page_' . $slug --
+	 * so the strings move when the menu is renamed *and* when it is reordered.
+	 * This has now silently stopped the stylesheet loading on the settings
+	 * screen twice: once when the menu was renamed to WP-PostRatings while
+	 * 'ratings_page_' was hardcoded, and again when Settings became the
+	 * top-level page while the prefix was being derived from the title. Every
+	 * rating shape is a CSS mask from that stylesheet, so both times the picker
+	 * became a list of labels with nothing beside them, and nothing errored.
+	 *
+	 * add_menu_page() and add_submenu_page() each hand back the hook they
+	 * registered. Keeping those is the only version of this that cannot drift.
 	 *
 	 * @return string[]
 	 */
 	public static function screen_hooks() {
-		$prefix = sanitize_title( self::menu_title() ) . '_page_';
-
-		return array(
-			'toplevel_page_' . self::PAGE,
-			$prefix . self::PAGE,
-			$prefix . WP_PostRatings_Settings::page(),
-		);
+		return self::$screen_hooks;
 	}
 
 	/**
