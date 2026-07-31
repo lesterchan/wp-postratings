@@ -479,4 +479,34 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( array( '#eeeeee', '#eeeeee', '#eeeeee' ), $ratings['color_off'], 'the chosen unrated colour was lost' );
 		$this->assertArrayNotHasKey( 'colors', WP_PostRatings_Options::get(), 'the retired site-wide row survived' );
 	}
+	/**
+	 * An up/down pair can be two different colours at once.
+	 *
+	 * The case this whole column exists for. The read-only strip picks its
+	 * colour from the post's current rating, which is right when one glyph is on
+	 * screen -- but a vote control shows every step together, so colouring it
+	 * that way could only ever paint both the same.
+	 */
+	public function test_an_up_down_control_carries_a_colour_per_step() {
+		$options                         = WP_PostRatings_Options::get();
+		$options['shape']                = 'thumb';
+		$options['max']                  = 2;
+		$options['ratings']['color']     = array( '#00ff00', '#ff0000' );
+		$options['ratings']['color_off'] = array( '', '' );
+		WP_PostRatings_Options::update( $options );
+
+		$html = WP_PostRatings_Template::ratings_images_vote( 1, 0, 2, 0, 'thumb', '', 0, array( 'Down', 'Up' ) );
+
+		// Step 1 is the down vote and step 2 the up vote.
+		$this->assertMatchesRegularExpression(
+			'/class="wp-postratings-down"[^>]*style="[^"]*--wp-postratings-color-on:#00ff00/',
+			$html,
+			'the down vote did not take step 1\'s colour'
+		);
+		$this->assertMatchesRegularExpression(
+			'/class="wp-postratings-up"[^>]*style="[^"]*--wp-postratings-color-on:#ff0000/',
+			$html,
+			'the up vote did not take step 2\'s colour'
+		);
+	}
 }

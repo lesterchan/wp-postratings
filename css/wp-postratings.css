@@ -225,14 +225,17 @@
 	outline-offset: 2px;
 }
 
+/* A step's own rated colour wins over the built-in green and red, so an
+   up/down pair coloured in the settings shows those colours rather than these.
+   The built-ins stay as the fallback for a site that has set neither. */
 .wp-postratings-updown .wp-postratings-up:hover,
 .wp-postratings-updown .wp-postratings-up:focus-visible {
-	color: var( --wp-postratings-color-up, #2e9e4f );
+	color: var( --wp-postratings-color-on, var( --wp-postratings-color-up, #2e9e4f ) );
 }
 
 .wp-postratings-updown .wp-postratings-down:hover,
 .wp-postratings-updown .wp-postratings-down:focus-visible {
-	color: var( --wp-postratings-color-down, #e5484d );
+	color: var( --wp-postratings-color-on, var( --wp-postratings-color-down, #e5484d ) );
 }
 
 .wp-postratings-updown button span {

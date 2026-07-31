@@ -307,7 +307,13 @@ class WP_PostRatings_Template {
 			$html .= '<input type="radio" id="' . esc_attr( $id ) . '"';
 			$html .= ' name="wp-postratings-' . esc_attr( $post_id ) . '"';
 			$html .= ' value="' . esc_attr( $i ) . '" data-rating="' . esc_attr( $i ) . '" />';
-			$html .= '<label for="' . esc_attr( $id ) . '">';
+			// Each step carries its own colours, for the reason given in
+			// updown_control(): every step of the scale is on screen at once.
+			$label_style = self::rating_color_style( $i );
+
+			$html .= '<label for="' . esc_attr( $id ) . '"';
+			$html .= '' !== $label_style ? ' style="' . esc_attr( $label_style ) . '"' : '';
+			$html .= '>';
 			$html .= '<i class="wp-postratings-item"></i><span>' . esc_html( $label ) . '</span>';
 			$html .= '</label>';
 		}
@@ -346,7 +352,25 @@ class WP_PostRatings_Template {
 		foreach ( $buttons as $button ) {
 			list( $direction, $value, $label, $item_style ) = $button;
 
+			/*
+			 * The step's colours go on the button, not on the glyph inside it.
+			 * The stylesheet colours these through the button's own `color`, and
+			 * `background-color: currentColor` on the glyph inherits it -- a
+			 * custom property set on the glyph would arrive too late to be read.
+			 *
+			 * This is what makes an up/down pair able to be green and red at
+			 * once: the control shows both steps together, so colouring it from
+			 * the post's current rating -- which is what the read-only strip
+			 * does -- could only ever paint them the same.
+			 */
+			$button_style = self::rating_color_style( $value );
+
 			$html .= '<button type="button" class="wp-postratings-' . esc_attr( $direction ) . '"';
+
+			if ( '' !== $button_style ) {
+				$html .= ' style="' . esc_attr( $button_style ) . '"';
+			}
+
 			$html .= ' data-rating="' . esc_attr( $value ) . '">';
 			$html .= '<i class="wp-postratings-item" style="' . esc_attr( $item_style ) . '"></i>';
 			$html .= '<span>' . esc_html( $label ) . '</span>';
