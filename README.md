@@ -435,7 +435,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Changelog
 ### 2.0.0
-* BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4. A site on an older stack simply will not be offered the update.
+* BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4.
 * BREAKING: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
 * BREAKING: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. Every class and element id is now prefixed with the plugin slug: `.post-ratings` is `.wp-postratings`, `.post-ratings-image` no longer exists at all, and the wrapper id is `wp-postratings-123` rather than `post-ratings-123`. Colour, size and spacing are CSS custom properties, which is usually a one-line replacement; see the FAQ.
 * BREAKING: The vote images no longer carry inline `onmouseover`/`onclick` attributes; hovering and clicking are handled by one delegated listener. Custom CSS or JavaScript that targeted those inline handlers, or that called `current_rating()` or `rate_post()` directly, needs updating.
@@ -473,42 +473,39 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Upgrade Notice
 
-### 2.0.0. This is a major release and it changes things you may have customised. Read this before updating from 1.91.3.
+### 2.0.0
 
-**Your server has to be new enough.** WP-PostRatings now needs WordPress 6.8 and PHP 8.2. If your site is older than that, WordPress will not offer you the update at all. Ask your host to move you to a current PHP before updating.
+Requires WordPress 6.8 and PHP 8.2.
 
-**Your settings move themselves.** The first page load after the update folds the fifteen `postratings_*` option rows, plus the two shared `stats_display` and `stats_mostlimit` rows, into one `wp_postratings_options` row, and replaces `postratings_db_version` and `postratings_options_version` with a single `wp_postratings_version`. You do not have to do anything, but if you have code that reads those old rows directly, it will find them gone.
+**Settings migrate on the first admin page load.** The fifteen `postratings_*` rows, plus the shared `stats_display` and `stats_mostlimit` rows, are folded into one `wp_postratings_options` row, and `postratings_db_version` and `postratings_options_version` become a single `wp_postratings_version`. Code reading the old rows directly will find them gone.
 
-**If you use WP-Stats, update all seven plugins together.** WP-Stats, WP-PostRatings, WP-Polls, WP-EMail, WP-PostViews, WP-DownloadManager and WP-DraftsForFriends all used to share two unprefixed option rows, `stats_display` and `stats_mostlimit`. Each of them now keeps its own copy and deletes the shared rows once it has read them, so whichever you update first takes them away from the rest. Every plugin treats a missing row as "show my block" rather than "hide it", so nothing disappears — but a block you had deliberately switched off may come back. Switch it off again under **Ratings -> Settings -> WP-Stats**, where "Show a ratings section on the stats page" and the entries-per-list figure now live.
+**Update all seven WP-Stats plugins together.** WP-Stats, WP-PostRatings, WP-Polls, WP-EMail, WP-PostViews, WP-DownloadManager and WP-DraftsForFriends shared two unprefixed rows, `stats_display` and `stats_mostlimit`. Each now keeps its own copy and deletes the shared rows once it has read them, so whichever you update first takes them from the rest. A missing row means "show", so a block you had switched off may reappear — switch it off again under **Ratings -> Settings -> WP-Stats**, where the setting and the entries-per-list figure now live.
 
-**The settings screen moved.** It is at **Ratings -> Settings** now, and what used to be two menu entries — Ratings Options and Ratings Templates — are two tabs of that one page. Any bookmark to `admin.php?page=wp-postratings-options` should become `admin.php?page=wp-postratings-settings`. The capability is unchanged: it is still `manage_ratings`.
+**The settings screen is at Ratings -> Settings**, with Ratings Options and Ratings Templates as two tabs of it. `admin.php?page=wp-postratings-options` is now `admin.php?page=wp-postratings-settings`. The capability is still `manage_ratings`.
 
-**Google rich snippets are off, and now have a type to choose.** The two settings — "Enable Google Rich Snippets?" and "Enable Ratings In Rich Snippets?" — are one setting, **Show ratings in Google results?**, and it starts at **No**.
+**Two Google rich snippet settings became one, defaulting to No.** "Enable Google Rich Snippets?" and "Enable Ratings In Rich Snippets?" are now **Show ratings in Google results?**. The old markup declared `schema.org/Article`, and Google shows ratings only for Book, Course, Event, Local Business, Movie, Organization, Product, Recipe, Software App and a few subtypes — so on an ordinary post it never produced a rich result.
 
-They had become the same decision, and the markup they produced could not do what it promised. It declared `schema.org/Article`, and Google shows a rating only for Book, Course, Event, Local Business, Movie, Organization, Product, Recipe, Software App and a few subtypes. Article, BlogPosting and NewsArticle are not on that list, so on an ordinary post it never produced a rich result at all. Nothing that worked is being taken away.
+If you filtered `wp_postratings_schema_itemtype` to a supported type, you *were* getting a real rich result, and it stops until you select that same type in the new setting. The filter still runs and still has the last word. Pick a type only if the content genuinely is that thing: marking a blog post as a `Product` to collect stars is spammy structured markup, and it costs a manual action.
 
-**Unless you filtered `wp_postratings_schema_itemtype`.** If you used that filter to declare a supported type — a recipe blog pointing it at `Recipe`, a review site at `Product` — you *were* getting a real rich result, and it stops until you pick that same type in the new setting. The filter still runs and still has the last word, so an existing filter keeps working as long as the setting is not left at No.
+**Rating images are now CSS shapes.** The 16 image sets are 9 shapes; whichever set you had is mapped to the matching shape automatically. A custom image folder falls back to stars — the FAQ shows how to register a shape instead, which survives updates.
 
-Pick a type only if your posts genuinely are that thing. Structured data has to describe the page, and marking a blog post as a `Product` to collect stars is what Google calls spammy structured markup — it costs a manual action, not a ranking.
-
-**Your rating images are replaced by shapes.** The 16 image sets are now 9 shapes drawn with CSS. Whichever set you had chosen is mapped to the matching shape automatically. If you had added your own folder of images, it falls back to stars — the FAQ shows how to register a shape instead, which survives updates.
-
-**Custom CSS almost certainly needs updating.** Every class and id now starts with the plugin slug:
+**Custom CSS needs updating.** Every class and id is slug-prefixed now:
 
 * `.post-ratings` is now `.wp-postratings`
-* `.post-ratings-image` is gone entirely; there is no `<img>` any more
+* `.post-ratings-image` is gone; there is no `<img>` any more
 * the wrapper id is `wp-postratings-123`, not `post-ratings-123`
 * the stylesheet is `css/wp-postratings.css`, not `postratings-css.css`, and there is no `-rtl` variant
 
-Colour, size, spacing and hover colour are CSS custom properties now, so most old overrides become a one-line change. See the FAQ.
+Colour, size, spacing and hover colour are CSS custom properties, so most overrides become a one-line change. See the FAQ.
 
-**Custom PHP may need updating.** Two things were renamed with no shim left behind:
+**Renamed with no shim left behind:**
 
 * the `rate_post` action is now `wp_postratings_rate_post`, with the same three arguments
-* the `RATINGS_IMG_EXT` constant is now `WP_POSTRATINGS_IMG_EXT`
+* `RATINGS_IMG_EXT` is now `WP_POSTRATINGS_IMG_EXT`
+* every class is `WP_PostRatings_*` rather than `Postratings_*`
 
-Every class was also renamed from `Postratings_*` to `WP_PostRatings_*`. The template tags — `the_ratings()`, `get_highest_rated()`, `get_most_rated()` and the rest — are unchanged, and so are the twenty-two filters that were already prefixed `wp_postratings_`.
+The template tags — `the_ratings()`, `get_highest_rated()`, `get_most_rated()` and the rest — and the twenty-two `wp_postratings_*` filters are unchanged.
 
-**Check the IP header setting.** If "Header That Contains The IP" is filled in, the plugin now reads only the first valid address in it rather than storing the whole chain. Rating logs recorded through that header before the update will no longer match, so a few visitors may be able to rate once more. If you are not behind Cloudflare, a load balancer or another reverse proxy, clear the field.
+**"Header That Contains The IP" now reads only the first valid address** rather than storing the whole chain. Rating logs recorded through it before the update no longer match, so a few visitors may be able to rate once more. Clear the field unless you are behind a reverse proxy.
 
-**Custom JavaScript.** The rating markup carries no inline `onmouseover` or `onclick` handlers any more, and there is no jQuery. Anything calling `current_rating()` or `rate_post()` in the browser needs rewriting against the delegated listener in `js/wp-postratings.js`.
+**Custom JavaScript.** The markup carries no inline `onmouseover` or `onclick` handlers and there is no jQuery. Code calling `current_rating()` or `rate_post()` in the browser must be rewritten against the delegated listener in `js/wp-postratings.js`.
