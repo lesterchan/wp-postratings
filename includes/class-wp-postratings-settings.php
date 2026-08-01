@@ -198,7 +198,7 @@ class WP_PostRatings_Settings {
 			array( self::SECTION_VOTING, __( 'Who May Rate', 'wp-postratings' ), $settings ),
 			array( self::SECTION_SNIPPETS, __( 'Google Rich Snippets', 'wp-postratings' ), $settings ),
 			array( self::SECTION_STATS, __( 'WP-Stats', 'wp-postratings' ), $settings ),
-			array( self::SECTION_TEMPLATES, __( 'Ratings Templates', 'wp-postratings' ), $templates ),
+			array( self::SECTION_TEMPLATES, '', $templates ),
 		);
 
 		foreach ( $sections as $section ) {
