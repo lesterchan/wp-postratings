@@ -59,6 +59,15 @@ async function loginAs( browser, baseURL, username ) {
 	const page = await context.newPage();
 
 	await page.goto( `${ baseURL }/wp-login.php` );
+
+	// wp-login.php focuses and selects #user_login on a 200ms timer, so that a
+	// visitor can start typing. Filling across that moment puts the password
+	// into the username box: Playwright focuses #user_pass, the timer takes
+	// focus back and selects what is there, and the typed text replaces the
+	// selection. Waiting for the timer's own effect is the signal that it has
+	// already fired -- a sleep would only make the race less likely.
+	await expect( page.locator( '#user_login' ) ).toBeFocused();
+
 	await page.locator( '#user_login' ).fill( username );
 	await page.locator( '#user_pass' ).fill( 'correct-horse-battery-staple' );
 	await page.locator( '#wp-submit' ).click();
