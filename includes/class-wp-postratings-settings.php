@@ -211,7 +211,7 @@ class WP_PostRatings_Settings {
 			array( 'shape', __( 'Ratings Shape:', 'wp-postratings' ), self::SECTION_APPEARANCE, $settings ),
 			array( 'allowtorate', __( 'Who Is Allowed To Rate?', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'check_method', __( 'Check For Repeat Votes:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
-			array( 'ip_header', __( 'Header That Contains The IP:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
+			array( 'ip_header', __( 'Header That Contains The IP', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'schema_type', __( 'Show ratings in Google results?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
 			array( 'stats_display', __( 'Show A Ratings Section On The Stats Page?', 'wp-postratings' ), self::SECTION_STATS, $settings ),
 			array( 'stats_most_limit', __( 'Entries Per Stats List:', 'wp-postratings' ), self::SECTION_STATS, $settings ),
