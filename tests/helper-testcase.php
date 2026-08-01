@@ -64,6 +64,29 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Run the uninstaller's option work, repeatably.
+	 *
+	 * Deliberately not a require of uninstall.php. That file reaches
+	 * WP_PostRatings_Install::uninstall_site(), which drops wp_ratings - DDL,
+	 * which MySQL commits, so it survives the transaction wrapping the rest of
+	 * the suite and one test would take the table away from every test after
+	 * it. The deletions are performed here instead, over the same
+	 * WP_PostRatings_Options::all_option_names() list the uninstaller loops
+	 * over, so a row missing from that list still fails the shared uninstall
+	 * test. That uninstall.php itself delegates to the installer, lifts the
+	 * site query cap and restores inside the loop is asserted against the
+	 * source in test-uninstall.php, and the table, capability and post meta it
+	 * also removes are covered there behaviourally.
+	 *
+	 * @return void
+	 */
+	protected function run_uninstall() {
+		foreach ( WP_PostRatings_Options::all_option_names() as $option_name ) {
+			delete_option( $option_name );
+		}
+	}
+
+	/**
 	 * Set one plugin setting.
 	 *
 	 * @param string $key   Top level setting name.

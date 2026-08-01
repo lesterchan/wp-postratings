@@ -1,260 +1,153 @@
 <?php
 /**
- * The checks every one of the nineteen plugins carries.
+ * WP-PostRatings' half of the metadata contract.
  *
- * They are about the things a release gets wrong quietly: a readme header that
- * lost its line breaks and renders as one run-on paragraph on wordpress.org, a
- * version that agrees with itself in two places out of three, an option row
- * that outlives the plugin that made it. None of them need a browser and none
- * of them need judgement, so they belong in the suite rather than in a
- * pre-release checklist nobody reads.
+ * The contract itself is Plugin_Metadata_TestCase, a byte-identical copy of
+ * _standards/templates/helper-metadata-testcase.php that every one of the
+ * nineteen plugins carries. Everything shared lives there. What is left here is
+ * what a machine cannot derive from the directory: the version being shipped,
+ * the class prefix, the breaks the Upgrade Notice has to name, and the hooks
+ * that have to reach into WP-PostRatings' own classes.
  *
  * @package WP-PostRatings
  */
 
 /**
- * Plugin metadata, layout and the option rows.
+ * The shared contract, plus what only WP-PostRatings can answer.
  */
-class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
+class WP_PostRatings_Metadata_Test extends Plugin_Metadata_TestCase {
 
 	/**
-	 * The nine README header fields, in order.
+	 * The version this release ships.
 	 *
-	 * @var array
-	 */
-	private static $header_fields = array(
-		'Contributors:',
-		'Donate link:',
-		'Tags:',
-		'Requires at least:',
-		'Tested up to:',
-		'Stable tag:',
-		'Requires PHP:',
-		'License:',
-		'License URI:',
-	);
-
-	/**
-	 * The h2 headings a README may carry, in the order they must appear.
-	 *
-	 * @var array
-	 */
-	private static $sections = array(
-		'## Description',
-		'## Usage',
-		'## Frequently Asked Questions',
-		'## Screenshots',
-		'## Changelog',
-		'## Upgrade Notice',
-	);
-
-	/**
-	 * The README, as shipped.
+	 * Written out rather than read from WP_POSTRATINGS_VERSION, so a bump has to
+	 * be made here as well and cannot happen by accident.
 	 *
 	 * @return string
 	 */
-	private function readme() {
-		return (string) file_get_contents( dirname( __DIR__ ) . '/README.md' );
+	protected function expected_version() {
+		return '2.0.0';
 	}
 
 	/**
-	 * The main plugin file, as shipped.
+	 * The prefix every class the plugin declares carries.
 	 *
 	 * @return string
 	 */
-	private function plugin_file() {
-		return (string) file_get_contents( dirname( __DIR__ ) . '/wp-postratings.php' );
+	protected function class_prefix() {
+		return 'WP_PostRatings';
 	}
 
 	/**
-	 * One value from the README header.
+	 * Everything a site owner updating from the released version would notice.
 	 *
-	 * @param string $field Field name, including the colon.
+	 * The fifteen option rows that were folded up, the two shared WP-Stats rows,
+	 * the settings screen that moved, the rich snippet settings that became one,
+	 * the images that became CSS shapes, every renamed class, hook, constant and
+	 * selector, and the browser functions custom JavaScript used to call.
 	 *
-	 * @return string
+	 * @return string[]
 	 */
-	private function readme_field( $field ) {
-		preg_match( '/^' . preg_quote( $field, '/' ) . '\s*(.+?)\s*$/m', $this->readme(), $matches );
-
-		return isset( $matches[1] ) ? $matches[1] : '';
-	}
-
-	/**
-	 * One value from the plugin file header.
-	 *
-	 * @param string $field Field name, including the colon.
-	 *
-	 * @return string
-	 */
-	private function header_field( $field ) {
-		preg_match( '/^\s*\*\s*' . preg_quote( $field, '/' ) . '\s*(.+?)\s*$/m', $this->plugin_file(), $matches );
-
-		return isset( $matches[1] ) ? $matches[1] : '';
-	}
-
-	// --- the README header ------------------------------------------------
-
-	/**
-	 * Eight of the nine header lines end in two spaces, and the ninth does not.
-	 *
-	 * Markdown turns a line ending in two spaces into a line break. Without
-	 * them wordpress.org renders the whole header as one paragraph, which is
-	 * the single most common thing to get wrong in a plugin readme.
-	 *
-	 * @return void
-	 */
-	public function test_every_readme_header_line_keeps_its_line_break() {
-		$lines  = explode( "\n", $this->readme() );
-		$header = array();
-
-		foreach ( array_slice( $lines, 1 ) as $line ) {
-			if ( '' === trim( $line ) ) {
-				break;
-			}
-
-			$header[] = $line;
-		}
-
-		$this->assertCount( 9, $header, 'the README header should be exactly nine fields' );
-
-		foreach ( self::$header_fields as $index => $field ) {
-			$this->assertStringStartsWith( $field, trim( $header[ $index ] ), 'header field ' . ( $index + 1 ) . ' is out of order' );
-		}
-
-		foreach ( array_slice( $header, 0, 8 ) as $line ) {
-			$this->assertStringEndsWith( '  ', $line, trim( $line ) . ' has lost its two trailing spaces' );
-		}
-
-		$last = $header[8];
-		$this->assertSame( rtrim( $last ), $last, 'the last header line must not have trailing spaces' );
-	}
-
-	/**
-	 * Every URL in the metadata points at lesterchan.net or the GNU licence.
-	 *
-	 * @return void
-	 */
-	public function test_canonical_lesterchan_urls() {
-		$this->assertSame( 'https://lesterchan.net/portfolio/programming/php/', $this->header_field( 'Plugin URI:' ) );
-		$this->assertSame( 'https://lesterchan.net', $this->header_field( 'Author URI:' ) );
-		$this->assertSame( 'https://lesterchan.net/site/donation/', $this->readme_field( 'Donate link:' ) );
-		$this->assertSame( 'https://www.gnu.org/licenses/gpl-2.0.html', $this->readme_field( 'License URI:' ) );
-		$this->assertSame( 'https://www.gnu.org/licenses/gpl-2.0.html', $this->header_field( 'License URI:' ) );
-	}
-
-	/**
-	 * The Contributors field names one person and no one else.
-	 *
-	 * @return void
-	 */
-	public function test_contributors_is_gamerz_only() {
-		$this->assertSame( 'GamerZ', $this->readme_field( 'Contributors:' ) );
-	}
-
-	/**
-	 * The text domain is the slug, and the translations live in /languages.
-	 *
-	 * @return void
-	 */
-	public function test_text_domain_is_the_plugin_slug() {
-		$this->assertSame( 'wp-postratings', $this->header_field( 'Text Domain:' ) );
-		$this->assertSame( '/languages', $this->header_field( 'Domain Path:' ) );
-		$this->assertSame( 'wp-postratings', WP_POSTRATINGS_SLUG );
-	}
-
-	/**
-	 * The version agrees in the header, the README and the constant.
-	 *
-	 * @return void
-	 */
-	public function test_version_matches_everywhere() {
-		$this->assertSame( WP_POSTRATINGS_VERSION, $this->header_field( 'Version:' ) );
-		$this->assertSame( WP_POSTRATINGS_VERSION, $this->readme_field( 'Stable tag:' ) );
-	}
-
-	/**
-	 * The supported floors agree between the header and the README.
-	 *
-	 * @return void
-	 */
-	public function test_requires_headers_match_readme() {
-		$this->assertSame( '6.8', $this->header_field( 'Requires at least:' ) );
-		$this->assertSame( '6.8', $this->readme_field( 'Requires at least:' ) );
-		$this->assertSame( '8.2', $this->header_field( 'Requires PHP:' ) );
-		$this->assertSame( '8.2', $this->readme_field( 'Requires PHP:' ) );
-	}
-
-	// --- the README body --------------------------------------------------
-
-	/**
-	 * The level two headings are the canonical set, in the canonical order.
-	 *
-	 * Level three headings are free; this is only about the h2s.
-	 *
-	 * @return void
-	 */
-	public function test_readme_sections_are_the_canonical_set() {
-		preg_match_all( '/^## .+$/m', $this->readme(), $matches );
-
-		$found = array_map( 'rtrim', $matches[0] );
-
-		foreach ( $found as $heading ) {
-			$this->assertContains( $heading, self::$sections, $heading . ' is not one of the canonical headings' );
-		}
-
-		$expected = array_values(
-			array_filter(
-				self::$sections,
-				static function ( $section ) use ( $found ) {
-					return in_array( $section, $found, true );
-				}
-			)
+	protected function upgrade_notice_subjects() {
+		return array(
+			'6.8',
+			'8.2',
+			'stats_display',
+			'stats_mostlimit',
+			'wp_postratings_options',
+			'wp_postratings_version',
+			'postratings_db_version',
+			'wp-postratings-options',
+			'wp-postratings-settings',
+			'manage_ratings',
+			'wp_postratings_schema_itemtype',
+			'.post-ratings',
+			'.wp-postratings',
+			'wp-postratings-123',
+			'postratings-css.css',
+			'css/wp-postratings.css',
+			'wp_postratings_rate_post',
+			'RATINGS_IMG_EXT',
+			'WP_POSTRATINGS_IMG_EXT',
+			'Postratings_',
+			'WP_PostRatings_',
+			'current_rating()',
+			'js/wp-postratings.js',
 		);
-
-		$this->assertSame( $expected, $found, 'the sections are out of order' );
-
-		foreach ( array( '## Description', '## Changelog', '## Upgrade Notice' ) as $required ) {
-			$this->assertContains( $required, $found, $required . ' is missing' );
-		}
 	}
 
 	/**
-	 * Every changelog bullet opens with one of the five allowed prefixes.
+	 * WP-PostRatings is one of the seven sharing the WP-Stats surface.
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	public function test_changelog_prefixes_are_canonical() {
-		$readme    = $this->readme();
-		$changelog = substr( $readme, strpos( $readme, '## Changelog' ) );
-		$end       = strpos( $changelog, '## Upgrade Notice' );
-		$changelog = false === $end ? $changelog : substr( $changelog, 0, $end );
-
-		preg_match_all( '/^\* (.*)$/m', $changelog, $matches );
-
-		$this->assertNotEmpty( $matches[1], 'the changelog has no entries at all' );
-
-		foreach ( $matches[1] as $entry ) {
-			$this->assertMatchesRegularExpression(
-				'/^(BREAKING|NEW|CHANGED|FIXED|NOTE): /',
-				$entry,
-				'changelog entry does not start with an allowed prefix: ' . $entry
-			);
-		}
+	protected function wp_stats_family() {
+		return true;
 	}
 
-	// --- what ships -------------------------------------------------------
+	/**
+	 * The unprefixed WP-Stats rows WP-PostRatings reads but does not own.
+	 *
+	 * @return string[]
+	 */
+	protected function shared_wp_stats_rows() {
+		return array( 'stats_display', 'stats_mostlimit' );
+	}
 
 	/**
-	 * No script the plugin registers depends on jQuery.
+	 * Write the rows uninstall is expected to remove.
 	 *
 	 * @return void
 	 */
-	public function test_no_jquery_is_enqueued() {
+	protected function seed_option_rows() {
+		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
+		WP_PostRatings_Options::update_markers();
+	}
+
+	/**
+	 * Write the wp_postratings_version marker row.
+	 *
+	 * @return void
+	 */
+	protected function write_version_row() {
+		WP_PostRatings_Options::update_markers();
+	}
+
+	/**
+	 * Round-trip the settings sanitiser.
+	 *
+	 * @param array $input What the settings form is pretending to have posted.
+	 * @return array
+	 */
+	protected function sanitize_settings( array $input ) {
+		return (array) WP_PostRatings_Options::sanitize( $input );
+	}
+
+	/**
+	 * Real settings keys to send through the sanitiser beside the poison.
+	 *
+	 * @return array
+	 */
+	protected function settings_fixture() {
+		return array(
+			'max'       => 5,
+			'ip_header' => 'HTTP_X_FORWARDED_FOR',
+		);
+	}
+
+	/**
+	 * Register the front-end and admin assets.
+	 *
+	 * The admin half is driven with a hook suffix the menu actually reported
+	 * rather than a hand-built string. That distinction is not pedantry: this
+	 * test went on passing with a hand-built one while the assets had stopped
+	 * loading on the real screen.
+	 *
+	 * @return void
+	 */
+	protected function register_plugin_assets() {
 		WP_PostRatings::get_instance()->scripts();
 
-		// Registered first, and driven with a hook the menu actually reported.
-		// Passing a hand-built string here is how this test went on passing
-		// while the assets had stopped loading on the real screen.
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 
@@ -262,311 +155,41 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 
 		$hooks = WP_PostRatings_Admin::screen_hooks();
 
-		$this->assertNotEmpty( $hooks, 'the menu registered no screens to enqueue on' );
+		$this->assertNotEmpty( $hooks, 'The menu registered no screens to enqueue on.' );
 
 		WP_PostRatings_Admin::scripts( $hooks[0] );
-
-		$scripts = wp_scripts();
-
-		foreach ( array( 'wp-postratings', 'wp-postratings-admin' ) as $handle ) {
-			$this->assertArrayHasKey( $handle, $scripts->registered, $handle . ' was not registered' );
-			$this->assertNotContains( 'jquery', $scripts->registered[ $handle ]->deps, $handle . ' still depends on jQuery' );
-		}
-
-		foreach ( glob( dirname( __DIR__ ) . '/js/*.js' ) as $file ) {
-			$this->assertDoesNotMatchRegularExpression( '/\bjQuery\b|\$\(/', (string) file_get_contents( $file ), basename( $file ) . ' uses jQuery' );
-		}
 	}
 
 	/**
-	 * Every shipped directory carries a silence-is-golden index.php.
+	 * The one stylesheet uses logical properties throughout.
+	 *
+	 * §5.1 drops the mirrored sheet, and the shared test proves no second sheet
+	 * ships. That is only safe if the sheet that remains works in both
+	 * directions, which is what this asserts - a physical margin-left reads
+	 * correctly in English and wrongly in Arabic, and nothing else would catch
+	 * it.
 	 *
 	 * @return void
 	 */
-	public function test_every_directory_has_an_index_php() {
-		$root = dirname( __DIR__ );
+	public function test_the_stylesheet_uses_logical_properties_only() {
+		$css = (string) file_get_contents( $this->metadata_root() . '/css/wp-postratings.css' );
 
-		$directories = array( '', '/bin', '/css', '/includes', '/js', '/tests', '/tests/e2e', '/tests/js' );
-
-		foreach ( $directories as $directory ) {
-			$this->assertFileExists( $root . $directory . '/index.php', ( '' === $directory ? '/' : $directory ) . ' has no index.php' );
-		}
-	}
-
-	/**
-	 * The plugin ships no RTL stylesheet and registers no rtl style data.
-	 *
-	 * A second sheet is a second thing to keep in step, and it only ever
-	 * existed because the first one used physical properties.
-	 *
-	 * @return void
-	 */
-	public function test_no_rtl_stylesheet_is_registered() {
-		$this->assertEmpty( glob( dirname( __DIR__ ) . '/css/*-rtl.css' ), 'an RTL stylesheet is still shipped' );
-
-		WP_PostRatings::get_instance()->scripts();
-
-		$this->assertFalse( wp_styles()->get_data( 'wp-postratings', 'rtl' ), 'the stylesheet still declares rtl data' );
-
-		$css = (string) file_get_contents( dirname( __DIR__ ) . '/css/wp-postratings.css' );
-
-		foreach ( array( 'margin-left', 'margin-right', 'padding-left', 'padding-right', 'text-align: left', 'text-align: right', 'border-left', 'border-right' ) as $physical ) {
-			$this->assertStringNotContainsString( $physical, $css, $physical . ' is a physical property; use its logical equivalent' );
-		}
-	}
-
-	// --- the option rows --------------------------------------------------
-
-	/**
-	 * Uninstalling leaves no row of this plugin's behind.
-	 *
-	 * Runs on a network too, where uninstall.php loops over every site and the
-	 * single-site path is never taken.
-	 *
-	 * @return void
-	 */
-	public function test_uninstall_removes_every_option_row() {
-		global $wpdb;
-
-		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
-		WP_PostRatings_Options::update_markers();
-
-		if ( is_multisite() ) {
-			$second = self::factory()->blog->create();
-
-			switch_to_blog( $second );
-			WP_PostRatings_Install::install();
-			restore_current_blog();
-		}
-
-		$this->run_uninstall();
-
-		$surviving = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'wp\\_postratings\\_%'" );
-
-		$this->assertSame( array(), $surviving, 'uninstall left rows behind: ' . implode( ', ', (array) $surviving ) );
-
-		if ( is_multisite() ) {
-			switch_to_blog( $second );
-			$surviving = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'wp\\_postratings\\_%'" );
-			restore_current_blog();
-
-			$this->assertSame( array(), $surviving, 'uninstall stopped at the first site of the network' );
-		}
-
-		$this->restore_after_uninstall();
-	}
-
-	/**
-	 * Run uninstall.php the way WordPress does.
-	 *
-	 * @return void
-	 */
-	private function run_uninstall() {
-		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			define( 'WP_UNINSTALL_PLUGIN', 'wp-postratings/wp-postratings.php' );
-		}
-
-		require dirname( __DIR__ ) . '/uninstall.php';
-	}
-
-	/**
-	 * Put the table and the capability back for whatever runs next.
-	 *
-	 * Deliberately NOT called from run_uninstall(). install() writes the option
-	 * rows as well as creating the table, so restoring inside the helper put
-	 * wp_postratings_options and wp_postratings_version straight back and the
-	 * caller then asserted that uninstall had left them behind. Restore after
-	 * asserting, never before.
-	 *
-	 * @return void
-	 */
-	private function restore_after_uninstall() {
-		WP_PostRatings_Install::install();
-	}
-
-	/**
-	 * The marker row holds exactly 'plugin' and 'db'.
-	 *
-	 * @return void
-	 */
-	public function test_version_row_holds_exactly_plugin_and_db() {
-		WP_PostRatings_Options::update_markers();
-
-		$markers = get_option( WP_PostRatings_Options::VERSION );
-
-		$this->assertIsArray( $markers, 'the marker row should be an array' );
-		$this->assertSame( array( 'plugin', 'db' ), array_keys( $markers ), 'the marker row carries exactly two keys' );
-		$this->assertSame( WP_POSTRATINGS_VERSION, $markers['plugin'] );
-		$this->assertSame( WP_POSTRATINGS_DB_VERSION, $markers['db'] );
-	}
-
-	/**
-	 * The sanitizer never writes an upgrade marker into the settings row.
-	 *
-	 * This is the regression guard for the bug wp-useronline shipped: with the
-	 * markers inside the settings array, every save had to rescue them by hand,
-	 * and the one that forgot made the upgrade re-run on every request. It
-	 * fails the moment somebody moves a marker back in.
-	 *
-	 * @return void
-	 */
-	public function test_settings_sanitizer_never_stores_version_markers() {
-		$clean = WP_PostRatings_Options::sanitize(
-			array(
-				'max'        => 5,
-				'version'    => '9.9.9',
-				'db_version' => '99',
-				'versions'   => array( 'plugin' => '9.9.9' ),
-				'ip_header'  => 'HTTP_X_FORWARDED_FOR',
-			)
+		$physical = array(
+			'margin-left',
+			'margin-right',
+			'padding-left',
+			'padding-right',
+			'text-align: left',
+			'text-align: right',
+			'border-left',
+			'border-right',
 		);
 
-		foreach ( array( 'version', 'db_version', 'versions' ) as $key ) {
-			$this->assertArrayNotHasKey( $key, $clean, $key . ' reached the settings row' );
-		}
-
-		WP_PostRatings_Options::update( $clean );
-
-		$this->assertSame( array( 'plugin', 'db' ), array_keys( (array) get_option( WP_PostRatings_Options::VERSION ) ) );
-	}
-	/**
-	 * The plugin root, whatever the checkout is called.
-	 *
-	 * @return string
-	 */
-	protected function metadata_root() {
-		return dirname( __DIR__ );
-	}
-
-	/**
-	 * Every PHP file the plugin ships, concatenated.
-	 *
-	 * @return string
-	 */
-	protected function metadata_source() {
-		$source = '';
-
-		foreach ( (array) glob( $this->metadata_root() . '/*.php' ) as $file ) {
-			$source .= (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the plugin's own source in a test.
-		}
-
-		foreach ( (array) glob( $this->metadata_root() . '/includes/*.php' ) as $file ) {
-			$source .= (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the plugin's own source in a test.
-		}
-
-		return $this->without_comments( $source );
-	}
-
-	/**
-	 * The same source with every comment removed.
-	 *
-	 * A test that greps the source for a call it does not want finds the comment
-	 * explaining why the call is absent, and fails the plugin for documenting
-	 * itself. wp-sweep says "There is no load_plugin_textdomain() call" and was
-	 * failed for saying so. Tokenising is the only honest way to tell code from
-	 * prose about code.
-	 *
-	 * @param string $source PHP source.
-	 * @return string
-	 */
-	protected function without_comments( $source ) {
-		$code = '';
-
-		foreach ( token_get_all( $source ) as $token ) {
-			if ( is_array( $token ) ) {
-				if ( T_COMMENT === $token[0] || T_DOC_COMMENT === $token[0] ) {
-					continue;
-				}
-				$code .= $token[1];
-				continue;
-			}
-
-			$code .= $token;
-		}
-
-		return $code;
-	}
-
-	/**
-	 * The GPL text ships with the plugin.
-	 *
-	 * @return void
-	 */
-	public function test_the_gpl_licence_is_shipped() {
-		$licence = (string) file_get_contents( $this->metadata_root() . '/LICENSE' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the plugin's own licence in a test.
-
-		$this->assertStringContainsString( 'GNU GENERAL PUBLIC LICENSE', $licence, 'The GPL text must ship with the plugin.' );
-		$this->assertStringContainsString( 'Version 2, June 1991', $licence, 'The licence must be GPLv2, matching the plugin header.' );
-	}
-
-	/**
-	 * The plugin header fields appear in the canonical order.
-	 *
-	 * @return void
-	 */
-	public function test_the_plugin_header_fields_are_in_the_canonical_order() {
-		$expected = array(
-			'Plugin Name',
-			'Plugin URI',
-			'Description',
-			'Version',
-			'Requires at least',
-			'Requires PHP',
-			'Author',
-			'Author URI',
-			'License',
-			'License URI',
-			'Text Domain',
-			'Domain Path',
-		);
-
-		// The main file is named for the directory, which is what wordpress.org
-		// installs it as.
-		$main = $this->metadata_root() . '/' . basename( $this->metadata_root() ) . '.php';
-		$this->assertFileExists( $main, 'The main plugin file is named after the plugin directory.' );
-
-		preg_match( '#^<\?php\s*/\*\*(.+?)\*/#s', (string) file_get_contents( $main ), $matches ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the plugin's own source in a test.
-		$this->assertNotEmpty( $matches, 'The plugin file must open with a docblock header.' );
-
-		preg_match_all( '/^\s*\*\s*([A-Z][A-Za-z ]*?):\s/m', $matches[1], $fields );
-
-		$this->assertSame( $expected, $fields[1], 'Plugin header fields must appear in the canonical order.' );
-	}
-
-	/**
-	 * The plugin leaves loading its translations to WordPress.
-	 *
-	 * @return void
-	 */
-	public function test_the_plugin_does_not_load_its_own_textdomain() {
-		// WordPress has loaded translations for wordpress.org plugins itself
-		// since 4.6, so a load_plugin_textdomain() call is dead weight that
-		// also fires before the plugin is on the translation server.
-		$this->assertStringNotContainsString(
-			'load_plugin_textdomain',
-			$this->metadata_source(),
-			'WordPress loads the textdomain itself since 4.6.'
-		);
-	}
-
-	/**
-	 * No build, editor or translation artefacts ship.
-	 *
-	 * @return void
-	 */
-	public function test_no_abandoned_build_or_translation_artefacts_ship() {
-		$root = $this->metadata_root();
-
-		$this->assertFileDoesNotExist( $root . '/.travis.yml', 'CI is GitHub Actions.' );
-		$this->assertFileDoesNotExist( $root . '/.wp-env.override.json', 'A personal wp-env override must not ship.' );
-		$this->assertDirectoryDoesNotExist( $root . '/languages', 'translate.wordpress.org builds the catalogue.' );
-		$this->assertDirectoryDoesNotExist( $root . '/.idea', 'Editor settings must not ship.' );
-
-		foreach ( array( 'pot', 'po', 'mo' ) as $extension ) {
-			$this->assertSame(
-				array(),
-				(array) glob( $root . '/*.' . $extension ),
-				"No .{$extension} files: translate.wordpress.org builds the catalogue."
+		foreach ( $physical as $property ) {
+			$this->assertStringNotContainsString(
+				$property,
+				$css,
+				$property . ' is a physical property; use its logical equivalent (§5.1).'
 			);
 		}
 	}

@@ -41,3 +41,10 @@ require $_tests_dir . '/includes/bootstrap.php';
 // After the WordPress bootstrap, which is what declares WP_UnitTestCase -- the
 // fixture base class extends it, so it cannot be loaded any earlier.
 require_once __DIR__ . '/helper-testcase.php';
+
+// The shared metadata contract. helper-metadata-testcase.php is a byte-identical
+// copy of _standards/templates/helper-metadata-testcase.php in all nineteen
+// plugins, so it cannot name WP_PostRatings_TestCase; it extends
+// Plugin_TestCase and this alias is the one per-plugin line the mechanism needs.
+class_alias( 'WP_PostRatings_TestCase', 'Plugin_TestCase' );
+require_once __DIR__ . '/helper-metadata-testcase.php';
