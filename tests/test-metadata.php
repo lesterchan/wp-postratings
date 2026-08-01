@@ -454,7 +454,37 @@ class WP_PostRatings_Metadata_Test extends WP_PostRatings_TestCase {
 			$source .= (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the plugin's own source in a test.
 		}
 
-		return $source;
+		return $this->without_comments( $source );
+	}
+
+	/**
+	 * The same source with every comment removed.
+	 *
+	 * A test that greps the source for a call it does not want finds the comment
+	 * explaining why the call is absent, and fails the plugin for documenting
+	 * itself. wp-sweep says "There is no load_plugin_textdomain() call" and was
+	 * failed for saying so. Tokenising is the only honest way to tell code from
+	 * prose about code.
+	 *
+	 * @param string $source PHP source.
+	 * @return string
+	 */
+	protected function without_comments( $source ) {
+		$code = '';
+
+		foreach ( token_get_all( $source ) as $token ) {
+			if ( is_array( $token ) ) {
+				if ( T_COMMENT === $token[0] || T_DOC_COMMENT === $token[0] ) {
+					continue;
+				}
+				$code .= $token[1];
+				continue;
+			}
+
+			$code .= $token;
+		}
+
+		return $code;
 	}
 
 	/**
