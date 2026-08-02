@@ -520,14 +520,14 @@ class WP_PostRatings_Settings {
 	public static function field_ip_header() {
 		?>
 		<input type="text" id="wp_postratings_ip_header" name="<?php echo esc_attr( self::name( 'ip_header' ) ); ?>"
-			value="<?php echo esc_attr( (string) WP_PostRatings_Options::get( 'ip_header' ) ); ?>" class="regular-text" />
+			value="<?php echo esc_attr( (string) WP_PostRatings_Options::get( 'ip_header' ) ); ?>" class="regular-text code" placeholder="HTTP_X_FORWARDED_FOR" />
 		<p class="description">
 			<?php esc_html_e( 'Leave this blank unless the site is behind a reverse proxy or CDN. Blank means the address the web server saw is used.', 'wp-postratings' ); ?>
 			<br />
 			<?php
 			printf(
 				/* translators: 1: an example header name, 2: the WP_POSTRATINGS_TRUST_PROXY constant, 3: the wp_postratings_trust_proxy filter, all in code spans. */
-				esc_html__( 'Example: %1$s. You can also opt in with the %2$s constant or the %3$s filter, which trust the usual proxy headers instead of one you name.', 'wp-postratings' ),
+				esc_html__( 'Example: %1$s. You can also opt in with the %2$s constant or the %3$s filter, which trust that header instead of one you name.', 'wp-postratings' ),
 				'<code>HTTP_X_FORWARDED_FOR</code>',
 				'<code>WP_POSTRATINGS_TRUST_PROXY</code>',
 				'<code>wp_postratings_trust_proxy</code>'
