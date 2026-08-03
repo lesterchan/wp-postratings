@@ -117,8 +117,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false ) );
 
-		$this->assertSame( $high, $ids[0] );
-		$this->assertContains( $low, $ids );
+		$this->assertSame( $high, $ids[0], 'On an up-down scale the highest score ranks first.' );
+		$this->assertContains( $low, $ids, 'While the lower one is still listed.' );
 	}
 
 	/**
@@ -132,8 +132,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'min_votes' => 5 ), 'highestrated', 0, false ) );
 
-		$this->assertContains( $solid, $ids );
-		$this->assertNotContains( $thin, $ids );
+		$this->assertContains( $solid, $ids, 'A post with enough votes is ranked.' );
+		$this->assertNotContains( $thin, $ids, 'And one below the minimum is not.' );
 	}
 
 	/**
@@ -163,10 +163,10 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 		$posts = $this->ids( WP_PostRatings_Stats::output( array( 'mode' => 'post' ), 'highestrated', 0, false ) );
 		$pages = $this->ids( WP_PostRatings_Stats::output( array( 'mode' => 'page' ), 'highestrated', 0, false ) );
 
-		$this->assertContains( $post, $posts );
-		$this->assertNotContains( $page, $posts );
-		$this->assertContains( $page, $pages );
-		$this->assertNotContains( $post, $pages );
+		$this->assertContains( $post, $posts, 'Asked for posts, the post is listed.' );
+		$this->assertNotContains( $page, $posts, 'And the page is not.' );
+		$this->assertContains( $page, $pages, 'Asked for pages, the page is listed.' );
+		$this->assertNotContains( $post, $pages, 'And the post is not.' );
 	}
 
 	/**
@@ -205,10 +205,10 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 		$ids = $this->ids( WP_PostRatings_Stats::output( array(), 'highestrated', 0, false ) );
 
-		$this->assertContains( $published, $ids );
-		$this->assertNotContains( $draft, $ids );
-		$this->assertNotContains( $protected, $ids );
-		$this->assertNotContains( $future, $ids );
+		$this->assertContains( $published, $ids, 'A published post is ranked.' );
+		$this->assertNotContains( $draft, $ids, 'A draft is not.' );
+		$this->assertNotContains( $protected, $ids, 'Nor a password protected post.' );
+		$this->assertNotContains( $future, $ids, 'Nor one scheduled for later.' );
 	}
 
 	// --- taxonomy filters -------------------------------------------------
@@ -238,8 +238,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertContains( $inside, $ids );
-		$this->assertNotContains( $outside, $ids );
+		$this->assertContains( $inside, $ids, 'A post in the category is listed.' );
+		$this->assertNotContains( $outside, $ids, 'And one outside it is not.' );
 	}
 
 	/**
@@ -269,8 +269,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertContains( $a, $ids );
-		$this->assertContains( $b, $ids );
+		$this->assertContains( $a, $ids, 'The first category is included.' );
+		$this->assertContains( $b, $ids, 'And the second, so several may be given.' );
 	}
 
 	/**
@@ -300,7 +300,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( array( $tagged ), $ids );
+		$this->assertSame( array( $tagged ), $ids, 'A tag filter matches on the tag taxonomy, not the category one.' );
 	}
 
 	/**
@@ -329,8 +329,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 		$wpdb->suppress_errors( $suppress );
 
-		$this->assertStringContainsString( 'N/A', $output );
-		$this->assertSame( '', $wpdb->last_error );
+		$this->assertStringContainsString( 'N/A', $output, 'An empty term list ranks nothing.' );
+		$this->assertSame( '', $wpdb->last_error, 'And leaves no syntax error behind.' );
 	}
 
 	/**
@@ -354,7 +354,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			false
 		);
 
-		$this->assertStringContainsString( 'N/A', $output );
+		$this->assertStringContainsString( 'N/A', $output, 'A term list of zeroes is treated as empty rather than as a term.' );
 	}
 
 	// --- the range shape --------------------------------------------------
@@ -383,8 +383,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertContains( $recent, $ids );
-		$this->assertNotContains( $stale, $ids );
+		$this->assertContains( $recent, $ids, 'A recent vote is counted in the window.' );
+		$this->assertNotContains( $stale, $ids, 'And an old one is not.' );
 	}
 
 	/**
@@ -411,8 +411,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertContains( $recent, $ids );
-		$this->assertContains( $stale, $ids );
+		$this->assertContains( $recent, $ids, 'A wider window still counts the recent vote.' );
+		$this->assertContains( $stale, $ids, 'And now the older one too.' );
 	}
 
 	/**
@@ -444,7 +444,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( $recent, $ids[0] );
+		$this->assertSame( $recent, $ids[0], 'The ranking is on the votes inside the window.' );
 	}
 
 	/**
@@ -480,7 +480,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( array( $inside ), $ids );
+		$this->assertSame( array( $inside ), $ids, 'The range shape accepts a taxonomy filter too.' );
 	}
 
 	/**
@@ -520,8 +520,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( $high, $highest[0] );
-		$this->assertSame( $low, $lowest[0] );
+		$this->assertSame( $high, $highest[0], 'Highest first orders by best.' );
+		$this->assertSame( $low, $lowest[0], 'And lowest first by worst.' );
 	}
 
 	// --- caching ----------------------------------------------------------
@@ -541,7 +541,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 		$highest = WP_PostRatings_Stats::output( array( 'order' => 'highest' ), 'highestrated', 0, false );
 		$lowest  = WP_PostRatings_Stats::output( array( 'order' => 'lowest' ), 'highestrated', 0, false );
 
-		$this->assertNotSame( $highest, $lowest );
+		$this->assertNotSame( $highest, $lowest, 'Two different queries do not share a cache entry.' );
 	}
 
 	/**
@@ -550,7 +550,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_empty_ranking_says_so() {
-		$this->assertStringContainsString( 'N/A', WP_PostRatings_Stats::output( array( 'mode' => 'nonexistent' ), 'highestrated', 0, false ) );
+		$this->assertStringContainsString( 'N/A', WP_PostRatings_Stats::output( array( 'mode' => 'nonexistent' ), 'highestrated', 0, false ), 'An empty ranking says so rather than rendering an empty list.' );
 	}
 
 	/**
@@ -565,6 +565,6 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Stats::output( array(), 'highestrated', 0, true );
 		$echoed = ob_get_clean();
 
-		$this->assertStringContainsString( '[' . $post_id . ']', $echoed );
+		$this->assertStringContainsString( '[' . $post_id . ']', $echoed, 'Asked to echo, the ranking is printed.' );
 	}
 }

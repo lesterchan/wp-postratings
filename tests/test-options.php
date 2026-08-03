@@ -18,8 +18,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_option_rows_are_prefixed_with_the_slug() {
-		$this->assertSame( 'wp_postratings_options', WP_PostRatings_Options::OPTION );
-		$this->assertSame( 'wp_postratings_version', WP_PostRatings_Options::VERSION );
+		$this->assertSame( 'wp_postratings_options', WP_PostRatings_Options::OPTION, 'The options row is prefixed with the slug.' );
+		$this->assertSame( 'wp_postratings_version', WP_PostRatings_Options::VERSION, 'And so is the version row.' );
 	}
 
 	/**
@@ -32,8 +32,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$options = WP_PostRatings_Options::get();
 
-		$this->assertSame( 7, $options['max'] );
-		$this->assertSame( 'star', $options['shape'] );
+		$this->assertSame( 7, $options['max'], 'A missing key falls back to its default.' );
+		$this->assertSame( 'star', $options['shape'], 'Whatever that default happens to be.' );
 		$this->assertArrayHasKey( 'vote', $options['templates'], 'A key absent from the stored row falls back to its shipped default.' );
 	}
 
@@ -50,8 +50,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$options = WP_PostRatings_Options::get();
 
-		$this->assertSame( 'CUSTOM', $options['templates']['vote'] );
-		$this->assertStringContainsString( '%RATINGS_IMAGES%', $options['templates']['text'] );
+		$this->assertSame( 'CUSTOM', $options['templates']['vote'], 'A partial group keeps the value it submitted.' );
+		$this->assertStringContainsString( '%RATINGS_IMAGES%', $options['templates']['text'], 'And the siblings it did not mention.' );
 	}
 
 	// --- migration --------------------------------------------------------
@@ -69,10 +69,10 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$options = WP_PostRatings_Options::get();
 
 		$this->assertSame( 'thumb', $options['shape'], 'the up/down set did not map to its shape' );
-		$this->assertSame( '2', $options['max'] );
-		$this->assertSame( '4', $options['check_method'] );
-		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'] );
-		$this->assertSame( array( -1, 1 ), $options['ratings']['value'] );
+		$this->assertSame( '2', $options['max'], 'The customised scale carries across the migration.' );
+		$this->assertSame( '4', $options['check_method'], 'The check method.' );
+		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'], 'The rating labels.' );
+		$this->assertSame( array( -1, 1 ), $options['ratings']['value'], 'And the values behind them.' );
 	}
 
 	/**
@@ -93,8 +93,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Options::maybe_migrate();
 
-		$this->assertSame( 'HTTP_CF_CONNECTING_IP', WP_PostRatings_Options::get( 'ip_header' ) );
-		$this->assertNotContains( WP_PostRatings_Options::OPTION, $this->legacy_names() );
+		$this->assertSame( 'HTTP_CF_CONNECTING_IP', WP_PostRatings_Options::get( 'ip_header' ), 'The reused row survives the migration.' );
+		$this->assertNotContains( WP_PostRatings_Options::OPTION, $this->legacy_names(), 'Because it is not on the list of legacy rows to delete.' );
 	}
 
 	/**
@@ -123,7 +123,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Options::maybe_migrate();
 
-		$this->assertSame( "O'Brien's %RATINGS_IMAGES_VOTE%", WP_PostRatings_Options::template( 'vote' ) );
+		$this->assertSame( "O'Brien's %RATINGS_IMAGES_VOTE%", WP_PostRatings_Options::template( 'vote' ), 'A slashed template is unslashed once, not left doubled.' );
 	}
 
 	/**
@@ -144,7 +144,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Options::maybe_migrate();
 		$second = WP_PostRatings_Options::get();
 
-		$this->assertSame( $first, $second );
+		$this->assertSame( $first, $second, 'Running the migration twice leaves the same result.' );
 		$this->assertSame( 'thumb', $second['shape'], 'the second run reverted to defaults' );
 	}
 
@@ -184,8 +184,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'templates' => array( 'vote' => 'X' ) ) );
 
-		$this->assertSame( 9, $clean['max'] );
-		$this->assertSame( 'X', $clean['templates']['vote'] );
+		$this->assertSame( 9, $clean['max'], 'A key absent from the submission keeps its stored value.' );
+		$this->assertSame( 'X', $clean['templates']['vote'], 'Templates included.' );
 	}
 
 	/**
@@ -199,7 +199,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	public function test_the_image_allow_list_matches_what_the_screen_offers() {
 		$shapes = WP_PostRatings_Shapes::names();
 
-		$this->assertContains( 'star', $shapes );
+		$this->assertContains( 'star', $shapes, 'The shape the screen offers is on the allow list.' );
 
 		foreach ( $shapes as $shape ) {
 			$clean = WP_PostRatings_Options::sanitize( array( 'shape' => $shape ) );
@@ -207,7 +207,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		}
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => '../../evil' ) );
-		$this->assertNotSame( '../../evil', $clean['shape'] );
+		$this->assertNotSame( '../../evil', $clean['shape'], 'While a path is not, so it cannot be saved as one.' );
 	}
 
 	/**
@@ -221,7 +221,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	public function test_a_legacy_set_name_is_accepted_and_mapped() {
 		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'stars_crystal' ) );
 
-		$this->assertSame( 'star', $clean['shape'] );
+		$this->assertSame( 'star', $clean['shape'], 'A legacy set name is accepted and mapped to the shape it became.' );
 	}
 
 	/**
@@ -238,8 +238,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 2, $clean['allowtorate'] );
-		$this->assertSame( 3, $clean['check_method'] );
+		$this->assertSame( 2, $clean['allowtorate'], 'An enumerated setting is constrained to its list.' );
+		$this->assertSame( 3, $clean['check_method'], 'For every one of them, not just the first.' );
 		$this->assertSame( WP_PostRatings_Options::MIN_SCALE, $clean['max'], 'a negative scale was not floored at the minimum' );
 	}
 
@@ -253,8 +253,8 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			array( 'templates' => array( 'vote' => '<strong>keep</strong><script>alert(1)</script>' ) )
 		);
 
-		$this->assertStringContainsString( '<strong>keep</strong>', $clean['templates']['vote'] );
-		$this->assertStringNotContainsString( '<script>', $clean['templates']['vote'] );
+		$this->assertStringContainsString( '<strong>keep</strong>', $clean['templates']['vote'], 'A template keeps the markup a site owner may use.' );
+		$this->assertStringNotContainsString( '<script>', $clean['templates']['vote'], 'And loses what they may not.' );
 	}
 
 	/**

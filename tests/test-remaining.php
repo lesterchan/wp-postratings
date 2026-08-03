@@ -28,8 +28,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_the_sort_query_vars_are_registered() {
 		$vars = apply_filters( 'query_vars', array() );
 
-		$this->assertContains( 'r_sortby', $vars );
-		$this->assertContains( 'r_orderby', $vars );
+		$this->assertContains( 'r_sortby', $vars, 'The sort column query var is registered.' );
+		$this->assertContains( 'r_orderby', $vars, 'And the direction one.' );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$ids = array_values( array_intersect( $query->posts, array( $low, $high ) ) );
 
-		$this->assertSame( array( $high, $low ), $ids );
+		$this->assertSame( array( $high, $low ), $ids, 'Highest rated sorts by average, best first.' );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$ids = array_values( array_intersect( $query->posts, array( $low, $high ) ) );
 
-		$this->assertSame( array( $low, $high ), $ids );
+		$this->assertSame( array( $low, $high ), $ids, 'And the direction is honoured.' );
 	}
 
 	/**
@@ -94,7 +94,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$ids = array_values( array_intersect( $query->posts, array( $few, $many ) ) );
 
-		$this->assertSame( array( $many, $few ), $ids );
+		$this->assertSame( array( $many, $few ), $ids, 'Most rated sorts by vote count, most first.' );
 	}
 
 	/**
@@ -114,7 +114,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		);
 
 		$this->assertNotEmpty( $query->posts, 'A junk sort direction is ignored rather than producing an empty result.' );
-		$this->assertSame( '', $query->last_error ?? '' );
+		$this->assertSame( '', $query->last_error ?? '', 'A junk direction is ignored rather than reaching ORDER BY.' );
 	}
 
 	/**
@@ -137,7 +137,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$plain = new WP_Query( array( 'fields' => 'ids' ) );
 
-		$this->assertStringNotContainsString( 'ratings_average', $plain->request );
+		$this->assertStringNotContainsString( 'ratings_average', $plain->request, 'The sort filters are removed, so a later query is unaffected.' );
 	}
 
 	// --- WP-Stats ---------------------------------------------------------
@@ -181,7 +181,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_a_disabled_wp_stats_section_is_not_offered() {
 		$this->set_option( 'stats_display', 0 );
 
-		$this->assertSame( array(), WP_PostRatings_WPStats::register_section( array() ) );
+		$this->assertSame( array(), WP_PostRatings_WPStats::register_section( array() ), 'With the section disabled there is nothing to register.' );
 	}
 
 	/**
@@ -198,8 +198,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		$html     = ob_get_clean();
 
 		$this->assertNull( $returned, 'render() echoes; it does not return markup' );
-		$this->assertStringContainsString( 'Highest Rated Post', $html );
-		$this->assertStringContainsString( '4', $html );
+		$this->assertStringContainsString( 'Highest Rated Post', $html, 'The section names the highest rated post.' );
+		$this->assertStringContainsString( '4', $html, 'And gives its figure.' );
 	}
 
 	/**
@@ -250,7 +250,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Options::maybe_migrate();
 
-		$this->assertSame( 7, (int) WP_PostRatings_Options::get( 'stats_most_limit' ) );
+		$this->assertSame( 7, (int) WP_PostRatings_Options::get( 'stats_most_limit' ), 'The shared row is read before the migration deletes it.' );
 		$this->assertFalse( get_option( 'stats_display' ), 'the shared row should be gone' );
 		$this->assertFalse( get_option( 'stats_mostlimit' ), 'the shared row should be gone' );
 	}
@@ -276,7 +276,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_the_wp_stats_limit_comes_from_our_own_row() {
 		$this->set_option( 'stats_most_limit', 3 );
 
-		$this->assertSame( 3, WP_PostRatings_WPStats::most_limit() );
+		$this->assertSame( 3, WP_PostRatings_WPStats::most_limit(), 'And the limit is read from the row of this plugin, not the shared one.' );
 	}
 
 	// --- shapes -----------------------------------------------------------
@@ -312,7 +312,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_an_unknown_shape_is_safe() {
 		$this->assertNull( WP_PostRatings_Shapes::get( 'does-not-exist' ), 'An unknown shape reads back null rather than raising a notice.' );
 		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'does-not-exist' ), 'An unknown shape is not treated as up-down by default.' );
-		$this->assertSame( '', WP_PostRatings_Shapes::data_uri( 'does-not-exist' ) );
+		$this->assertSame( '', WP_PostRatings_Shapes::data_uri( 'does-not-exist' ), 'An unknown shape yields nothing rather than a broken data URI.' );
 	}
 
 	// --- helpers ----------------------------------------------------------
@@ -323,8 +323,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_snippet_helper_truncates() {
-		$this->assertSame( 'abcde...', WP_PostRatings_Template::snippet( 'abcdefghij', 5 ) );
-		$this->assertSame( 'abc', WP_PostRatings_Template::snippet( 'abc', 10 ) );
+		$this->assertSame( 'abcde...', WP_PostRatings_Template::snippet( 'abcdefghij', 5 ), 'A string past the budget is cut and given an ellipsis.' );
+		$this->assertSame( 'abc', WP_PostRatings_Template::snippet( 'abc', 10 ), 'A string within it is returned whole.' );
 	}
 
 	/**
@@ -343,8 +343,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$excerpt = WP_PostRatings_Template::post_excerpt( $post_id, '', 'Confidential body copy.' );
 
-		$this->assertStringNotContainsString( 'Confidential', $excerpt );
-		$this->assertStringContainsString( 'protected post', $excerpt );
+		$this->assertStringNotContainsString( 'Confidential', $excerpt, 'A protected post does not leak its excerpt.' );
+		$this->assertStringContainsString( 'protected post', $excerpt, 'It says it is protected instead.' );
 	}
 
 	/**
@@ -357,7 +357,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_shortcodes_are_stripped_from_the_excerpt() {
 		$excerpt = WP_PostRatings_Template::post_excerpt( 0, '', 'Before [ratings] after.' );
 
-		$this->assertStringNotContainsString( '[ratings]', $excerpt );
+		$this->assertStringNotContainsString( '[ratings]', $excerpt, 'A shortcode is stripped from the excerpt rather than rendered in it.' );
 	}
 
 	/**
@@ -369,7 +369,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		$this->go_to( home_url( '/?feed=rss2' ) );
 
 		$this->assertTrue( is_feed(), 'The fixture really is a feed request, or the shortcode test below proves nothing.' );
-		$this->assertStringContainsString( 'visit this post to rate it', do_shortcode( '[ratings]' ) );
+		$this->assertStringContainsString( 'visit this post to rate it', do_shortcode( '[ratings]' ), 'In a feed the shortcode says where to vote rather than offering to.' );
 	}
 
 	// --- back compatibility -----------------------------------------------
@@ -388,10 +388,10 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		$this->setExpectedDeprecated( 'ratings_lock_file' );
 		$this->setExpectedDeprecated( 'snippet_text' );
 
-		$this->assertSame( WP_PostRatings_Rating::get_raw_ip(), ratings_get_raw_ipaddress() );
-		$this->assertSame( WP_PostRatings_Rating::get_ip(), ratings_get_ipaddress() );
-		$this->assertSame( WP_PostRatings_Rating::lock_file( 7 ), ratings_lock_file( 7 ) );
-		$this->assertSame( WP_PostRatings_Template::snippet( 'abc', 10 ), snippet_text( 'abc', 10 ) );
+		$this->assertSame( WP_PostRatings_Rating::get_raw_ip(), ratings_get_raw_ipaddress(), 'The raw address shim forwards.' );
+		$this->assertSame( WP_PostRatings_Rating::get_ip(), ratings_get_ipaddress(), 'The hashed address shim.' );
+		$this->assertSame( WP_PostRatings_Rating::lock_file( 7 ), ratings_lock_file( 7 ), 'The lock file shim.' );
+		$this->assertSame( WP_PostRatings_Template::snippet( 'abc', 10 ), snippet_text( 'abc', 10 ), 'And the snippet shim.' );
 	}
 
 	/**
@@ -404,7 +404,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 
 		$expected = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'stars', 'Alt', 0 );
 
-		$this->assertSame( $expected, get_ratings_images( 0, 5, 3, 'stars', 'Alt', 0 ) );
+		$this->assertSame( $expected, get_ratings_images( 0, 5, 3, 'stars', 'Alt', 0 ), 'The deprecated image builder forwards to the shape renderer.' );
 	}
 
 	/**
@@ -413,9 +413,9 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_path_constants_are_defined() {
-		$this->assertStringEndsWith( '/', WP_POSTRATINGS_DIR );
-		$this->assertStringEndsWith( '/', WP_POSTRATINGS_URL );
-		$this->assertSame( WP_POSTRATINGS_VERSION, '2.0.0' );
+		$this->assertStringEndsWith( '/', WP_POSTRATINGS_DIR, 'The directory constant is slash terminated, so it can be concatenated.' );
+		$this->assertStringEndsWith( '/', WP_POSTRATINGS_URL, 'And so is the URL constant.' );
+		$this->assertSame( WP_POSTRATINGS_VERSION, '2.0.0', 'The version constant is this release.' );
 	}
 
 	/**
@@ -426,6 +426,6 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_the_version_agrees_with_the_header() {
 		$data = get_file_data( WP_POSTRATINGS_MAIN_FILE, array( 'Version' => 'Version' ) );
 
-		$this->assertSame( WP_POSTRATINGS_VERSION, $data['Version'] );
+		$this->assertSame( WP_POSTRATINGS_VERSION, $data['Version'], 'And agrees with the plugin header.' );
 	}
 }

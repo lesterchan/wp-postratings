@@ -101,11 +101,11 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	public function test_the_figures_are_correct() {
 		$post_id = $this->make_rated_post( 4, 18 );
 
-		$this->assertSame( '4', expand_ratings_template( '%RATINGS_USERS%', $post_id, null, 0, false ) );
-		$this->assertSame( '18', expand_ratings_template( '%RATINGS_SCORE%', $post_id, null, 0, false ) );
-		$this->assertSame( '4.50', expand_ratings_template( '%RATINGS_AVERAGE%', $post_id, null, 0, false ) );
-		$this->assertSame( '5', expand_ratings_template( '%RATINGS_MAX%', $post_id, null, 0, false ) );
-		$this->assertSame( '90.00', expand_ratings_template( '%RATINGS_PERCENTAGE%', $post_id, null, 0, false ) );
+		$this->assertSame( '4', expand_ratings_template( '%RATINGS_USERS%', $post_id, null, 0, false ), 'The vote count is the number of voters.' );
+		$this->assertSame( '18', expand_ratings_template( '%RATINGS_SCORE%', $post_id, null, 0, false ), 'The score is their ratings added up.' );
+		$this->assertSame( '4.50', expand_ratings_template( '%RATINGS_AVERAGE%', $post_id, null, 0, false ), 'The average is the score over the count.' );
+		$this->assertSame( '5', expand_ratings_template( '%RATINGS_MAX%', $post_id, null, 0, false ), 'The maximum is the top of the scale.' );
+		$this->assertSame( '90.00', expand_ratings_template( '%RATINGS_PERCENTAGE%', $post_id, null, 0, false ), 'And the percentage is the average against it.' );
 	}
 
 	/**
@@ -116,8 +116,8 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	public function test_an_unrated_post_reports_zero() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertSame( '0', expand_ratings_template( '%RATINGS_USERS%', $post_id, null, 0, false ) );
-		$this->assertSame( '0.00', expand_ratings_template( '%RATINGS_AVERAGE%', $post_id, null, 0, false ) );
+		$this->assertSame( '0', expand_ratings_template( '%RATINGS_USERS%', $post_id, null, 0, false ), 'An unrated post has no voters.' );
+		$this->assertSame( '0.00', expand_ratings_template( '%RATINGS_AVERAGE%', $post_id, null, 0, false ), 'And an average of zero rather than a division by it.' );
 	}
 
 	/**
@@ -156,11 +156,11 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$output = the_ratings_vote( $post_id );
 
-		$this->assertStringNotContainsString( 'onmouseover', $output );
-		$this->assertStringNotContainsString( 'onclick', $output );
-		$this->assertStringContainsString( 'data-post-id="' . $post_id . '"', $output );
-		$this->assertStringContainsString( 'role="radiogroup"', $output );
-		$this->assertStringContainsString( 'type="radio"', $output );
+		$this->assertStringNotContainsString( 'onmouseover', $output, 'The vote markup carries no hover handler.' );
+		$this->assertStringNotContainsString( 'onclick', $output, 'And no click handler.' );
+		$this->assertStringContainsString( 'data-post-id="' . $post_id . '"', $output, 'The post is carried as data for the script to read.' );
+		$this->assertStringContainsString( 'role="radiogroup"', $output, 'The scale is announced as a radio group.' );
+		$this->assertStringContainsString( 'type="radio"', $output, 'And is really built from radios.' );
 	}
 
 	/**
@@ -180,7 +180,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 		$output  = the_ratings_vote( $post_id );
 
-		$this->assertStringContainsString( 'O&#039;Brien &amp; &quot;co&quot;', $output );
+		$this->assertStringContainsString( 'O&#039;Brien &amp; &quot;co&quot;', $output, 'A label is escaped once, so an apostrophe reads as one.' );
 		$this->assertStringNotContainsString( '&amp;amp;', $output, 'the label was double encoded' );
 	}
 
@@ -197,8 +197,8 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$output = the_ratings( 'div', $post_id, false );
 
-		$this->assertStringNotContainsString( 'wp-postratings-vote', $output );
-		$this->assertStringContainsString( 'wp-postratings', $output );
+		$this->assertStringNotContainsString( 'wp-postratings-vote', $output, 'A visitor who has voted is not offered the form again.' );
+		$this->assertStringContainsString( 'wp-postratings', $output, 'They are shown the results instead of nothing.' );
 	}
 
 	/**
@@ -212,7 +212,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 1, 4 );
 
-		$this->assertStringContainsString( 'registered member', the_ratings( 'div', $post_id, false ) );
+		$this->assertStringContainsString( 'registered member', the_ratings( 'div', $post_id, false ), 'A visitor without permission is told why rather than shown the form.' );
 	}
 
 	/**
@@ -223,7 +223,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	public function test_an_unrated_post_uses_the_none_template() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertStringContainsString( 'No Ratings Yet', the_ratings_vote( $post_id ) );
+		$this->assertStringContainsString( 'No Ratings Yet', the_ratings_vote( $post_id ), 'An unrated post uses the none template.' );
 	}
 
 	/**
@@ -236,8 +236,8 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$output = do_shortcode( '[ratings id="' . $post_id . '"]' );
 
-		$this->assertStringContainsString( 'wp-postratings-' . $post_id, $output );
-		$this->assertStringNotContainsString( '[ratings', $output );
+		$this->assertStringContainsString( 'wp-postratings-' . $post_id, $output, 'The shortcode renders the strip.' );
+		$this->assertStringNotContainsString( '[ratings', $output, 'And is consumed rather than printed.' );
 	}
 
 	/**
@@ -250,7 +250,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$output = do_shortcode( '[ratings id="' . $post_id . '" results="true"]' );
 
-		$this->assertStringNotContainsString( 'wp-postratings-vote', $output );
+		$this->assertStringNotContainsString( 'wp-postratings-vote', $output, 'The results shortcode omits the voting form.' );
 	}
 
 	/**
@@ -266,9 +266,9 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$output = expand_ratings_template( '%RATINGS_IMAGES%%RATINGS_IMAGES_VOTE%', $post_id, null, 0, false );
 
-		$this->assertStringNotContainsString( '<img', $output );
-		$this->assertStringNotContainsString( '/images/', $output );
-		$this->assertStringContainsString( 'data:image/svg+xml,', $output );
+		$this->assertStringNotContainsString( '<img', $output, 'The markup has no image element.' );
+		$this->assertStringNotContainsString( '/images/', $output, 'And nothing under the images directory.' );
+		$this->assertStringContainsString( 'data:image/svg+xml,', $output, 'The shapes are inline data URIs instead.' );
 	}
 
 	// --- stats ------------------------------------------------------------
@@ -327,7 +327,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_empty_ranking_reports_na() {
-		$this->assertStringContainsString( 'N/A', get_highest_rated( 'nonexistent_type', 0, 10, 0, false ) );
+		$this->assertStringContainsString( 'N/A', get_highest_rated( 'nonexistent_type', 0, 10, 0, false ), 'An empty ranking says so rather than rendering an empty list.' );
 	}
 
 	/**
@@ -336,8 +336,8 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_empty_term_list_is_safe() {
-		$this->assertStringContainsString( 'N/A', get_highest_rated_category( array(), '', 0, 10, 0, false ) );
-		$this->assertStringContainsString( 'N/A', get_highest_rated_category( 0, '', 0, 10, 0, false ) );
+		$this->assertStringContainsString( 'N/A', get_highest_rated_category( array(), '', 0, 10, 0, false ), 'An empty term list is safe.' );
+		$this->assertStringContainsString( 'N/A', get_highest_rated_category( 0, '', 0, 10, 0, false ), 'And so is a zero where the list should be.' );
 	}
 
 	/**
@@ -348,7 +348,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	public function test_minimum_votes_filters_the_list() {
 		$this->make_rated_post( 1, 5 );
 
-		$this->assertStringContainsString( 'N/A', get_highest_rated( '', 50, 10, 0, false ) );
+		$this->assertStringContainsString( 'N/A', get_highest_rated( '', 50, 10, 0, false ), 'A minimum nothing reaches leaves the list empty.' );
 	}
 
 	/**
@@ -362,6 +362,6 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		wp_cache_flush();
 
-		$this->assertSame( 10, (int) get_ratings_users( false ) );
+		$this->assertSame( 10, (int) get_ratings_users( false ), 'The site total is every vote added up.' );
 	}
 }

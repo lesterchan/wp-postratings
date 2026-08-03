@@ -64,7 +64,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 
 		$this->assertNotSame( $before, $switched, 'the table name did not change with the site' );
 		$this->assertSame( $before, $wpdb->ratings, 'the table name did not come back' );
-		$this->assertStringContainsString( (string) $other, $switched );
+		$this->assertStringContainsString( (string) $other, $switched, 'The table name follows the site that was switched to.' );
 	}
 
 	/**
@@ -75,7 +75,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	public function test_the_table_is_registered_as_blog_scoped() {
 		global $wpdb;
 
-		$this->assertContains( 'ratings', $wpdb->tables );
+		$this->assertContains( 'ratings', $wpdb->tables, 'The table is registered as blog scoped, which is what makes it follow.' );
 		$this->assertArrayHasKey( 'ratings', $wpdb->tables( 'blog' ), 'The ratings table is registered blog-scoped, so each site gets its own.' );
 	}
 
@@ -98,8 +98,8 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		$other_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" );
 		restore_current_blog();
 
-		$this->assertSame( 1, $other_count );
-		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
+		$this->assertSame( 1, $other_count, 'The other site has the row.' );
+		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'And this one does not.' );
 	}
 
 	/**
@@ -125,10 +125,10 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
-		$this->assertSame( 1, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
+		$this->assertSame( 1, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'The vote is logged on the site it was cast on.' );
 		restore_current_blog();
 
-		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ) );
+		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'And nowhere else.' );
 	}
 
 	/**
@@ -148,10 +148,10 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Options::update( $options );
 		restore_current_blog();
 
-		$this->assertSame( 'stars', WP_PostRatings_Options::get( 'shape' ) );
+		$this->assertSame( 'stars', WP_PostRatings_Options::get( 'shape' ), 'This site keeps its own shape.' );
 
 		switch_to_blog( $other );
-		$this->assertSame( 'thumbs', WP_PostRatings_Options::get( 'shape' ) );
+		$this->assertSame( 'thumbs', WP_PostRatings_Options::get( 'shape' ), 'And the other site keeps its own.' );
 		restore_current_blog();
 	}
 
@@ -172,8 +172,8 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		$there = WP_PostRatings_Rating::lock_file( 1 );
 		restore_current_blog();
 
-		$this->assertNotSame( $here, $there );
-		$this->assertStringContainsString( 'wp-blog-' . $other . '-', $there );
+		$this->assertNotSame( $here, $there, 'Two sites get two lock files.' );
+		$this->assertStringContainsString( 'wp-blog-' . $other . '-', $there, 'Named for the site they belong to.' );
 	}
 
 	// --- network activation -----------------------------------------------
@@ -257,7 +257,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( $before, get_current_blog_id(), 'activation left the wrong site current' );
 		$this->assertCount( $depth, $GLOBALS['_wp_switched_stack'], 'the switch stack was left unbalanced' );
-		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings );
+		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings, 'Network activation leaves the switch stack where it found it.' );
 	}
 
 	/**

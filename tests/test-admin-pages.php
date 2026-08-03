@@ -54,7 +54,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Settings', 'render' ), $get );
 
 		$this->assertAdminScreenClean( $html );
-		$this->assertStringContainsString( 'Ratings Settings', $html );
+		$this->assertStringContainsString( 'Ratings Settings', $html, 'The settings screen is titled.' );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Admin', 'render_manage' ), $get );
 
 		$this->assertAdminScreenClean( $html );
-		$this->assertStringContainsString( 'Manage Ratings', $html );
+		$this->assertStringContainsString( 'Manage Ratings', $html, 'The log screen is titled.' );
 	}
 
 	/**
@@ -123,8 +123,8 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 
 		$html = $this->render_admin_screen( array( 'WP_PostRatings_Admin', 'render_manage' ) );
 
-		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html );
-		$this->assertStringContainsString( '&lt;script&gt;', $html );
+		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html, 'A username carrying markup is not rendered as markup.' );
+		$this->assertStringContainsString( '&lt;script&gt;', $html, 'It is escaped and shown as text instead.' );
 	}
 
 	/**
@@ -142,7 +142,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		);
 
 		$this->assertAdminScreenClean( $html );
-		$this->assertStringContainsString( 'Manage Ratings', $html );
+		$this->assertStringContainsString( 'Manage Ratings', $html, 'An unknown sort column still renders the screen rather than a database error.' );
 	}
 
 	/**
@@ -177,8 +177,8 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$this->assertSame( array(), $this->admin_page_notices );
-		$this->assertStringContainsString( 'Statistics Type:', $html );
+		$this->assertSame( array(), $this->admin_page_notices, 'The widget form raises no PHP diagnostics.' );
+		$this->assertStringContainsString( 'Statistics Type:', $html, 'And renders the field it exists to offer.' );
 	}
 
 	/**
@@ -258,7 +258,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$this->assertSame( array(), $this->admin_page_notices );
+		$this->assertSame( array(), $this->admin_page_notices, 'An unconfigured widget renders without warning on a key it has not got.' );
 	}
 
 	/**
@@ -283,12 +283,12 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		);
 
 		$this->assertIsArray( $instance, 'A save without the submit marker still returns an instance rather than false.' );
-		$this->assertSame( 'Top posts', $instance['title'] );
-		$this->assertSame( 'most_rated', $instance['type'] );
-		$this->assertSame( 7, $instance['limit'] );
+		$this->assertSame( 'Top posts', $instance['title'], 'The title is saved.' );
+		$this->assertSame( 'most_rated', $instance['type'], 'The statistics type.' );
+		$this->assertSame( 7, $instance['limit'], 'The row limit.' );
 		// wp_parse_id_list() maps 'nonsense' to 0, which would filter on a
 		// category that cannot exist.
-		$this->assertSame( '3,4', $instance['cat_ids'] );
+		$this->assertSame( '3,4', $instance['cat_ids'], 'And the category ids.' );
 	}
 
 	/**
@@ -301,7 +301,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 
 		$instance = $widget->update( array( 'type' => 'nonsense' ), array() );
 
-		$this->assertSame( 'highest_rated', $instance['type'] );
+		$this->assertSame( 'highest_rated', $instance['type'], 'An unknown type falls back rather than being stored.' );
 	}
 	/**
 	 * Settings comes first and the log second, both under one menu.

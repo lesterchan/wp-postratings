@@ -29,10 +29,10 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 		$first  = WP_PostRatings_Rating::lock_file( 1 );
 		$second = WP_PostRatings_Rating::lock_file( 2 );
 
-		$this->assertNotSame( $first, $second );
-		$this->assertStringContainsString( 'wp-blog-' . get_current_blog_id() . '-', $first );
-		$this->assertStringContainsString( '-wp-postratings-1.lock', $first );
-		$this->assertStringStartsWith( get_temp_dir(), $first );
+		$this->assertNotSame( $first, $second, 'Two posts get two lock files.' );
+		$this->assertStringContainsString( 'wp-blog-' . get_current_blog_id() . '-', $first, 'Named for the site.' );
+		$this->assertStringContainsString( '-wp-postratings-1.lock', $first, 'And the post.' );
+		$this->assertStringStartsWith( get_temp_dir(), $first, 'Written to the temporary directory rather than into the plugin.' );
 	}
 
 	/**
@@ -51,7 +51,7 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 			2
 		);
 
-		$this->assertSame( get_temp_dir() . '/custom-9.lock', WP_PostRatings_Rating::lock_file( 9 ) );
+		$this->assertSame( get_temp_dir() . '/custom-9.lock', WP_PostRatings_Rating::lock_file( 9 ), 'The lock file is filterable.' );
 	}
 
 	/**
@@ -154,8 +154,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Rating::release_lock( $holder, $post_id );
 
-		$this->assertStringContainsString( 'Unable to obtain lock', $output );
-		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertStringContainsString( 'Unable to obtain lock', $output, 'A vote that cannot take the lock says so.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And records nothing.' );
 	}
 
 	/**

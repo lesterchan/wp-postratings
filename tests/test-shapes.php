@@ -134,8 +134,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			$this->assertSame( 'star', WP_PostRatings_Shapes::from_legacy( $legacy ), $legacy );
 		}
 
-		$this->assertSame( 'plusminus', WP_PostRatings_Shapes::from_legacy( 'plusminus_crystal' ) );
-		$this->assertSame( 'heart', WP_PostRatings_Shapes::from_legacy( 'heart_crystal' ) );
+		$this->assertSame( 'plusminus', WP_PostRatings_Shapes::from_legacy( 'plusminus_crystal' ), 'A finish variant collapses onto the shape it drew.' );
+		$this->assertSame( 'heart', WP_PostRatings_Shapes::from_legacy( 'heart_crystal' ), 'For every finish, not just the first.' );
 	}
 
 	/**
@@ -161,8 +161,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_set_falls_back_to_stars() {
-		$this->assertSame( 'star', WP_PostRatings_Shapes::from_legacy( 'my_custom_folder' ) );
-		$this->assertSame( 'star', WP_PostRatings_Template::resolve_shape( 'my_custom_folder' ) );
+		$this->assertSame( 'star', WP_PostRatings_Shapes::from_legacy( 'my_custom_folder' ), 'An unknown legacy set falls back to stars.' );
+		$this->assertSame( 'star', WP_PostRatings_Template::resolve_shape( 'my_custom_folder' ), 'And so does the resolver the template goes through.' );
 	}
 
 	/**
@@ -171,7 +171,7 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_shape_name_resolves_to_itself() {
-		$this->assertSame( 'heart', WP_PostRatings_Template::resolve_shape( 'heart' ) );
+		$this->assertSame( 'heart', WP_PostRatings_Template::resolve_shape( 'heart' ), 'A shape name resolves to itself rather than to the fallback.' );
 	}
 
 	// --- registering a shape ----------------------------------------------
@@ -197,8 +197,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$this->assertContains( 'diamond', WP_PostRatings_Shapes::names() );
-		$this->assertStringContainsString( 'data:image/svg+xml,', WP_PostRatings_Shapes::data_uri( 'diamond' ) );
+		$this->assertContains( 'diamond', WP_PostRatings_Shapes::names(), 'A registered shape is listed.' );
+		$this->assertStringContainsString( 'data:image/svg+xml,', WP_PostRatings_Shapes::data_uri( 'diamond' ), 'And renders as a data URI.' );
 	}
 
 	/**
@@ -225,7 +225,7 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'shape' => 'diamond' ) );
 
-		$this->assertSame( 'diamond', $clean['shape'] );
+		$this->assertSame( 'diamond', $clean['shape'], 'A registered shape can be saved.' );
 	}
 
 	/**
@@ -242,7 +242,7 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		$this->assertNotContains( 'broken', WP_PostRatings_Shapes::names() );
+		$this->assertNotContains( 'broken', WP_PostRatings_Shapes::names(), 'A malformed shape is dropped rather than registered.' );
 	}
 
 	// --- colour ------------------------------------------------------------
@@ -305,8 +305,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( array( '#e5484d' ), $clean['ratings']['color'] );
-		$this->assertSame( array( '#eeeeee' ), $clean['ratings']['color_off'] );
+		$this->assertSame( array( '#e5484d' ), $clean['ratings']['color'], 'The voted colour is stored.' );
+		$this->assertSame( array( '#eeeeee' ), $clean['ratings']['color_off'], 'And the unvoted one.' );
 	}
 
 	/**
@@ -335,8 +335,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( '#123456', $clean['colors']['on'] );
-		$this->assertSame( '#abcdef', $clean['colors']['off'] );
+		$this->assertSame( '#123456', $clean['colors']['on'], 'A junk colour keeps the stored voted colour.' );
+		$this->assertSame( '#abcdef', $clean['colors']['off'], 'And the stored unvoted one.' );
 	}
 
 	/**
@@ -377,7 +377,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 
 		$this->assertStringContainsString(
 			'var( --wp-postratings-color-hover, var( --wp-postratings-color-on',
-			$css
+			$css,
+			'Hover falls back to the voted colour rather than to nothing.'
 		);
 	}
 
@@ -406,10 +407,10 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_fill_is_a_true_percentage() {
-		$this->assertSame( 74.0, WP_PostRatings_Template::fill_percentage( 3.7, 5 ) );
-		$this->assertSame( 80.0, WP_PostRatings_Template::fill_percentage( 4, 5 ) );
-		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 0, 5 ) );
-		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 5, 5 ) );
+		$this->assertSame( 74.0, WP_PostRatings_Template::fill_percentage( 3.7, 5 ), 'A fractional rating is a fractional percentage.' );
+		$this->assertSame( 80.0, WP_PostRatings_Template::fill_percentage( 4, 5 ), 'A whole one too.' );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 0, 5 ), 'Nothing rated is nothing filled.' );
+		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 5, 5 ), 'And the top of the scale is full.' );
 	}
 
 	/**
@@ -418,9 +419,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_fill_is_clamped() {
-		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 99, 5 ) );
-		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( -3, 5 ) );
-		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 3, 0 ) );
+		$this->assertSame( 100.0, WP_PostRatings_Template::fill_percentage( 99, 5 ), 'A rating past the scale is clamped to full.' );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( -3, 5 ), 'A negative one to empty.' );
+		$this->assertSame( 0.0, WP_PostRatings_Template::fill_percentage( 3, 0 ), 'And a scale of zero is not divided by.' );
 	}
 
 	/**
@@ -431,9 +432,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_the_strip_carries_the_fill() {
 		$html = WP_PostRatings_Template::ratings_images( 0, 5, 3.7, 'star', 'Alt' );
 
-		$this->assertStringContainsString( '--wp-postratings-fill:74%', $html );
-		$this->assertStringContainsString( 'role="img"', $html );
-		$this->assertStringContainsString( 'aria-label="Alt"', $html );
+		$this->assertStringContainsString( '--wp-postratings-fill:74%', $html, 'The strip carries the fill as a custom property.' );
+		$this->assertStringContainsString( 'role="img"', $html, 'And is announced as an image.' );
+		$this->assertStringContainsString( 'aria-label="Alt"', $html, 'With the label it was given.' );
 	}
 
 	/**
@@ -445,8 +446,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 		$html  = WP_PostRatings_Template::ratings_images( 0, 5, 3, 'star', 'Alt' );
 		$html .= WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 0, 'star', '', 0, array() );
 
-		$this->assertStringNotContainsString( '<img', $html );
-		$this->assertStringNotContainsString( '.gif', $html );
-		$this->assertStringNotContainsString( '/images/', $html );
+		$this->assertStringNotContainsString( '<img', $html, 'The markup has no image element.' );
+		$this->assertStringNotContainsString( '.gif', $html, 'No GIF.' );
+		$this->assertStringNotContainsString( '/images/', $html, 'And nothing under the images directory the plugin no longer ships.' );
 	}
 }

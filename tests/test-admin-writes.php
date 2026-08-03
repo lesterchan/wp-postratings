@@ -139,7 +139,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 
 		$remaining = $wpdb->get_col( "SELECT rating_username FROM {$wpdb->ratings}" );
 
-		$this->assertSame( array( 'Two' ), $remaining );
+		$this->assertSame( array( 'Two' ), $remaining, 'A bulk delete removes only the rows that were ticked.' );
 	}
 
 	/**
@@ -205,8 +205,8 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 0, $this->log_count() );
-		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 0, $this->log_count(), 'Deleting the logs empties the log.' );
+		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And leaves the rating totals on the post.' );
 	}
 
 	/**
@@ -228,8 +228,8 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 1, $this->log_count() );
-		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 1, $this->log_count(), 'Deleting the data leaves the log alone.' );
+		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'While the rating totals are cleared.' );
 	}
 
 	/**
@@ -255,8 +255,8 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 		);
 
 		$this->assertSame( 1, $this->log_count(), 'the other post lost its log rows' );
-		$this->assertSame( 6, (int) get_post_meta( $other, 'ratings_users', true ) );
-		$this->assertSame( '', get_post_meta( $target, 'ratings_users', true ) );
+		$this->assertSame( 6, (int) get_post_meta( $other, 'ratings_users', true ), 'Another post keeps its totals.' );
+		$this->assertSame( '', get_post_meta( $target, 'ratings_users', true ), 'While the named post loses its own.' );
 	}
 
 	/**
@@ -281,9 +281,9 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 0, $this->log_count() );
-		$this->assertSame( '', get_post_meta( $first, 'ratings_users', true ) );
-		$this->assertSame( '', get_post_meta( $second, 'ratings_users', true ) );
+		$this->assertSame( 0, $this->log_count(), 'Clearing everything empties the log.' );
+		$this->assertSame( '', get_post_meta( $first, 'ratings_users', true ), 'And clears the first post.' );
+		$this->assertSame( '', get_post_meta( $second, 'ratings_users', true ), 'And the second, so it really is everything.' );
 	}
 
 	/**
@@ -298,7 +298,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 4, 18 );
 
 		// Warm the cache the way a page render would.
-		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ), 'The meta cache is flushed, so the cleared value is what is read back.' );
 
 		$this->handle(
 			array(),
@@ -334,8 +334,8 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 1, $this->log_count() );
-		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 1, $this->log_count(), 'An unparseable id list deletes no log rows.' );
+		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And no rating totals.' );
 	}
 
 	/**
@@ -406,9 +406,9 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'postratings_ratingstext_1', $html );
-		$this->assertStringContainsString( 'postratings_ratingstext_3', $html );
-		$this->assertStringNotContainsString( 'postratings_ratingstext_4', $html );
+		$this->assertStringContainsString( 'postratings_ratingstext_1', $html, 'The first rating row is built.' );
+		$this->assertStringContainsString( 'postratings_ratingstext_3', $html, 'And the last of the scale.' );
+		$this->assertStringNotContainsString( 'postratings_ratingstext_4', $html, 'But not one past it.' );
 	}
 
 	/**
@@ -427,8 +427,8 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'Vote Down', $html );
-		$this->assertStringContainsString( 'Vote Up', $html );
+		$this->assertStringContainsString( 'Vote Down', $html, 'An up-down scale labels its negative end.' );
+		$this->assertStringContainsString( 'Vote Up', $html, 'And its positive end.' );
 	}
 
 	/**
@@ -447,7 +447,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html );
+		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html, 'An unknown image set builds nothing rather than a broken row.' );
 	}
 
 	/**
@@ -469,7 +469,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringContainsString( 'wp-postratings-shape-star', $html );
+		$this->assertStringContainsString( 'wp-postratings-shape-star', $html, 'A legacy set name is mapped to the shape it became.' );
 	}
 
 	/**
@@ -490,7 +490,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html );
+		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html, 'Without the capability the endpoint builds nothing.' );
 	}
 
 	/**
@@ -509,7 +509,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html );
+		$this->assertStringNotContainsString( 'postratings_ratingstext_1', $html, 'And without a nonce.' );
 	}
 
 	/**
@@ -528,6 +528,6 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertStringNotContainsString( 'postratings_ratingstext_101', $html );
+		$this->assertStringNotContainsString( 'postratings_ratingstext_101', $html, 'An absurd scale is clamped rather than built out in full.' );
 	}
 }

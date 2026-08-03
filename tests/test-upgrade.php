@@ -87,10 +87,10 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 
 		$options = WP_PostRatings_Options::get();
 
-		$this->assertSame( '5', $options['max'] );
-		$this->assertSame( '1', $options['allowtorate'] );
-		$this->assertSame( '2', $options['check_method'] );
-		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $options['ip_header'] );
+		$this->assertSame( '5', $options['max'], 'The scale survives the upgrade.' );
+		$this->assertSame( '1', $options['allowtorate'], 'The permission setting.' );
+		$this->assertSame( '2', $options['check_method'], 'The check method.' );
+		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $options['ip_header'], 'And the header setting.' );
 		// The two rich snippet toggles are gone, and an install that had them on
 		// lands on "No" rather than being given a type it never chose. The old
 		// output declared schema.org/Article, which Google shows no rating for,
@@ -98,7 +98,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( '', $options['schema_type'], 'a legacy install was given a schema type it never picked' );
 		$this->assertArrayNotHasKey( 'richsnippet', $options, 'the retired toggle survived the migration' );
 		$this->assertArrayNotHasKey( 'richsnippet_ratings', $options, 'the retired toggle survived the migration' );
-		$this->assertSame( array( 'Awful', 'Poor', 'OK', 'Good', 'Superb' ), $options['ratings']['text'] );
+		$this->assertSame( array( 'Awful', 'Poor', 'OK', 'Good', 'Superb' ), $options['ratings']['text'], 'The rating labels survive whole.' );
 		// The two "while a vote is in flight" settings are retired with the two
 		// rich snippet ones. The loading text is gone and the rating always dims,
 		// because dimming it is aria-busy -- which announces the update to
@@ -115,7 +115,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_the_chosen_style_carries_over() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ), 'The chosen style carries over as the shape it became.' );
 	}
 
 	/**
@@ -126,8 +126,8 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_customised_templates_survive() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( "Rate: %RATINGS_IMAGES_VOTE% O'Brien", WP_PostRatings_Options::template( 'vote' ) );
-		$this->assertSame( 'Voted: %RATINGS_IMAGES% %RATINGS_AVERAGE%', WP_PostRatings_Options::template( 'text' ) );
+		$this->assertSame( "Rate: %RATINGS_IMAGES_VOTE% O'Brien", WP_PostRatings_Options::template( 'vote' ), 'A customised vote template survives, apostrophe and all.' );
+		$this->assertSame( 'Voted: %RATINGS_IMAGES% %RATINGS_AVERAGE%', WP_PostRatings_Options::template( 'text' ), 'And so does the results template.' );
 	}
 
 	// --- the data survives -------------------------------------------------
@@ -143,8 +143,8 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_existing_ratings_are_untouched() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( 4, (int) get_post_meta( $this->post_id, 'ratings_users', true ) );
-		$this->assertSame( 18, (int) get_post_meta( $this->post_id, 'ratings_score', true ) );
+		$this->assertSame( 4, (int) get_post_meta( $this->post_id, 'ratings_users', true ), 'The vote count on an existing post is untouched.' );
+		$this->assertSame( 18, (int) get_post_meta( $this->post_id, 'ratings_score', true ), 'And the score.' );
 	}
 
 	/**
@@ -159,8 +159,8 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 
 		$row = $wpdb->get_row( "SELECT * FROM {$wpdb->ratings}" );
 
-		$this->assertSame( wp_hash( '203.0.113.7' ), $row->rating_ip );
-		$this->assertSame( 4, (int) $row->rating_rating );
+		$this->assertSame( wp_hash( '203.0.113.7' ), $row->rating_ip, 'The logged address is untouched.' );
+		$this->assertSame( 4, (int) $row->rating_rating, 'And the rating.' );
 	}
 
 	/**
@@ -190,8 +190,8 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_the_front_end_uses_the_sites_own_templates() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertStringContainsString( "O'Brien", the_ratings_vote( $this->post_id ) );
-		$this->assertStringContainsString( 'Voted:', the_ratings_results( $this->post_id ) );
+		$this->assertStringContainsString( "O'Brien", the_ratings_vote( $this->post_id ), 'The front end renders the template the site configured.' );
+		$this->assertStringContainsString( 'Voted:', the_ratings_results( $this->post_id ), 'For the results as well as the vote form.' );
 	}
 
 	/**
@@ -202,7 +202,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	public function test_the_configured_labels_are_used() {
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertStringContainsString( 'Superb', the_ratings_vote( $this->post_id ) );
+		$this->assertStringContainsString( 'Superb', the_ratings_vote( $this->post_id ), 'And uses the labels the site configured.' );
 	}
 
 	/**
@@ -235,7 +235,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		);
 		$html = ob_get_clean();
 
-		$this->assertStringContainsString( '<aside>', $html );
+		$this->assertStringContainsString( '<aside>', $html, 'A widget configured before the upgrade still renders.' );
 	}
 
 	// --- the window before an admin page is loaded -------------------------
@@ -266,8 +266,8 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 			'the front end served default templates instead of the site\'s own'
 		);
 
-		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ) );
-		$this->assertSame( '1', WP_PostRatings_Options::get( 'allowtorate' ) );
+		$this->assertSame( 'star', WP_PostRatings_Options::get( 'shape' ), 'A front end request migrates the shape.' );
+		$this->assertSame( '1', WP_PostRatings_Options::get( 'allowtorate' ), 'And the rest of the settings, with no admin request needed.' );
 	}
 
 	/**
@@ -296,6 +296,6 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertSame( 0, $writes, 'the migration rewrote an already-migrated install' );
-		$this->assertSame( $before, WP_PostRatings_Options::get() );
+		$this->assertSame( $before, WP_PostRatings_Options::get(), 'An already migrated install writes nothing.' );
 	}
 }

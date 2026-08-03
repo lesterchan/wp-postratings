@@ -83,7 +83,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 4, 'Alice' );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 4, WP_PostRatings_Comments::rating_for( 'Alice' ) );
+		$this->assertSame( 4, WP_PostRatings_Comments::rating_for( 'Alice' ), 'A logged in rating is matched by username.' );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Someone Else', '203.0.113.50' );
 
-		$this->assertSame( 5, WP_PostRatings_Comments::rating_for( 'Someone Else' ) );
+		$this->assertSame( 5, WP_PostRatings_Comments::rating_for( 'Someone Else' ), 'And a guest rating by the hash of the address.' );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 5, 'Guest', '203.0.113.50' );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( '203.0.113.50' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( '203.0.113.50' ), 'The raw address is not a key, so it cannot be looked up with.' );
 	}
 
 	/**
@@ -130,7 +130,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Someone Else', '203.0.113.50' );
 
-		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Someone Else' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Someone Else' ), 'Logging by username ignores the address entirely.' );
 	}
 
 	/**
@@ -141,7 +141,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 	public function test_a_commenter_who_never_rated_gets_nothing() {
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Nobody' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Nobody' ), 'A commenter who never rated has no rating.' );
 	}
 
 	/**
@@ -155,7 +155,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->log_rating( $this->post_id, 3, "O\\'Brien" );
 		$this->enter_loop( $this->post_id );
 
-		$this->assertSame( 3, WP_PostRatings_Comments::rating_for( "O'Brien" ) );
+		$this->assertSame( 3, WP_PostRatings_Comments::rating_for( "O'Brien" ), 'A slashed username is matched, so an apostrophe does not lose the rating.' );
 	}
 
 	/**
@@ -179,8 +179,8 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 
 		$html = WP_PostRatings_Comments::author_ratings();
 
-		$this->assertStringContainsString( 'wp-postratings-item', $html );
-		$this->assertStringContainsString( 'Alice gives a rating of 4', $html );
+		$this->assertStringContainsString( 'wp-postratings-item', $html, 'The strip is rendered.' );
+		$this->assertStringContainsString( 'Alice gives a rating of 4', $html, 'Reading as the rating that was given.' );
 	}
 
 	/**
@@ -192,7 +192,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Nobody' );
 
-		$this->assertSame( '', WP_PostRatings_Comments::author_ratings() );
+		$this->assertSame( '', WP_PostRatings_Comments::author_ratings(), 'No rating renders nothing rather than an empty strip.' );
 	}
 
 	/**
@@ -205,11 +205,11 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Alice' );
 
-		$this->assertSame( 'Body.', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
+		$this->assertSame( 'Body.', WP_PostRatings_Comments::append_to_comment( 'Body.' ), 'Without the option the comment body comes back untouched.' );
 
 		add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 
-		$this->assertStringContainsString( 'wp-postratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ) );
+		$this->assertStringContainsString( 'wp-postratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ), 'With it the strip is appended.' );
 	}
 
 	/**
@@ -225,8 +225,8 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 
 		$html = WP_PostRatings_Comments::append_to_comment( 'Body.' );
 
-		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html );
-		$this->assertStringContainsString( '&lt;script&gt;', $html );
+		$this->assertStringNotContainsString( '<script>alert(1)</script>', $html, 'An author name carrying markup is not rendered as markup.' );
+		$this->assertStringContainsString( '&lt;script&gt;', $html, 'It is escaped and shown as text instead.' );
 	}
 
 	/**
@@ -256,6 +256,6 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$other = $this->make_rated_post( 0, 0 );
 		$this->enter_loop( $other );
 
-		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Alice' ) );
+		$this->assertSame( 0, WP_PostRatings_Comments::rating_for( 'Alice' ), 'The map is rebuilt per post, so a rating cannot answer for another post.' );
 	}
 }

@@ -20,7 +20,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_the_table_is_installed() {
 		global $wpdb;
 
-		$this->assertSame( $wpdb->ratings, $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) ) );
+		$this->assertSame( $wpdb->ratings, $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->ratings ) ), 'The table is installed.' );
 	}
 
 	/**
@@ -33,8 +33,8 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_the_table_is_registered_with_wpdb() {
 		global $wpdb;
 
-		$this->assertContains( 'ratings', $wpdb->tables );
-		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings );
+		$this->assertContains( 'ratings', $wpdb->tables, 'The table is registered with wpdb.' );
+		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings, 'Under the table prefix.' );
 	}
 
 	/**
@@ -62,7 +62,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Install::install();
 		WP_PostRatings_Install::maybe_upgrade();
 
-		$this->assertSame( $before, $wpdb->get_var( "SHOW CREATE TABLE {$wpdb->ratings}", 1 ) );
+		$this->assertSame( $before, $wpdb->get_var( "SHOW CREATE TABLE {$wpdb->ratings}", 1 ), 'Reinstalling leaves the table as it was.' );
 	}
 
 	/**
@@ -73,7 +73,8 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_the_schema_version_is_recorded() {
 		$this->assertSame(
 			WP_POSTRATINGS_DB_VERSION,
-			WP_PostRatings_Options::markers()['db']
+			WP_PostRatings_Options::markers()['db'],
+			'The schema version is recorded, so the next upgrade knows where it starts.'
 		);
 	}
 
@@ -89,7 +90,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_uninstall_php_delegates_to_the_installer() {
 		$source = file_get_contents( dirname( __DIR__ ) . '/uninstall.php' );
 
-		$this->assertStringContainsString( 'WP_PostRatings_Install::uninstall();', $source );
+		$this->assertStringContainsString( 'WP_PostRatings_Install::uninstall();', $source, 'uninstall.php delegates rather than repeating the work.' );
 		$this->assertStringContainsString( "defined( 'WP_UNINSTALL_PLUGIN' )", $source, 'uninstall.php must refuse to run on its own' );
 		$this->assertStringNotContainsString( '$wpdb', $source, 'the work belongs in the installer, beside the install it undoes' );
 	}
@@ -110,7 +111,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 
 		$this->assertMatchesRegularExpression( "/'number'\s*=>\s*0/", $source, 'uninstall.php lifts the site query cap, or a network past the default would be half-uninstalled.' );
 		$this->assertMatchesRegularExpression( "/'fields'\s*=>\s*'ids'/", $source, 'uninstall.php asks for ids only, which is what makes the unlimited query affordable.' );
-		$this->assertStringNotContainsString( 'wp_get_sites', $source );
+		$this->assertStringNotContainsString( 'wp_get_sites', $source, 'And does not call the function core removed.' );
 	}
 
 	/**
@@ -183,12 +184,12 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_the_uninstall_list_covers_every_option() {
 		$names = WP_PostRatings_Options::all_option_names();
 
-		$this->assertContains( WP_PostRatings_Options::OPTION, $names );
-		$this->assertContains( WP_PostRatings_Options::VERSION, $names );
+		$this->assertContains( WP_PostRatings_Options::OPTION, $names, 'The options row is on the uninstall list.' );
+		$this->assertContains( WP_PostRatings_Options::VERSION, $names, 'The version row.' );
 		$this->assertContains( 'postratings_options', $names, 'the renamed row would be orphaned' );
-		$this->assertContains( 'postratings_db_version', $names );
-		$this->assertContains( 'postratings_options_version', $names );
+		$this->assertContains( 'postratings_db_version', $names, 'The legacy schema row.' );
+		$this->assertContains( 'postratings_options_version', $names, 'The legacy options version row.' );
 		$this->assertContains( 'postratings_template_vote', $names, 'a legacy row would be orphaned' );
-		$this->assertContains( 'widget_ratings-widget', $names );
+		$this->assertContains( 'widget_ratings-widget', $names, 'And the widget row, which is the one easiest to forget.' );
 	}
 }

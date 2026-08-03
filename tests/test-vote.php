@@ -39,9 +39,9 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
-		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
-		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_score', true ) );
-		$this->assertSame( '4', (string) get_post_meta( $post_id, 'ratings_average', true ) );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'A vote adds a voter.' );
+		$this->assertSame( 4, (int) get_post_meta( $post_id, 'ratings_score', true ), 'Its rating to the score.' );
+		$this->assertSame( '4', (string) get_post_meta( $post_id, 'ratings_average', true ), 'And the average follows from the two.' );
 	}
 
 	/**
@@ -54,9 +54,9 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Rating::process_vote( $post_id, 2 );
 
-		$this->assertSame( 5, (int) get_post_meta( $post_id, 'ratings_users', true ) );
-		$this->assertSame( 20, (int) get_post_meta( $post_id, 'ratings_score', true ) );
-		$this->assertSame( '4', (string) get_post_meta( $post_id, 'ratings_average', true ) );
+		$this->assertSame( 5, (int) get_post_meta( $post_id, 'ratings_users', true ), 'Five votes are five voters.' );
+		$this->assertSame( 20, (int) get_post_meta( $post_id, 'ratings_score', true ), 'Their ratings added up.' );
+		$this->assertSame( '4', (string) get_post_meta( $post_id, 'ratings_average', true ), 'And the average of them.' );
 	}
 
 	/**
@@ -72,8 +72,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$output = WP_PostRatings_Rating::process_vote( $post_id, 99 );
 
-		$this->assertStringContainsString( 'Invalid Rating', $output );
-		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertStringContainsString( 'Invalid Rating', $output, 'A rating off the scale is refused with a reason.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And nothing is recorded.' );
 	}
 
 	/**
@@ -84,9 +84,9 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_a_non_positive_rating_writes_nothing() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 0 ) );
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, -3 ) );
-		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 0 ), 'A rating of zero writes nothing.' );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, -3 ), 'Nor does a negative one.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'Leaving the post unrated.' );
 	}
 
 	/**
@@ -95,7 +95,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_post_is_refused() {
-		$this->assertStringContainsString( 'Invalid Post ID', WP_PostRatings_Rating::process_vote( 999999, 3 ) );
+		$this->assertStringContainsString( 'Invalid Post ID', WP_PostRatings_Rating::process_vote( 999999, 3 ), 'An unknown post is refused with a reason.' );
 	}
 
 	/**
@@ -108,8 +108,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1)';
 
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ) );
-		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ), 'A bot is turned away.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And records nothing.' );
 	}
 
 	/**
@@ -124,7 +124,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
-		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'A missing user agent is not treated as a bot.' );
 	}
 
 	// --- who may rate -----------------------------------------------------
@@ -141,8 +141,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With logged-in-only set, a guest is refused.' );
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ) );
-		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ), 'With logged in voting only, a guest is refused.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And records nothing.' );
 	}
 
 	/**
@@ -170,12 +170,12 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
-		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'The first vote from an address is recorded.' );
 
 		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
-		$this->assertStringContainsString( 'Already Rated', $output );
-		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertStringContainsString( 'Already Rated', $output, 'The second is refused with a reason.' );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And the count stays where it was.' );
 	}
 
 	/**
@@ -193,7 +193,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.99';
 		WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
-		$this->assertSame( 2, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertSame( 2, (int) get_post_meta( $post_id, 'ratings_users', true ), 'A different address is a different voter.' );
 	}
 
 	/**
@@ -211,8 +211,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$stored = $wpdb->get_var( "SELECT rating_ip FROM {$wpdb->ratings}" );
 
-		$this->assertSame( wp_hash( '203.0.113.1' ), $stored );
-		$this->assertStringNotContainsString( '203.0.113.1', (string) $stored );
+		$this->assertSame( wp_hash( '203.0.113.1' ), $stored, 'The stored address is the hash of it.' );
+		$this->assertStringNotContainsString( '203.0.113.1', (string) $stored, 'And the address itself is nowhere in the row.' );
 	}
 
 	/**
@@ -295,8 +295,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
 
-		$this->assertStringContainsString( 'Already Rated', $output );
-		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ) );
+		$this->assertStringContainsString( 'Already Rated', $output, 'A second vote from the same user is refused with a reason.' );
+		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And the count stays where it was.' );
 	}
 
 	/**
@@ -321,7 +321,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
-		$this->assertSame( "O'Brien's post", $wpdb->get_var( "SELECT rating_posttitle FROM {$wpdb->ratings}" ) );
+		$this->assertSame( "O'Brien's post", $wpdb->get_var( "SELECT rating_posttitle FROM {$wpdb->ratings}" ), 'The logged title is unslashed once, not left doubled.' );
 	}
 
 	/**
