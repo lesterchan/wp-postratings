@@ -6,7 +6,7 @@
  * deleted. Everything it does lives beside the installer it undoes, so the two
  * cannot drift apart and the work is reachable from the test suite.
  *
- * @package wp-postratings
+ * @package WP-PostRatings
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {

@@ -8,7 +8,7 @@
  * The stats tags keep their function_exists() guards, which have always let a
  * theme replace one wholesale.
  *
- * @package wp-postratings
+ * @package WP-PostRatings
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

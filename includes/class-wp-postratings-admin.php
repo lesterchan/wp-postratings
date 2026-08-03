@@ -2,7 +2,7 @@
 /**
  * WP-PostRatings class-wp-postratings-admin.php
  *
- * @package wp-postratings
+ * @package WP-PostRatings
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -9,7 +9,7 @@
  * The public template tags are not here -- they still live in template-tags.php
  * and are not deprecated.
  *
- * @package wp-postratings
+ * @package WP-PostRatings
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
