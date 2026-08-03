@@ -27,7 +27,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$user = $this->create_admin();
 		wp_set_current_user( $user );
 		wp_get_current_user()->add_cap( WP_PostRatings_Settings::capability() );
 
@@ -321,7 +321,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		// add_submenu_page() returns false and registers nothing when the current
 		// user lacks the capability, so the entries this asserts on only exist for
 		// somebody who may see them. The capability is the plugin's own.
-		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$user = $this->create_admin();
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( $user );
 
@@ -367,7 +367,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		$menu    = array();
 		$submenu = array();
 
-		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$user = $this->create_admin();
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( $user );
 

@@ -21,6 +21,27 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 	protected $admin_page_notices = array();
 
 	/**
+	 * Creates a user who may actually reach the plugin's screens.
+	 *
+	 * The screens take `manage_ratings`, the plugin's own capability, which
+	 * activation adds to the administrator role. map_meta_cap() only remaps the
+	 * capabilities core knows about, so a custom one means the same thing on a
+	 * network as on a single site and no grant_super_admin() is wanted. The
+	 * tests that add or revoke the capability by hand are asserting the gate
+	 * itself and keep doing that explicitly.
+	 *
+	 * Every administrator the suite creates goes through this, so the network
+	 * question is answered in one place rather than at each call site. Tests
+	 * that assert the *unprivileged* path set their own subscriber or editor
+	 * explicitly and must not be routed through here.
+	 *
+	 * @return int The new user's ID.
+	 */
+	protected function create_admin() {
+		return self::factory()->user->create( array( 'role' => 'administrator' ) );
+	}
+
+	/**
 	 * Reset the log table and the settings before each test.
 	 *
 	 * @return void

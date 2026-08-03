@@ -30,7 +30,7 @@ class WP_PostRatings_Admin_Writes_Test extends WP_PostRatings_TestCase {
 	public function set_up() {
 		parent::set_up();
 
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		wp_set_current_user( $this->create_admin() );
 		wp_get_current_user()->add_cap( WP_PostRatings_Settings::capability() );
 
 		require_once ABSPATH . 'wp-admin/includes/admin.php';

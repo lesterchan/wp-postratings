@@ -149,7 +149,7 @@ class WP_PostRatings_Metadata_Test extends Plugin_Metadata_TestCase {
 		WP_PostRatings::get_instance()->scripts();
 
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		wp_set_current_user( $this->create_admin() );
 
 		WP_PostRatings_Admin::menu();
 
