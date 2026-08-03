@@ -148,7 +148,7 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 
 		$ids = $this->ids( WP_PostRatings_Stats::output( array( 'limit' => 2 ), 'highestrated', 0, false ) );
 
-		$this->assertCount( 2, $ids );
+		$this->assertCount( 2, $ids, 'The limit caps the rows returned, whatever was rated.' );
 	}
 
 	/**

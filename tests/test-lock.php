@@ -62,8 +62,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	public function test_acquiring_the_lock_creates_the_file() {
 		$handle = WP_PostRatings_Rating::acquire_lock( 1 );
 
-		$this->assertIsResource( $handle );
-		$this->assertFileExists( WP_PostRatings_Rating::lock_file( 1 ) );
+		$this->assertIsResource( $handle, 'Acquiring the lock hands back an open handle.' );
+		$this->assertFileExists( WP_PostRatings_Rating::lock_file( 1 ), 'Acquiring the lock creates the lock file.' );
 
 		WP_PostRatings_Rating::release_lock( $handle, 1 );
 	}
@@ -80,8 +80,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 		$handle = WP_PostRatings_Rating::acquire_lock( 1 );
 		$path   = WP_PostRatings_Rating::lock_file( 1 );
 
-		$this->assertTrue( WP_PostRatings_Rating::release_lock( $handle, 1 ) );
-		$this->assertFileDoesNotExist( $path );
+		$this->assertTrue( WP_PostRatings_Rating::release_lock( $handle, 1 ), 'Releasing a held lock reports success.' );
+		$this->assertFileDoesNotExist( $path, 'Releasing the lock removes the file rather than leaving it behind.' );
 	}
 
 	/**
@@ -90,8 +90,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_releasing_a_non_handle_is_refused() {
-		$this->assertFalse( WP_PostRatings_Rating::release_lock( false, 1 ) );
-		$this->assertFalse( WP_PostRatings_Rating::release_lock( null, 1 ) );
+		$this->assertFalse( WP_PostRatings_Rating::release_lock( false, 1 ), 'Releasing something that is not a handle is refused rather than fatal.' );
+		$this->assertFalse( WP_PostRatings_Rating::release_lock( null, 1 ), 'Releasing null is refused rather than fatal.' );
 	}
 
 	/**
@@ -107,7 +107,7 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	public function test_a_contending_lock_fails_fast() {
 		$path = WP_PostRatings_Rating::lock_file( 1 );
 
-		$this->assertNotEmpty( $path );
+		$this->assertNotEmpty( $path, 'The lock file path is not empty, or every assertion below would be about the wrong file.' );
 
 		$holder = WP_PostRatings_Rating::acquire_lock( 1 );
 
@@ -133,7 +133,7 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 
 		$this->cast_vote( $post_id, 4 );
 
-		$this->assertFileDoesNotExist( WP_PostRatings_Rating::lock_file( $post_id ) );
+		$this->assertFileDoesNotExist( WP_PostRatings_Rating::lock_file( $post_id ), 'A completed vote leaves no lock file behind.' );
 	}
 
 	/**

@@ -282,7 +282,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 			array()
 		);
 
-		$this->assertIsArray( $instance );
+		$this->assertIsArray( $instance, 'A save without the submit marker still returns an instance rather than false.' );
 		$this->assertSame( 'Top posts', $instance['title'] );
 		$this->assertSame( 'most_rated', $instance['type'] );
 		$this->assertSame( 7, $instance['limit'] );

@@ -140,7 +140,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertFalse( WP_PostRatings_Rating::can_rate() );
+		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With logged-in-only set, a guest is refused.' );
 		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ) );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ) );
 	}
@@ -154,7 +154,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$this->set_option( 'allowtorate', 0 );
 		wp_set_current_user( self::factory()->user->create() );
 
-		$this->assertFalse( WP_PostRatings_Rating::can_rate() );
+		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With guests-only set, a member is refused.' );
 	}
 
 	// --- logging methods --------------------------------------------------

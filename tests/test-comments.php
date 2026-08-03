@@ -164,7 +164,7 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_lookup_without_a_loop_is_safe() {
-		$this->assertIsInt( WP_PostRatings_Comments::rating_for( 'Anyone' ) );
+		$this->assertIsInt( WP_PostRatings_Comments::rating_for( 'Anyone' ), 'A lookup outside the loop answers with a number rather than warning on a missing comment.' );
 	}
 
 	/**

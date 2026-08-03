@@ -32,8 +32,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 		$scale  = array_filter( $shapes, static fn( $s ) => WP_PostRatings_Shapes::SCALE === $s['type'] );
 		$updown = array_filter( $shapes, static fn( $s ) => WP_PostRatings_Shapes::UPDOWN === $s['type'] );
 
-		$this->assertNotEmpty( $scale );
-		$this->assertNotEmpty( $updown );
+		$this->assertNotEmpty( $scale, 'At least one scale shape ships.' );
+		$this->assertNotEmpty( $updown, 'At least one up-down shape ships.' );
 	}
 
 	/**
@@ -114,7 +114,7 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_every_legacy_set_maps_to_a_real_shape() {
 		$map = WP_PostRatings_Shapes::legacy_map();
 
-		$this->assertCount( 16, $map );
+		$this->assertCount( 16, $map, 'All sixteen legacy sets are mapped, so no upgrading site loses its shape.' );
 
 		foreach ( $map as $legacy => $shape ) {
 			$this->assertNotNull( WP_PostRatings_Shapes::get( $shape ), $legacy . ' maps to nothing' );
@@ -265,8 +265,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_built_in_colours_match_the_stylesheet() {
-		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_RATED );
-		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_UNRATED );
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_RATED, 'The rated colour is a six-digit hex the stylesheet can use.' );
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/i', WP_PostRatings_Options::COLOR_UNRATED, 'The unrated colour is a six-digit hex the stylesheet can use.' );
 
 		$css = file_get_contents( dirname( __DIR__ ) . '/css/wp-postratings.css' );
 
@@ -392,7 +392,7 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_the_stylesheet_has_no_defaults_block() {
 		$css = file_get_contents( WP_POSTRATINGS_DIR . 'css/wp-postratings.css' );
 
-		$this->assertDoesNotMatchRegularExpression( '/^:root\s*\{/m', $css );
+		$this->assertDoesNotMatchRegularExpression( '/^:root\s*\{/m', $css, 'The stylesheet ships no :root defaults block; the colours come from the options.' );
 	}
 
 	// --- fill --------------------------------------------------------------

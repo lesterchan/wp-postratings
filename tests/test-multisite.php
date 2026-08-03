@@ -76,7 +76,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		global $wpdb;
 
 		$this->assertContains( 'ratings', $wpdb->tables );
-		$this->assertArrayHasKey( 'ratings', $wpdb->tables( 'blog' ) );
+		$this->assertArrayHasKey( 'ratings', $wpdb->tables( 'blog' ), 'The ratings table is registered blog-scoped, so each site gets its own.' );
 	}
 
 	// --- isolation --------------------------------------------------------
@@ -281,7 +281,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		$granted = get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() );
 		restore_current_blog();
 
-		$this->assertTrue( $granted );
+		$this->assertTrue( $granted, 'Network activation grants the capability on the other site too, not only the current one.' );
 	}
 
 	/**

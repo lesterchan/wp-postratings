@@ -113,7 +113,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertNotEmpty( $query->posts );
+		$this->assertNotEmpty( $query->posts, 'A junk sort direction is ignored rather than producing an empty result.' );
 		$this->assertSame( '', $query->last_error ?? '' );
 	}
 
@@ -156,9 +156,9 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 			array_keys( $sections['wp_postratings'] ),
 			'the entry must carry title, priority and render, in that order and nothing else'
 		);
-		$this->assertIsString( $sections['wp_postratings']['title'] );
-		$this->assertIsInt( $sections['wp_postratings']['priority'] );
-		$this->assertIsCallable( $sections['wp_postratings']['render'] );
+		$this->assertIsString( $sections['wp_postratings']['title'], 'The WP-Stats section entry carries a title string.' );
+		$this->assertIsInt( $sections['wp_postratings']['priority'], 'The WP-Stats section entry carries an integer priority.' );
+		$this->assertIsCallable( $sections['wp_postratings']['render'], 'The WP-Stats section entry carries something callable to render with.' );
 	}
 
 	/**
@@ -170,7 +170,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		$sections = WP_PostRatings_WPStats::register_section( array( 'wp_polls' => array( 'title' => 'Polls' ) ) );
 
 		$this->assertArrayHasKey( 'wp_polls', $sections, 'a contributor must never drop a sibling' );
-		$this->assertArrayHasKey( 'wp_postratings', $sections );
+		$this->assertArrayHasKey( 'wp_postratings', $sections, 'Adding this plugin entry leaves a sibling plugin entry in place.' );
 	}
 
 	/**
@@ -290,7 +290,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 		$names = WP_PostRatings_Shapes::names();
 
 		foreach ( array( 'star', 'heart', 'thumb', 'plusminus' ) as $expected ) {
-			$this->assertContains( $expected, $names );
+			$this->assertContains( $expected, $names, $expected . ' is shipped but not listed by names().' );
 		}
 	}
 
@@ -300,8 +300,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_two_families_are_distinguished() {
-		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'star' ) );
-		$this->assertTrue( WP_PostRatings_Shapes::is_updown( 'thumb' ) );
+		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'star' ), 'A star is a scale shape, not an up-down one.' );
+		$this->assertTrue( WP_PostRatings_Shapes::is_updown( 'thumb' ), 'A thumb is an up-down shape.' );
 	}
 
 	/**
@@ -310,8 +310,8 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_shape_is_safe() {
-		$this->assertNull( WP_PostRatings_Shapes::get( 'does-not-exist' ) );
-		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'does-not-exist' ) );
+		$this->assertNull( WP_PostRatings_Shapes::get( 'does-not-exist' ), 'An unknown shape reads back null rather than raising a notice.' );
+		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'does-not-exist' ), 'An unknown shape is not treated as up-down by default.' );
 		$this->assertSame( '', WP_PostRatings_Shapes::data_uri( 'does-not-exist' ) );
 	}
 
@@ -368,7 +368,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_the_shortcode_is_inert_in_a_feed() {
 		$this->go_to( home_url( '/?feed=rss2' ) );
 
-		$this->assertTrue( is_feed() );
+		$this->assertTrue( is_feed(), 'The fixture really is a feed request, or the shortcode test below proves nothing.' );
 		$this->assertStringContainsString( 'visit this post to rate it', do_shortcode( '[ratings]' ) );
 	}
 

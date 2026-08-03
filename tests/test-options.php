@@ -34,7 +34,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 7, $options['max'] );
 		$this->assertSame( 'star', $options['shape'] );
-		$this->assertArrayHasKey( 'vote', $options['templates'] );
+		$this->assertArrayHasKey( 'vote', $options['templates'], 'A key absent from the stored row falls back to its shipped default.' );
 	}
 
 	/**

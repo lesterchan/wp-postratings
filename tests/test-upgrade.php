@@ -177,7 +177,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.7';
 		unset( $_SERVER['HTTP_CF_CONNECTING_IP'] );
 
-		$this->assertTrue( WP_PostRatings_Rating::has_rated( $this->post_id ) );
+		$this->assertTrue( WP_PostRatings_Rating::has_rated( $this->post_id ), 'A voter recorded before the upgrade is still recognised after it.' );
 	}
 
 	// --- the front end keeps working ---------------------------------------

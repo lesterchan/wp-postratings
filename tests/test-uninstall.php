@@ -43,7 +43,7 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_capability_is_granted() {
-		$this->assertTrue( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() ) );
+		$this->assertTrue( get_role( 'administrator' )->has_cap( WP_PostRatings_Settings::capability() ), 'The fixture really does grant the capability, so the uninstall below has something to revoke.' );
 	}
 
 	/**
@@ -108,8 +108,8 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 	public function test_uninstall_lifts_the_site_query_cap() {
 		$source = file_get_contents( dirname( __DIR__ ) . '/includes/class-wp-postratings-install.php' );
 
-		$this->assertMatchesRegularExpression( "/'number'\s*=>\s*0/", $source );
-		$this->assertMatchesRegularExpression( "/'fields'\s*=>\s*'ids'/", $source );
+		$this->assertMatchesRegularExpression( "/'number'\s*=>\s*0/", $source, 'uninstall.php lifts the site query cap, or a network past the default would be half-uninstalled.' );
+		$this->assertMatchesRegularExpression( "/'fields'\s*=>\s*'ids'/", $source, 'uninstall.php asks for ids only, which is what makes the unlimited query affordable.' );
 		$this->assertStringNotContainsString( 'wp_get_sites', $source );
 	}
 
@@ -126,7 +126,8 @@ class WP_PostRatings_Uninstall_Test extends WP_PostRatings_TestCase {
 
 		$this->assertMatchesRegularExpression(
 			'/foreach\s*\(.*\)\s*\{\s*switch_to_blog\(.*\);\s*self::uninstall_site\(\);\s*restore_current_blog\(\);\s*\}/s',
-			$source
+			$source,
+			'The restore sits inside the loop; once after it leaves the stack unwound by one.'
 		);
 	}
 
