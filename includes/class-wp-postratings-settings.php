@@ -38,6 +38,14 @@ class WP_PostRatings_Settings {
 	 * Deliberately not manage_options: WP-PostRatings has shipped its own
 	 * capability since 1.80, and sites grant it to editors who are trusted with
 	 * the rating logs but not with the rest of wp-admin.
+	 *
+	 * **It gates the settings screen too, which §2.7 asks to be argued rather
+	 * than assumed.** The argument is that these settings are the ratings -- how
+	 * many steps the scale has, what each one is called, who may vote. An editor
+	 * trusted to read the logs and moderate the ratings but not to say what a
+	 * rating is would be holding half a job. The alternative is worse than the
+	 * inconsistency: a site would have to grant manage_options to delegate this
+	 * at all, which opens every settings screen on the installation.
 	 */
 	const CAPABILITY = 'manage_ratings';
 
