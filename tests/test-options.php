@@ -76,6 +76,50 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * A 1.x install that never changed a setting still gets a row written.
+	 *
+	 * Every other migration fixture here is customised, and rightly so for "did
+	 * the values carry across". None of them can see §7.6.1, because a result
+	 * differing from the defaults is written whatever happened on the way in.
+	 *
+	 * This one seeds the loose rows with exactly what the plugin ships, so the
+	 * merged result equals the defaults, and it registers the setting first so
+	 * the default_option_wp_postratings_options filter is live while update()
+	 * runs. An absent row then reads back as the defaults, and update_option()
+	 * returns early on a value identical to the one it just read -- writing
+	 * nothing, while the fourteen legacy rows are deleted regardless.
+	 *
+	 * WP-PostRatings survives it because update_option() sanitises before it
+	 * compares and the sanitiser alters the defaults, so core reaches its
+	 * add_option() fallback. That is a real safeguard and an accidental one; it
+	 * is asserted here so that a sanitiser which one day leaves clean input
+	 * alone cannot silently take it away.
+	 *
+	 * Asserted on the raw row, because get() merges over the defaults and cannot
+	 * tell a write that happened from one that did not.
+	 *
+	 * @return void
+	 */
+	public function test_a_stock_1x_install_still_gets_its_row_written() {
+		$this->build_stock_legacy_install();
+
+		$this->assertFalse( get_option( WP_PostRatings_Options::OPTION, false ), 'The fixture is only pre-migration if the settings row is genuinely absent.' );
+
+		WP_PostRatings_Settings::register();
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$stored = get_option( WP_PostRatings_Options::OPTION, false );
+
+		$this->assertIsArray( $stored, 'The migration must write the settings row even when its result equals the shipped defaults.' );
+		$this->assertSame( WP_PostRatings_Options::defaults()['shape'], $stored['shape'], 'And the value is in the row, not merely answered by the registered default.' );
+
+		foreach ( $this->legacy_names() as $name ) {
+			$this->assertFalse( get_option( $name, false ), $name . ' must not survive the migration' );
+		}
+	}
+
+	/**
 	 * The row the migration writes into is not one of the rows it deletes.
 	 *
 	 * Deleting it would throw away every setting just merged, which is the
@@ -279,6 +323,41 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 			'postratings_template_highestrated',
 			'postratings_template_mostrated',
 		);
+	}
+
+	/**
+	 * Rebuild a pre-2.0.0 install that never had a setting changed.
+	 *
+	 * Every value is read out of defaults() rather than typed, so this cannot
+	 * quietly become a customised fixture when a default changes -- which would
+	 * lose the one property it exists to hold.
+	 *
+	 * @return void
+	 */
+	private function build_stock_legacy_install() {
+		delete_option( WP_PostRatings_Options::OPTION );
+		delete_option( WP_PostRatings_Options::VERSION );
+
+		$defaults = WP_PostRatings_Options::defaults();
+
+		update_option( 'postratings_image', $defaults['shape'] );
+		update_option( 'postratings_max', $defaults['max'] );
+		update_option( 'postratings_customrating', $defaults['customrating'] );
+		update_option( 'postratings_allowtorate', $defaults['allowtorate'] );
+		update_option( 'postratings_logging_method', $defaults['check_method'] );
+		update_option( 'postratings_ratingstext', $defaults['ratings']['text'] );
+		update_option( 'postratings_ratingsvalue', $defaults['ratings']['value'] );
+
+		foreach ( array(
+			'vote'         => 'postratings_template_vote',
+			'text'         => 'postratings_template_text',
+			'permission'   => 'postratings_template_permission',
+			'none'         => 'postratings_template_none',
+			'highestrated' => 'postratings_template_highestrated',
+			'mostrated'    => 'postratings_template_mostrated',
+		) as $key => $row ) {
+			update_option( $row, $defaults['templates'][ $key ] );
+		}
 	}
 
 	/**
