@@ -6,9 +6,21 @@
  * which are two of the three places these tests exist to watch -- and it was a
  * unit test doing exactly that, asserting on a renderer nothing called, that let
  * the settings preview stay orange through a green suite.
+ *
+ * The migration helpers at the bottom are the one exception, and §7.5 draws the
+ * line where they sit: data a person could *not* type -- fifteen unprefixed rows
+ * as the released 1.91.2 left them -- has no screen to go in through, because
+ * the screen that wrote them has not existed since. Those go straight into
+ * storage. Everything a person could type still goes through the form.
  */
 
+const { execFileSync } = require( 'child_process' );
+const path = require( 'path' );
+
 const { expect } = require( '@wordpress/e2e-test-utils-playwright' );
+
+/** The plugin root, which is where wp-env reads .wp-env.json from. */
+const PLUGIN_ROOT = path.join( __dirname, '../..' );
 
 const SETTINGS_URL = '/wp-admin/admin.php?page=wp-postratings-settings';
 const TEMPLATES_URL = `${ SETTINGS_URL }&tab=templates`;
@@ -178,6 +190,217 @@ async function resetTemplates( page ) {
 }
 
 /**
+ * Run PHP inside the tests environment and hand back what it printed.
+ *
+ * The code is base64'd rather than passed as itself: a stored template holding
+ * quotes and angle brackets is exactly the sort of string that arrives at the
+ * other end subtly different, and a fixture that is not the payload byte for
+ * byte proves nothing about what the migration did to it.
+ *
+ * @param {string} code PHP to evaluate, without an opening tag.
+ * @return {string} Whatever the code echoed between its markers.
+ */
+function wpEval( code ) {
+	const encoded = Buffer.from( code, 'utf8' ).toString( 'base64' );
+
+	const output = execFileSync(
+		'npx',
+		[
+			'--yes',
+			'@wordpress/env',
+			'run',
+			'tests-cli',
+			'wp',
+			'eval',
+			`eval( base64_decode( '${ encoded }' ) );`,
+		],
+		{ cwd: PLUGIN_ROOT, encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'pipe' ] },
+	);
+
+	// wp-env prints its own progress around the command's output, so the code
+	// wraps what it wants to return in markers rather than the caller trying to
+	// tell the two apart by position.
+	const matched = output.match( /<<<([\s\S]*?)>>>/ );
+
+	return matched ? matched[ 1 ] : '';
+}
+
+/**
+ * Run PHP and read back a JSON value, so types survive the round trip.
+ *
+ * @param {string} expression PHP expression to encode and return.
+ * @return {*} The decoded value.
+ */
+function wpEvalJson( expression ) {
+	return JSON.parse( wpEval( `echo '<<<' . wp_json_encode( ${ expression } ) . '>>>';` ) );
+}
+
+/**
+ * The settings row as the database holds it, with no defaults merged in.
+ *
+ * WP_PostRatings_Options::get() merges over the defaults, so it answers
+ * identically for a row holding the defaults and for no row at all -- which is
+ * what a migration that read, deleted and never wrote leaves behind, and the
+ * whole of §7.6.1. Ask the database when the question is "was it written".
+ *
+ * @return {Object|false} The stored array, or false when there is no row.
+ */
+function rawOptions() {
+	return wpEvalJson( 'get_option( WP_PostRatings_Options::OPTION )' );
+}
+
+/**
+ * The defaults the running code would fall back to.
+ *
+ * @return {Object} The default settings.
+ */
+function defaultOptions() {
+	return wpEvalJson( 'WP_PostRatings_Options::defaults()' );
+}
+
+/**
+ * The upgrade markers, as the database holds them.
+ *
+ * @return {Object|false} The stored array, or false when there is no row.
+ */
+function versionRow() {
+	return wpEvalJson( 'get_option( WP_PostRatings_Options::VERSION )' );
+}
+
+/**
+ * The version numbers the running code expects to find stamped.
+ *
+ * @return {{plugin: string, db: string}} The two markers.
+ */
+function runningVersions() {
+	return wpEvalJson(
+		`array(
+			'plugin' => WP_POSTRATINGS_VERSION,
+			'db'     => WP_POSTRATINGS_DB_VERSION,
+		)`,
+	);
+}
+
+/**
+ * The PHP expression naming every pre-2.0.0 row the migration deletes.
+ *
+ * The plugin's own list, minus the four rows that are not legacy at all, plus
+ * the two WP-Stats rows by name. Those two are *deliberately* absent from
+ * all_option_names(): §13.2 keeps them off the uninstall list because up to five
+ * siblings that have not upgraded are still reading them, while the migration
+ * still has to delete them once it has folded them in. Naming them here rather
+ * than deriving them is the same distinction the plugin draws.
+ *
+ * @type {string}
+ */
+const LEGACY_ROW_NAMES_PHP = `array_values( array_merge(
+	array_diff(
+		WP_PostRatings_Options::all_option_names(),
+		array(
+			WP_PostRatings_Options::OPTION,
+			WP_PostRatings_Options::VERSION,
+			'widget_ratings',
+			'widget_ratings-widget',
+			'widget_ratings_highest_rated',
+			'widget_ratings_most_rated',
+		)
+	),
+	array( 'stats_display', 'stats_mostlimit' )
+) )`;
+
+/**
+ * Every legacy row name, as the running code lists them.
+ *
+ * @return {string[]} Row names.
+ */
+function legacyRowNames() {
+	return wpEvalJson( LEGACY_ROW_NAMES_PHP );
+}
+
+/**
+ * Put the install back into the shape a pre-2.0.0 site is in.
+ *
+ * The prefixed rows go away and whichever unprefixed ones the caller names take
+ * their place: fifteen postratings_* rows, plus the two WP-Stats rows this
+ * plugin shared with five siblings.
+ *
+ * **It hands back what it can see, and that is not a convenience.**
+ * maybe_upgrade() is hooked to `init`, which a WP-CLI request reaches like any
+ * other. So the moment this call ends, the next `wp eval` boots WordPress with
+ * the markers missing and performs the upgrade itself, before running a line of
+ * the code it was given -- and a test that read the rows back through another
+ * helper would be asserting on WP-CLI's run rather than on the browser's, with
+ * nothing left for the browser to do.
+ *
+ * @param {Object} rows Legacy option name => value, stored exactly as given.
+ * @return {{legacy: string[], options: *, version: *}} The state as just seeded.
+ */
+function installLegacyRows( rows ) {
+	const encoded = Buffer.from( JSON.stringify( rows ), 'utf8' ).toString( 'base64' );
+
+	return JSON.parse(
+		wpEval(
+			`delete_option( WP_PostRatings_Options::OPTION );
+			delete_option( WP_PostRatings_Options::VERSION );
+			foreach ( ${ LEGACY_ROW_NAMES_PHP } as $row ) {
+				delete_option( $row );
+			}
+			foreach ( json_decode( base64_decode( '${ encoded }' ), true ) as $name => $value ) {
+				update_option( $name, $value );
+			}
+
+			$alive = array();
+			foreach ( ${ LEGACY_ROW_NAMES_PHP } as $row ) {
+				if ( false !== get_option( $row, false ) ) {
+					$alive[] = $row;
+				}
+			}
+
+			echo '<<<' . wp_json_encode( array(
+				'legacy'  => array_values( $alive ),
+				'options' => get_option( WP_PostRatings_Options::OPTION ),
+				'version' => get_option( WP_PostRatings_Options::VERSION ),
+			) ) . '>>>';`,
+		),
+	);
+}
+
+/**
+ * Which pre-2.0.0 rows are still in the database.
+ *
+ * @return {string[]} The legacy rows that survive.
+ */
+function survivingLegacyRows() {
+	return wpEvalJson(
+		`array_values( array_filter(
+			${ LEGACY_ROW_NAMES_PHP },
+			static function ( $name ) {
+				return false !== get_option( $name, false );
+			}
+		) )`,
+	);
+}
+
+/**
+ * Put the install back to a current one: markers stamped, settings shipped.
+ *
+ * @return {void}
+ */
+function resetPlugin() {
+	wpEval(
+		`foreach ( ${ LEGACY_ROW_NAMES_PHP } as $row ) {
+			delete_option( $row );
+		}
+		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
+		update_option( WP_PostRatings_Options::VERSION, array(
+			'plugin' => WP_POSTRATINGS_VERSION,
+			'db'     => WP_POSTRATINGS_DB_VERSION,
+		) );
+		echo '<<<done>>>';`,
+	);
+}
+
+/**
  * The value of every swatch in one of the two colour columns, in row order.
  *
  * @param {import('@playwright/test').Page} page     Page under test.
@@ -231,9 +454,19 @@ module.exports = {
 	chooseType,
 	configure,
 	createRatedPost,
+	defaultOptions,
+	installLegacyRows,
+	legacyRowNames,
 	openSettings,
+	rawOptions,
+	resetPlugin,
 	resetTemplates,
+	runningVersions,
 	saveSettings,
+	survivingLegacyRows,
 	swatches,
 	uniqueTitle,
+	versionRow,
+	wpEval,
+	wpEvalJson,
 };
