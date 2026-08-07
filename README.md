@@ -427,11 +427,10 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Screenshots
 
-1. Admin - Manage Ratings
-2. Admin - Ratings Settings
-3. Admin - Ratings Templates
-4. Ratings
-5. Ratings Hover
+1. Ratings -> Settings: the shape, the scale, who may rate, and how a repeat is spotted
+2. The Templates tab, holding the markup of the control and of every result
+3. Ratings -> Logs, every vote with who cast it, filterable by user and by rating
+4. The control in a post with a star under the pointer, and the same rating read-only below
 
 ## Changelog
 ### 2.0.0
