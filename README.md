@@ -43,6 +43,29 @@ To put ratings on every post automatically, a classic theme can call the templat
 
 The settings live at **WP-Admin -> Ratings -> Settings**, which has a Settings tab and a Templates tab.
 
+### WP-CLI
+```
+wp postratings list
+wp postratings list --limit=50 --format=json
+wp postratings get 42
+wp postratings delete 42 --yes
+wp postratings delete --all --what=logs
+```
+
+A rating lives in two places — the running totals each post displays, and a row per vote in the log. `--what` chooses which to clear: `logs`, `data` or `both`, and `both` is the default.
+
+### REST API
+```
+GET  /wp-json/postratings/v1/post/<id>
+POST /wp-json/postratings/v1/post/<id>/rate
+```
+
+Reading is public, because a rating is public. Rating takes the same `wp_postratings_<id>-nonce` the rendered control already carries, passed as a `nonce` parameter, and is subject to the same eligibility and repeat-rating settings as rating through the page.
+
+Each response carries the rendered markup as well as the numbers, because your templates and your chosen shape decide what a rating looks like.
+
+**These routes are an addition.** The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
+
 ## Frequently Asked Questions
 
 ### How do I change the colour of the ratings?
@@ -434,6 +457,8 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Changelog
 ### 2.0.0
+* NEW: A `wp postratings` WP-CLI command — `list`, `get` and `delete`, with `--what=logs|data|both`.
+* NEW: A `postratings/v1` REST API for reading a post's rating and casting one. The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
 * BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4.
 * BREAKING: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
 * BREAKING: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. Every class and element id is now prefixed with the plugin slug: `.post-ratings` is `.wp-postratings`, `.post-ratings-image` no longer exists at all, and the wrapper id is `wp-postratings-123` rather than `post-ratings-123`. Colour, size and spacing are CSS custom properties, which is usually a one-line replacement; see the FAQ.
