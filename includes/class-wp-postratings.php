@@ -72,12 +72,36 @@ class WP_PostRatings {
 
 		add_action( 'plugins_loaded', array( 'WP_PostRatings_WPStats', 'init' ) );
 
+		new WP_PostRatings_API();
+
+		self::register_command();
+
 		if ( is_admin() ) {
 			WP_PostRatings_Admin::init();
 			WP_PostRatings_Settings::init();
 
 			add_filter( 'set-screen-option', array( 'WP_PostRatings_Admin', 'set_screen_option' ), 10, 3 );
 		}
+	}
+
+	/**
+	 * Register the WP-CLI command.
+	 *
+	 * The class file is required here rather than at plugin load because it
+	 * extends WP_CLI_Command, which only exists when WP-CLI is the one running
+	 * WordPress. Requiring it unconditionally is a fatal error on every web
+	 * request.
+	 *
+	 * @return void
+	 */
+	public static function register_command() {
+		if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+			return;
+		}
+
+		require_once WP_POSTRATINGS_DIR . 'includes/class-wp-postratings-command.php';
+
+		WP_CLI::add_command( 'postratings', 'WP_PostRatings_Command' );
 	}
 
 	/**

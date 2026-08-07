@@ -42,6 +42,14 @@ require $_tests_dir . '/includes/bootstrap.php';
 // fixture base class extends it, so it cannot be loaded any earlier.
 require_once __DIR__ . '/helper-testcase.php';
 
+// The WP-CLI stand-ins, in dependency order: the base class the command file
+// extends, then the formatter it prints through, then the facade -- which ends
+// by requiring the command itself, so nothing else has to know that the plugin
+// only loads that file when WP_CLI is defined.
+require_once __DIR__ . '/helper-wp-cli-command.php';
+require_once __DIR__ . '/helper-wp-cli-utils.php';
+require_once __DIR__ . '/helper-wp-cli.php';
+
 // The shared metadata contract. helper-metadata-testcase.php is a byte-identical
 // copy of _standards/templates/helper-metadata-testcase.php in all nineteen
 // plugins, so it cannot name WP_PostRatings_TestCase; it extends

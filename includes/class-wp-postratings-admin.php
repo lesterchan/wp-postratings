@@ -218,7 +218,7 @@ class WP_PostRatings_Admin {
 			$ids = wp_parse_id_list( wp_unslash( $_REQUEST['rating_id'] ) );
 
 			if ( ! empty( $ids ) ) {
-				$deleted = self::delete_log_rows( 'rating_id', $ids );
+				$deleted = WP_PostRatings_Data::delete_log_entries( $ids );
 
 				/* translators: %s: number of log entries deleted. */
 				$notices[] = sprintf( _n( '%s rating log entry deleted.', '%s rating log entries deleted.', $deleted, 'wp-postratings' ), number_format_i18n( $deleted ) );
@@ -276,73 +276,30 @@ class WP_PostRatings_Admin {
 	 * @return array Notices.
 	 */
 	private static function delete_data( $mode, $is_all, $post_ids ) {
-		global $wpdb;
+		$notices = array();
 
-		$notices   = array();
-		$meta_keys = array( 'ratings_users', 'ratings_score', 'ratings_average' );
-
+		// The deletions themselves live in WP_PostRatings_Data, which is what
+		// the WP-CLI command drives too. What is left here is the wording, and
+		// that is the part the two callers do not share.
 		if ( 1 === $mode || 3 === $mode ) {
-			if ( $is_all ) {
-				$deleted = (int) $wpdb->query( "DELETE FROM {$wpdb->ratings}" );
-			} else {
-				$deleted = self::delete_log_rows( 'rating_postid', $post_ids );
-			}
+			$deleted = WP_PostRatings_Data::delete_logs( $post_ids, $is_all );
 
 			/* translators: %s: number of log entries deleted. */
 			$notices[] = sprintf( _n( '%s rating log entry deleted.', '%s rating log entries deleted.', $deleted, 'wp-postratings' ), number_format_i18n( $deleted ) );
 		}
 
 		if ( 2 === $mode || 3 === $mode ) {
+			WP_PostRatings_Data::delete_ratings( $post_ids, $is_all );
+
 			if ( $is_all ) {
-				// delete_post_meta() wants a post id, and "every post" is not
-				// one; this clears the key across the table in one statement.
-				foreach ( $meta_keys as $meta_key ) {
-					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s", $meta_key ) );
-				}
-
-				// Deleting meta rows directly leaves every post's meta cache
-				// holding the values that were just removed.
-				wp_cache_flush();
-
 				$notices[] = __( 'All rating data deleted.', 'wp-postratings' );
 			} else {
-				foreach ( $post_ids as $post_id ) {
-					foreach ( $meta_keys as $meta_key ) {
-						delete_post_meta( $post_id, $meta_key );
-					}
-				}
-
 				/* translators: %s: list of post ids. */
 				$notices[] = sprintf( __( 'Rating data deleted for Post ID(s) %s.', 'wp-postratings' ), implode( ', ', $post_ids ) );
 			}
 		}
 
 		return $notices;
-	}
-
-	/**
-	 * Delete log rows matching a list of ids.
-	 *
-	 * One $wpdb->delete() per id rather than a generated run of %d
-	 * placeholders: an IN () list cannot be expressed with $wpdb->prepare()
-	 * without interpolating the placeholders into the SQL first, and the lists
-	 * here are a page of log rows or a handful of post ids typed into a form.
-	 *
-	 * @param string $column Column to match on.
-	 * @param array  $ids    Ids to delete.
-	 *
-	 * @return int Rows deleted.
-	 */
-	private static function delete_log_rows( $column, $ids ) {
-		global $wpdb;
-
-		$deleted = 0;
-
-		foreach ( $ids as $id ) {
-			$deleted += (int) $wpdb->delete( $wpdb->ratings, array( $column => (int) $id ), array( '%d' ) );
-		}
-
-		return $deleted;
 	}
 
 	/**
