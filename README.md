@@ -467,6 +467,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 2. The Templates tab, holding the markup of the control and of every result
 3. Ratings -> Logs, every vote with who cast it, filterable by user and by rating
 4. The control in a post with a star under the pointer, and the same rating read-only below
+5. The Ratings block in the editor, previewing the control for the post it is pointed at, with the sidebar choosing that post and whether the rating can be cast or only read
 
 ## Changelog
 ### 2.0.0
