@@ -104,7 +104,8 @@ class WP_PostRatings_API {
 	private function post_or_404( $post_id ) {
 		$post = get_post( (int) $post_id );
 
-		if ( ! $post || wp_is_post_revision( $post ) ) {
+		// The same three questions the AJAX path asks; see process_vote().
+		if ( ! $post || wp_is_post_revision( $post ) || ! is_post_publicly_viewable( $post ) ) {
 			return new WP_Error(
 				'wp_postratings_no_such_post',
 				/* translators: %s: post id. */

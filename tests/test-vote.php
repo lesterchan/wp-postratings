@@ -99,6 +99,49 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * The old guard accepted every other row in wp_posts, so an unauthenticated
+	 * visitor could seed a rating on a post nobody has
+	 * published -- it then arrived already rated on the day it went live -- and
+	 * record() copies the unpublished title into the log table, where the Logs
+	 * screen shows it.
+	 *
+	 * @dataProvider data_unratable_rows
+	 *
+	 * @param array  $post_args Arguments for the row to try.
+	 * @param string $why       What the row stands for.
+	 * @return void
+	 */
+	public function test_a_post_nobody_can_read_cannot_be_rated( array $post_args, $why ) {
+		$post_id = self::factory()->post->create( $post_args );
+
+		$this->assertStringContainsString( 'Invalid Post ID', $this->refusal( $post_id, 3 ), $why );
+		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'And no rating meta is seeded on it.' );
+	}
+
+	/**
+	 * Rows that exist and must not be ratable.
+	 *
+	 * @return array
+	 */
+	public function data_unratable_rows() {
+		return array(
+			'a draft'       => array( array( 'post_status' => 'draft' ), 'A draft is not published.' ),
+			'a pending'     => array( array( 'post_status' => 'pending' ), 'Nor is a pending post.' ),
+			'a private'     => array( array( 'post_status' => 'private' ), 'A private post is not publicly viewable.' ),
+			'a trashed'     => array( array( 'post_status' => 'trash' ), 'Nor is one in the trash.' ),
+			'an auto-draft' => array( array( 'post_status' => 'auto-draft' ), 'An auto-draft is not something anybody has read.' ),
+		);
+	}
+
+	public function test_an_ordinary_published_post_is_still_ratable() {
+		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
+
+		$this->assertSame( '1', get_post_meta( $post_id, 'ratings_users', true ), 'The feature still works for the posts it is for.' );
+	}
+
+	/**
 	 * A crawler's vote is dropped.
 	 *
 	 * @return void

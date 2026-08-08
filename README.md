@@ -477,6 +477,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Changelog
 ### 2.0.0
+* FIXED: Any post ID could be rated, not only a published one. A visitor who was never signed in could seed `ratings_users`, `ratings_score` and `ratings_average` onto a draft, a pending, a private or a trashed post — so it arrived already rated on the day it was published — and the unpublished title was copied into the log table, where the Logs screen then displayed it. On a site that had put `%POST_TITLE%` or `%POST_CONTENT%` into the text template, the reply returned unpublished content directly. Both the AJAX action and the REST route now require a post that is actually publicly viewable
 * NEW: A `wp postratings` WP-CLI command — `list`, `get` and `delete`, with `--what=logs|data|both`.
 * NEW: A `postratings/v1` REST API for reading a post's rating and casting one. The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
 * NEW: A **Ratings** block for the editor, with the post id and a results-only toggle in the sidebar. It renders on the server through the same code the shortcode does, so the editor preview is the real rating. The `[ratings]` shortcode is unchanged and still supported — the block is an addition beside it, nothing needs migrating, and posts already holding a shortcode need no edit.

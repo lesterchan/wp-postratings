@@ -521,7 +521,20 @@ class WP_PostRatings_Rating {
 
 			$post = get_post( $post_id );
 
-			if ( ! $post || wp_is_post_revision( $post ) ) {
+			/*
+			 * is_post_publicly_viewable() as well, because get_post() plus the
+			 * revision test accepted every other row in wp_posts: drafts,
+			 * pending, private, trashed, auto-drafts, attachments and any
+			 * published-but-not-public custom type. An unauthenticated visitor
+			 * could therefore seed ratings_users, ratings_score and
+			 * ratings_average on a post nobody has published -- so it arrived
+			 * already rated on the day it went live -- and record() copies the
+			 * unpublished title into rating_posttitle, where the Logs screen
+			 * then shows it. On a site that has put %POST_TITLE% or
+			 * %POST_CONTENT% into the text template, the response body returns
+			 * the unpublished content directly.
+			 */
+			if ( ! $post || wp_is_post_revision( $post ) || ! is_post_publicly_viewable( $post ) ) {
 				/* translators: %s: post id. */
 				throw new InvalidArgumentException( esc_html( sprintf( __( 'Invalid Post ID (#%s).', 'wp-postratings' ), $post_id ) ) );
 			}
