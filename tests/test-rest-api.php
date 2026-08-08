@@ -226,7 +226,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 			)
 		);
 
-		$this->assertSame( 400, $response->get_status(), 'A rating off the end of the scale is refused.' );
+		$this->assertSame( 403, $response->get_status(), 'A rating off the end of the scale is refused.' );
 		$this->assertSame( 0, WP_PostRatings_Data::get( $post_id )['users'], 'And records nothing.' );
 	}
 
@@ -263,7 +263,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 
 		$second = $rate();
 
-		$this->assertSame( 400, $second->get_status(), 'The second is refused.' );
+		$this->assertSame( 403, $second->get_status(), 'The second is refused.' );
 		$this->assertSame( 1, WP_PostRatings_Data::get( $post_id )['users'], 'And the count did not move again.' );
 	}
 

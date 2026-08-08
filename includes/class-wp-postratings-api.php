@@ -200,7 +200,7 @@ class WP_PostRatings_API {
 			return new WP_Error(
 				'wp_postratings_rating_refused',
 				'' === $html ? __( 'This rating was not accepted.', 'wp-postratings' ) : $html,
-				array( 'status' => 400 )
+				array( 'status' => 403 )
 			);
 		}
 
