@@ -445,7 +445,15 @@ class WP_PostRatings_Rating {
 
 		header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 
-		WP_PostRatings_Template::render( self::process_vote( $post_id, $rate ) );
+		try {
+			WP_PostRatings_Template::render( self::process_vote( $post_id, $rate ) );
+		} catch ( InvalidArgumentException $e ) {
+			// The message is already escaped at every throw site, and is empty
+			// for the refusals that say nothing -- so this renders the sentence
+			// or renders nothing, which is what this endpoint did before.
+			WP_PostRatings_Template::render( $e->getMessage() );
+		}
+
 		exit;
 	}
 
@@ -455,23 +463,35 @@ class WP_PostRatings_Rating {
 	 * Split out from handle_vote() so it can be driven from a test: the handler
 	 * ends in exit(), which takes the runner with it.
 	 *
+	 * **Returns on success and throws on every refusal**, which is the same
+	 * shape WP_Polls_Vote::vote_poll_process() uses. It used to answer with a
+	 * string either way -- rendered markup when the rating landed, a sentence
+	 * when it did not -- and nothing in that return told the two apart, so a
+	 * caller had to watch ratings_users move to find out what had happened.
+	 *
+	 * The refusals that deliberately say nothing to a visitor -- a bot, or
+	 * somebody not allowed to rate -- throw with an **empty message**. A caller
+	 * showing the message therefore shows nothing, exactly as before, while a
+	 * caller that needs a status still has one.
+	 *
 	 * @param int $post_id Post being rated.
 	 * @param int $rate    Position on the scale.
 	 *
-	 * @return string Markup to send back, or '' to say nothing.
+	 * @return string Markup for the rating that was recorded.
+	 * @throws InvalidArgumentException When the rating is refused.
 	 */
 	public static function process_vote( $post_id, $rate ) {
 		$post_id = (int) $post_id;
 		$rate    = (int) $rate;
 
 		if ( $rate <= 0 || $post_id <= 0 || ! self::can_rate() ) {
-			return '';
+			throw new InvalidArgumentException( '' );
 		}
 
 		$useragent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 		if ( self::is_bot( $useragent ) ) {
-			return '';
+			throw new InvalidArgumentException( '' );
 		}
 
 		$ratings_max    = (int) WP_PostRatings_Options::get( 'max' );
@@ -481,13 +501,13 @@ class WP_PostRatings_Rating {
 		// become $ratings_values[-1]: a warning, and a vote worth nothing.
 		if ( $rate > $ratings_max || ! isset( $ratings_values[ $rate - 1 ] ) ) {
 			/* translators: %s: rating that was submitted. */
-			return sprintf( esc_html__( 'Invalid Rating (#%s).', 'wp-postratings' ), $rate );
+			throw new InvalidArgumentException( esc_html( sprintf( __( 'Invalid Rating (#%s).', 'wp-postratings' ), $rate ) ) );
 		}
 
 		$lock = self::acquire_lock( $post_id );
 
 		if ( false === $lock ) {
-			return esc_html__( 'Unable to obtain lock', 'wp-postratings' );
+			throw new InvalidArgumentException( esc_html__( 'Unable to obtain lock', 'wp-postratings' ) );
 		}
 
 		// The lock is released on every path below. A single release at the end
@@ -496,14 +516,14 @@ class WP_PostRatings_Rating {
 		try {
 			if ( self::has_rated( $post_id ) ) {
 				/* translators: %s: post id. */
-				return sprintf( esc_html__( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id );
+				throw new InvalidArgumentException( esc_html( sprintf( __( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id ) ) );
 			}
 
 			$post = get_post( $post_id );
 
 			if ( ! $post || wp_is_post_revision( $post ) ) {
 				/* translators: %s: post id. */
-				return sprintf( esc_html__( 'Invalid Post ID (#%s).', 'wp-postratings' ), $post_id );
+				throw new InvalidArgumentException( esc_html( sprintf( __( 'Invalid Post ID (#%s).', 'wp-postratings' ), $post_id ) ) );
 			}
 
 			$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );

@@ -122,6 +122,30 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Rate a post and hand back the refusal, or '' when it was accepted.
+	 *
+	 * WP_PostRatings_Rating::process_vote() returns on success and throws on
+	 * every refusal, so a test
+	 * about a refusal has to catch. The refusals that say nothing to a visitor
+	 * throw with an empty message, which is why '' is ambiguous here on its own
+	 * -- assert on what was stored as well.
+	 *
+	 * @param int $post_id Post to rate.
+	 * @param int $rate    Position on the scale.
+	 *
+	 * @return string The refusal message, or '' if the rating was accepted.
+	 */
+	protected function refusal( $post_id, $rate ) {
+		try {
+			WP_PostRatings_Rating::process_vote( $post_id, $rate );
+		} catch ( InvalidArgumentException $e ) {
+			return '' === $e->getMessage() ? '(silent)' : $e->getMessage();
+		}
+
+		return '';
+	}
+
+	/**
 	 * Create a post carrying rating meta.
 	 *
 	 * @param int    $users Number of voters.

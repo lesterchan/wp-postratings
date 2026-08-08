@@ -164,9 +164,17 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	 * @param int $post_id Post to rate.
 	 * @param int $rate    Position on the scale.
 	 *
+	 * process_vote() throws on a refusal now rather than returning the reason,
+	 * so this catches and hands the message back -- which is what every caller
+	 * here was already asserting on.
+	 *
 	 * @return string
 	 */
 	private function cast_vote( $post_id, $rate ) {
-		return WP_PostRatings_Rating::process_vote( $post_id, $rate );
+		try {
+			return WP_PostRatings_Rating::process_vote( $post_id, $rate );
+		} catch ( InvalidArgumentException $e ) {
+			return $e->getMessage();
+		}
 	}
 }

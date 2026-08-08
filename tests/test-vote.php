@@ -70,7 +70,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_an_out_of_range_rating_is_refused() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$output = WP_PostRatings_Rating::process_vote( $post_id, 99 );
+		$output = $this->refusal( $post_id, 99 );
 
 		$this->assertStringContainsString( 'Invalid Rating', $output, 'A rating off the scale is refused with a reason.' );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And nothing is recorded.' );
@@ -84,8 +84,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_a_non_positive_rating_writes_nothing() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 0 ), 'A rating of zero writes nothing.' );
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, -3 ), 'Nor does a negative one.' );
+		$this->assertSame( '(silent)', $this->refusal( $post_id, 0 ), 'A rating of zero writes nothing, and says nothing.' );
+		$this->assertSame( '(silent)', $this->refusal( $post_id, -3 ), 'Nor does a negative one.' );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'Leaving the post unrated.' );
 	}
 
@@ -95,7 +95,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_post_is_refused() {
-		$this->assertStringContainsString( 'Invalid Post ID', WP_PostRatings_Rating::process_vote( 999999, 3 ), 'An unknown post is refused with a reason.' );
+		$this->assertStringContainsString( 'Invalid Post ID', $this->refusal( 999999, 3 ), 'An unknown post is refused with a reason.' );
 	}
 
 	/**
@@ -108,7 +108,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; Googlebot/2.1)';
 
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ), 'A bot is turned away.' );
+		$this->assertSame( '(silent)', $this->refusal( $post_id, 4 ), 'A bot is turned away, without being told why.' );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And records nothing.' );
 	}
 
@@ -141,7 +141,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With logged-in-only set, a guest is refused.' );
-		$this->assertSame( '', WP_PostRatings_Rating::process_vote( $post_id, 4 ), 'With logged in voting only, a guest is refused.' );
+		$this->assertSame( '(silent)', $this->refusal( $post_id, 4 ), 'With logged in voting only, a guest is refused.' );
 		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And records nothing.' );
 	}
 
@@ -172,7 +172,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'The first vote from an address is recorded.' );
 
-		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
+		$output = $this->refusal( $post_id, 5 );
 
 		$this->assertStringContainsString( 'Already Rated', $output, 'The second is refused with a reason.' );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And the count stays where it was.' );
@@ -230,7 +230,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
-		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
+		$output = $this->refusal( $post_id, 5 );
 
 		$this->assertStringNotContainsString( 'Already Rated', $output, 'not checking still blocked a repeat vote' );
 		$this->assertSame( 2, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->ratings}" ), 'both votes should be in the log' );
@@ -293,7 +293,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$post_id = $this->make_rated_post( 0, 0 );
 
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
-		$output = WP_PostRatings_Rating::process_vote( $post_id, 5 );
+		$output = $this->refusal( $post_id, 5 );
 
 		$this->assertStringContainsString( 'Already Rated', $output, 'A second vote from the same user is refused with a reason.' );
 		$this->assertSame( 1, (int) get_post_meta( $post_id, 'ratings_users', true ), 'And the count stays where it was.' );

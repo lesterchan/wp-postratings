@@ -181,28 +181,24 @@ class WP_PostRatings_API {
 			);
 		}
 
-		// process_vote() answers with a string either way -- the rendered result
-		// when the rating landed, a plain sentence when it was refused, and an
-		// empty string for the refusals that deliberately say nothing (a bot, a
-		// visitor who may not rate). Nothing in that return distinguishes the
-		// two, so the vote is detected by what it did rather than by what it
-		// said: a rating that counted always moves ratings_users by one.
-		//
-		// Changing process_vote() to return a structured result would be
-		// tidier and is deliberately not done here: the AJAX handler and its
-		// tests share that contract, and a REST route is not a reason to
-		// rewrite the path every existing site votes through.
-		$before = WP_PostRatings_Data::get( $post_id );
-		$html   = WP_PostRatings_Rating::process_vote( $post_id, (int) $request['rate'] );
-		$after  = WP_PostRatings_Data::get( $post_id );
-
-		if ( $after['users'] === $before['users'] ) {
+		// process_vote() returns on success and throws on every refusal, so the
+		// two are separate channels and this route does not have to infer an
+		// outcome from a side effect. It used to watch ratings_users move,
+		// because the old contract answered with a string either way.
+		try {
+			$html = WP_PostRatings_Rating::process_vote( $post_id, (int) $request['rate'] );
+		} catch ( InvalidArgumentException $e ) {
+			// Empty for the refusals that say nothing to a browser -- a bot, or
+			// a visitor not allowed to rate. A client asking over REST gets a
+			// reason rather than an empty body.
 			return new WP_Error(
 				'wp_postratings_rating_refused',
-				'' === $html ? __( 'This rating was not accepted.', 'wp-postratings' ) : $html,
+				'' === $e->getMessage() ? __( 'This rating was not accepted.', 'wp-postratings' ) : $e->getMessage(),
 				array( 'status' => 403 )
 			);
 		}
+
+		$after = WP_PostRatings_Data::get( $post_id );
 
 		return rest_ensure_response(
 			array(
