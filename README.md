@@ -27,6 +27,12 @@ WP-PostRatings adds a rating control to any post, page or custom post type. Visi
 ### Donations
 I spent most of my free time creating, updating, maintaining and supporting these plugins, if you really love my plugins and could spare me a couple of bucks, I will really appreciate it. If not feel free to use it without any obligations.
 
+## Installation
+
+1. Install and activate the plugin.
+1. Go to `WP-Admin -> Ratings -> Settings` and choose the shape, the scale and who is allowed to rate.
+1. Show the control: type `[ratings]` into a post, add the **Ratings** block, or call `the_ratings()` from your theme.
+
 ## Usage
 
 The simplest way, and the only one that works in a block theme without editing template files, is the shortcode. Put it in the post or page you want rated:
