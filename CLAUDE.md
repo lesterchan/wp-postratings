@@ -108,6 +108,27 @@ single-source-of-truth tidiness.
   posted, so a sanitiser that returns just what it was given wipes the other
   tab's values silently. This screen has two tabs; that is not hypothetical.
 
+## WP-CLI and REST
+
+`wp postratings list|get|delete`, and `postratings/v1` with two routes: read a
+post's rating, cast one.
+
+**A rating lives in two places** -- the running totals in post meta and a row per
+vote in the log -- so "clear this post's ratings" is ambiguous until you say
+which. `delete --what=logs|data|both` is that choice, and `WP_PostRatings_Data`
+is where both halves are done, so the admin screen and the command cannot
+disagree about what clearing means.
+
+**`process_vote()` returns a string whether the rating landed or not** -- rendered
+markup on success, a plain sentence on refusal, an empty string for the refusals
+that say nothing. Nothing in that return distinguishes them, so the REST route
+decides by watching `ratings_users` instead: a rating that counted always moves
+it by one. Reading the return instead makes "outside the scale" and "already
+rated" both answer 200. Do not simplify it.
+
+**The `admin-ajax.php` `wp_postratings` action is still registered and still
+supported**, with a test asserting so.
+
 ## Migrations, and why they are tested through a browser
 
 `maybe_upgrade()` hangs off `init`, so every request reaches it — activation
