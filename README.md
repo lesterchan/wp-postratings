@@ -64,6 +64,8 @@ Reading is public, because a rating is public. Rating takes the same `wp_postrat
 
 Each response carries the rendered markup as well as the numbers, because your templates and your chosen shape decide what a rating looks like.
 
+**A refusal answers 403**, not 400 — a rating already cast, a rating off the end of the scale, a bad nonce. 400 is kept for a parameter this plugin never had a chance to look at, and a post that does not exist is 404.
+
 **These routes are an addition.** The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
 
 ## Frequently Asked Questions
