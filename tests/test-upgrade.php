@@ -27,6 +27,35 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 	private $post_id;
 
 	/**
+	 * Fire `init` again, the way a second request would.
+	 *
+	 * `init` has already fired once before any test runs - the bootstrap loads
+	 * the plugin and then finishes booting WordPress. Firing it again here is
+	 * the point of the two tests below, which watch a front end request migrate
+	 * without wp-admin ever being asked; but it also re-runs the
+	 * once-per-process work hooked to init, and block registration is exactly
+	 * that. Registering a block type twice is a _doing_it_wrong() notice, which
+	 * this suite turns into a failure, and the double registration is an
+	 * artefact of one process standing in for two requests rather than
+	 * something a site can do. A real second request starts with an empty block
+	 * registry, so empty it of this plugin's blocks first and the second init
+	 * then does the same work the first one did.
+	 *
+	 * @return void
+	 */
+	private function fire_init() {
+		$registry = WP_Block_Type_Registry::get_instance();
+
+		foreach ( array_keys( $registry->get_all_registered() ) as $name ) {
+			if ( 0 === strpos( $name, 'wp-postratings/' ) ) {
+				$registry->unregister( $name );
+			}
+		}
+
+		do_action( 'init' );
+	}
+
+	/**
 	 * Build a site as 1.91.3 left it.
 	 *
 	 * @return void
@@ -258,7 +287,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$this->assertFalse( is_admin(), 'this test has to run as a front end request' );
 
 		// What the plugin does on a normal front end page load.
-		do_action( 'init' );
+		$this->fire_init();
 
 		$this->assertSame(
 			"Rate: %RATINGS_IMAGES_VOTE% O'Brien",
@@ -292,7 +321,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 			}
 		);
 
-		do_action( 'init' );
+		$this->fire_init();
 		WP_PostRatings_Install::maybe_upgrade();
 
 		$this->assertSame( 0, $writes, 'the migration rewrote an already-migrated install' );
