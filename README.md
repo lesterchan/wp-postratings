@@ -83,7 +83,7 @@ Each response carries the rendered markup as well as the numbers, because your t
 
 ### How do I change the colour of the ratings?
 
-Set them on the Ratings Options screen, under **Ratings Colour**. There is one colour for a rated shape and one for an unrated one, which is what the old `stars_crystal` and `stars_dark` image sets were for.
+Go to `WP-Admin -> Ratings -> Settings` and look under **Individual Rating Text and Value**. Each step on the scale has its own pair of colour swatches, in the **Rated** and **Not rated** columns, which is what the old `stars_crystal` and `stars_dark` image sets were for.
 
 Hovering uses the rated colour. If you would rather tell "about to pick" apart from "already recorded", set `--wp-postratings-color-hover` in your theme.
 
