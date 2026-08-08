@@ -108,6 +108,35 @@ single-source-of-truth tidiness.
   posted, so a sanitiser that returns just what it was given wipes the other
   tab's values silently. This screen has two tabs; that is not hypothetical.
 
+## The block
+
+`wp-postratings/ratings`, registered by `WP_PostRatings_Blocks` from the metadata
+`bin/build` compiles out of `src/` into `build/`. **`build/` is generated and
+gitignored**, so a checkout that has never been built registers no block;
+`bin/test.sh` and `bin/test-e2e.sh` build first.
+
+**The block wraps `[ratings]` and never replaces it.** The shortcode stays
+registered and supported. Both entry points meet at
+`WP_PostRatings::render_ratings( $post_id, $results )` and **neither calls the
+other**; the block does not run `do_shortcode()`.
+
+**`results` is deliberately not normalised.** The shortcode has always treated
+any value as "yes", so `results="0"` renders the result on live pages today.
+Running it through a boolean filter would silently change them. The shared
+renderer reads truthiness only, so a real boolean from the block and a string
+from the shortcode agree wherever a block can express the value at all.
+
+**The renderer is on `WP_PostRatings`, not on `WP_PostRatings_Template`.** The
+composition step sits on top of the `the_ratings()` template tags, which
+themselves sit on the template class -- putting it there would make the markup
+builder call back up into its own public API.
+
+**`block_editor_styles()` is load-bearing.** Every rating shape is a CSS mask on
+an empty `<i class="wp-postratings-item">` sized entirely from the stylesheet,
+so an editor without it previews labels with zero-width nothing beside them.
+Guarded on `is_admin()` because `enqueue_block_assets` fires on the front end
+too, where `styles()` has already run.
+
 ## WP-CLI and REST
 
 `wp postratings list|get|delete`, and `postratings/v1` with two routes: read a
