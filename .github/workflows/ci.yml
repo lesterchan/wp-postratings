@@ -135,6 +135,20 @@ jobs:
         with:
           node-version: "24"
 
+      # Blocks register from build/, which bin/build generates from src/ and
+      # which is gitignored, so a checkout has none. tests/test-blocks.php
+      # asserts they register, and without this it fails on every row of the
+      # matrix. Dropped by bin/verify.py for a plugin with no src/, the way the
+      # eslint job is dropped for a plugin with no JavaScript.
+      #
+      # This job runs phpunit directly rather than through bin/test.sh, because
+      # the matrix picks the config file, so the build step that script does has
+      # to be repeated here rather than inherited.
+      - name: Install dev dependencies and build blocks
+        run: |
+          npm ci --no-fund --no-audit
+          npm run build
+
       # The runner already has Docker, which is all wp-env needs, so CI runs the
       # same stack as bin/test.sh does locally -- one code path, no drift.
       - name: Start wp-env

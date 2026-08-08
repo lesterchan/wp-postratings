@@ -91,6 +91,7 @@ require_once __DIR__ . '/includes/class-wp-postratings-api.php';
 require_once __DIR__ . '/includes/class-wp-postratings-install.php';
 require_once __DIR__ . '/includes/class-wp-postratings-template.php';
 require_once __DIR__ . '/includes/class-wp-postratings-rating.php';
+require_once __DIR__ . '/includes/class-wp-postratings-blocks.php';
 require_once __DIR__ . '/includes/class-wp-postratings-comments.php';
 require_once __DIR__ . '/includes/class-wp-postratings-stats.php';
 require_once __DIR__ . '/includes/class-wp-postratings-widget.php';

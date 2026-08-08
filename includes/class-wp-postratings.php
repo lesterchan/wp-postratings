@@ -55,6 +55,7 @@ class WP_PostRatings {
 		// autoloaded option, so an already-migrated install pays a lookup.
 		add_action( 'init', array( 'WP_PostRatings_Install', 'maybe_upgrade' ), 5 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'block_editor_styles' ) );
 
 		add_shortcode( 'ratings', array( $this, 'shortcode' ) );
 
@@ -69,6 +70,7 @@ class WP_PostRatings {
 
 		WP_PostRatings_Rating::init();
 		WP_PostRatings_Comments::init();
+		WP_PostRatings_Blocks::init();
 
 		add_action( 'plugins_loaded', array( 'WP_PostRatings_WPStats', 'init' ) );
 
@@ -134,11 +136,7 @@ class WP_PostRatings {
 	 * @return void
 	 */
 	public function scripts() {
-		$options = WP_PostRatings_Options::get();
-
-		// No separate RTL stylesheet since 2.0.0: the rules use logical
-		// properties, so direction is handled by the browser.
-		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'wp-postratings.css' ), array(), WP_POSTRATINGS_VERSION );
+		$this->styles();
 
 		// The empty dependency array is the point: the script is vanilla
 		// ES2017 and asks for nothing since 2.0.0.
@@ -164,6 +162,46 @@ class WP_PostRatings {
 	}
 
 	/**
+	 * Enqueue the front end stylesheet.
+	 *
+	 * Split out of scripts() so the block editor can have the styles without
+	 * the script.
+	 *
+	 * No separate RTL stylesheet since 2.0.0: the rules use logical
+	 * properties, so direction is handled by the browser.
+	 *
+	 * @return void
+	 */
+	public function styles() {
+		wp_enqueue_style( 'wp-postratings', $this->stylesheet_url( 'wp-postratings.css' ), array(), WP_POSTRATINGS_VERSION );
+	}
+
+	/**
+	 * Enqueue the stylesheet for the block editor's preview.
+	 *
+	 * Every rating shape is a CSS mask declared in that stylesheet, so an
+	 * editor without it previews the block as a bare row of radio buttons --
+	 * technically the right markup and visibly not the rating the post will
+	 * show.
+	 *
+	 * The styles only, never the script: the front end script casts the vote,
+	 * and a preview that can be rated in records real ratings from the editor.
+	 * The block wraps its preview in `inert` for the same reason.
+	 *
+	 * Guarded on is_admin() because `enqueue_block_assets` fires on the front
+	 * end too, where scripts() has already done this on `wp_enqueue_scripts`.
+	 *
+	 * @return void
+	 */
+	public function block_editor_styles() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$this->styles();
+	}
+
+	/**
 	 * URL of a stylesheet, preferring a copy shipped by the active theme.
 	 *
 	 * The theme may place it at the root or under css/.
@@ -185,6 +223,11 @@ class WP_PostRatings {
 	/**
 	 * The [ratings] shortcode.
 	 *
+	 * A thin wrapper over render_ratings(): everything but the attribute
+	 * parsing is shared with the block, which calls the same method. The
+	 * shortcode is not going anywhere -- it is what fifteen years of published
+	 * posts contain -- and the block is an addition beside it.
+	 *
 	 * @param array $atts Shortcode attributes.
 	 *
 	 * @return string
@@ -198,17 +241,47 @@ class WP_PostRatings {
 			$atts
 		);
 
+		// Passed through as it arrived rather than normalised: the shortcode
+		// has always treated any value at all as "yes", and tightening that
+		// here would change what `results="0"` renders on pages nobody is
+		// about to re-edit. The block's attribute is a real boolean and the
+		// shared renderer only asks whether it is truthy, so the two agree
+		// wherever a block can express the value at all.
+		return self::render_ratings( $attributes['id'], $attributes['results'] );
+	}
+
+	/**
+	 * Render a post's rating, for whichever entry point asked.
+	 *
+	 * The one renderer behind the `[ratings]` shortcode and the
+	 * `wp-postratings/ratings` block. Neither of those calls the other: the
+	 * block does not run do_shortcode() and the shortcode does not ask the
+	 * block class for anything, so unregistering either leaves the other
+	 * working, and the markup is decided in one place so they cannot drift.
+	 *
+	 * The feed and AMP guard lives here rather than in the shortcode precisely
+	 * so the block inherits it: a dynamic block renders in a feed too, and a
+	 * rating control in a feed reader votes nowhere.
+	 *
+	 * @param int         $post_id Post to rate, or 0 for the post being rendered.
+	 * @param bool|string $results Whether to show the result instead of the
+	 *                             control. A string where a shortcode supplied
+	 *                             it, and only its truthiness is read.
+	 *
+	 * @return string
+	 */
+	public static function render_ratings( $post_id = 0, $results = false ) {
 		if ( is_feed() || ( function_exists( 'is_amp_endpoint' ) && is_amp_endpoint() ) ) {
 			return esc_html__( 'Note: There is a rating embedded within this post, please visit this post to rate it.', 'wp-postratings' );
 		}
 
-		$id = (int) $attributes['id'];
+		$post_id = (int) $post_id;
 
-		if ( $attributes['results'] ) {
-			return the_ratings_results( $id );
+		if ( $results ) {
+			return the_ratings_results( $post_id );
 		}
 
-		return the_ratings( 'span', $id, false );
+		return the_ratings( 'span', $post_id, false );
 	}
 
 	/**

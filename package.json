@@ -4,6 +4,8 @@
 	"description": "Dev tooling for WP-PostRatings. Excluded from the SVN deploy; never ships to users.",
 	"license": "GPL-2.0-or-later",
 	"scripts": {
+		"build": "bin/build",
+		"start": "wp-scripts start",
 		"lint:js": "eslint .",
 		"lint:js:fix": "eslint . --fix",
 		"test": "bin/test.sh",
@@ -14,8 +16,14 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.62.1",
+		"@wordpress/block-editor": "^16.1.0",
+		"@wordpress/blocks": "^15.25.0",
+		"@wordpress/components": "^38.0.0",
 		"@wordpress/e2e-test-utils-playwright": "^1.52.0",
 		"@wordpress/eslint-plugin": "^25.7.0",
+		"@wordpress/i18n": "^6.25.0",
+		"@wordpress/scripts": "^34.0.0",
+		"@wordpress/server-side-render": "^6.28.0",
 		"eslint": "^9.39.0",
 		"globals": "^16.0.0",
 		"jsdom": "^27.0.0",

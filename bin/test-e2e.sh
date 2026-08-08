@@ -21,6 +21,13 @@ cd "$(dirname "$0")/.."
 PORT=$(node -p "require('./.wp-env.json').testsPort")
 export WP_BASE_URL="${WP_BASE_URL:-http://localhost:${PORT}}"
 
+# The blocks are registered from build/, which is generated and not in the
+# repository, so a fresh clone has none. Without this the block suite fails on a
+# checkout that has never been built -- and worse, on a checkout where src/ has
+# changed since the last build it would test the *previous* build and pass.
+echo "==> Building blocks"
+bin/build
+
 echo "==> Starting wp-env"
 npx --yes @wordpress/env start
 

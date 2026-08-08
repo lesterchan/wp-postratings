@@ -6,3 +6,9 @@ node_modules/
 
 # Playwright traces and screenshots from a failing run.
 artifacts/
+
+# Compiled block sources. Generated from src/ by bin/build, which the deploy
+# runs before it copies anything -- so this being absent from a fresh clone is
+# correct, and build/ is deliberately *not* excluded from the deploy the way
+# src/ is: it is what register_block_type_from_metadata() loads at runtime.
+build/

@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp-postratings/ratings",
+	"version": "2.0.0",
+	"title": "Ratings",
+	"category": "widgets",
+	"icon": "star-filled",
+	"description": "A rating control for a post, or its result on its own.",
+	"keywords": [ "rating", "ratings", "vote", "stars" ],
+	"textdomain": "wp-postratings",
+	"attributes": {
+		"id": {
+			"type": "number",
+			"default": 0
+		},
+		"results": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false,
+		"multiple": true,
+		"reusable": false
+	},
+	"editorScript": "file:./index.js"
+}

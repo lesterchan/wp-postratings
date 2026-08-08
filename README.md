@@ -43,6 +43,17 @@ To put ratings on every post automatically, a classic theme can call the templat
 
 The settings live at **WP-Admin -> Ratings -> Settings**, which has a Settings tab and a Templates tab.
 
+### Showing A Rating In A Block
+
+A **Ratings** block is available in the editor, under **Widgets**. Two settings in the sidebar:
+
+* **Post ID** — leave it at zero to rate the post the block sits in, which is what an empty `[ratings]` does, or give an id to show another post's rating wherever you put the block.
+* **Show the result only** — displays the rating without offering to change it, for putting a post's score somewhere it should not be voted from. This is what `results="true"` does.
+
+It renders on the server, so the preview in the editor is the real rating rather than an approximation, and changing your shape, colours or templates updates every post showing it without re-saving anything. The preview is deliberately not clickable: rating from the editor would record a real vote.
+
+**The shortcode still works and is not going anywhere.** `[ratings]`, `[ratings id="1"]` and `[ratings id="1" results="true"]` behave exactly as they always have, and a post already containing one needs no change. The block calls the same code the shortcode calls, so the two render identically — use whichever suits the post.
+
 ### WP-CLI
 ```
 wp postratings list
@@ -461,6 +472,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 ### 2.0.0
 * NEW: A `wp postratings` WP-CLI command — `list`, `get` and `delete`, with `--what=logs|data|both`.
 * NEW: A `postratings/v1` REST API for reading a post's rating and casting one. The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
+* NEW: A **Ratings** block for the editor, with the post id and a results-only toggle in the sidebar. It renders on the server through the same code the shortcode does, so the editor preview is the real rating. The `[ratings]` shortcode is unchanged and still supported — the block is an addition beside it, nothing needs migrating, and posts already holding a shortcode need no edit.
 * BREAKING: Requires WordPress 6.8 and PHP 8.2, up from 6.0 and 7.4.
 * BREAKING: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
 * BREAKING: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. Every class and element id is now prefixed with the plugin slug: `.post-ratings` is `.wp-postratings`, `.post-ratings-image` no longer exists at all, and the wrapper id is `wp-postratings-123` rather than `post-ratings-123`. Colour, size and spacing are CSS custom properties, which is usually a one-line replacement; see the FAQ.

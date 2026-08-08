@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Build the block sources in src/ into build/.
+#
+# Named `build` with no extension because plugin_deploy.sh looks for exactly
+# that filename and runs it before the rsync, so what reaches wordpress.org is
+# built from whatever is on disk at deploy time.
+#
+#   bin/build            # once
+#   npm run build        # the same thing; the script points here
+#   npm start            # rebuild on change, while writing a block
+#
+# `npm run build` deliberately calls this rather than `wp-scripts build`. The
+# compile is only half the job -- the directory guards below are the other half
+# -- and a second way to build is a way to build wrongly. CI proved that: it ran
+# `wp-scripts build` directly, produced a build/ with no index.php in it, and
+# failed all six PHPUnit rows on the shared metadata suite while every local run
+# had passed, because every local run went through this file.
+#
+# `src/` is excluded from the deploy and `build/` is not: build/ is what
+# register_block_type_from_metadata() loads at runtime, and unbuilt JSX is of no
+# use to a site. Do not "tidy up" by excluding both.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+# The deploy runs this on a machine that may never have installed the dev
+# dependencies -- and a deploy that quietly skipped the build would ship a
+# build/ directory left over from whenever it was last run by hand, which is
+# worse than failing here.
+if [ ! -d node_modules ]; then
+	echo "==> Installing dev dependencies"
+	npm ci
+fi
+
+echo "==> Building blocks"
+npx wp-scripts build
+
+# wp-scripts discovers its entry points by scanning src/ for block.json, so a
+# src/ directory that produced nothing means the scan found nothing -- a
+# misplaced or malformed block.json rather than an empty build. Silence there
+# would reach wordpress.org as a plugin whose blocks do not register.
+if [ ! -d build ] || [ -z "$(ls -A build 2>/dev/null)" ]; then
+	echo "Build produced no output. Check that src/*/block.json exists and is valid." >&2
+	exit 1
+fi
+
+# Every shipped directory carries a silence-is-golden index.php, and build/ is
+# shipped -- it is the half of this pair that reaches wordpress.org. webpack
+# does not know that rule, so the guards are written here rather than committed:
+# build/ is generated, so a committed guard inside it would be deleted by the
+# first clean build.
+#
+# Walked rather than listed, because the directories under build/ are one per
+# block and a block added later would otherwise ship without one. The shared
+# metadata suite asserts this and will fail the build that forgets.
+echo "==> Writing directory guards"
+while IFS= read -r directory; do
+	cat > "$directory/index.php" <<-'GUARD'
+	<?php
+	/**
+	 * Silence is golden.
+	 *
+	 * @package WP-PostRatings
+	 */
+	GUARD
+done < <(find build -type d)

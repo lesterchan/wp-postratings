@@ -11,7 +11,15 @@ import globals from 'globals';
 
 export default [
 	{
-		ignores: [ '**/node_modules/**', '**/vendor/**', '**/*.min.js' ],
+		ignores: [
+			'**/node_modules/**',
+			'**/vendor/**',
+			'**/*.min.js',
+			// webpack's output. Minified, so every formatting rule fires on it
+			// -- 600-odd errors on one line -- and none of them is ours to fix.
+			// The sources it is built from are in src/ and are linted.
+			'**/build/**',
+		],
 	},
 	...wordpress.configs[ 'recommended-with-formatting' ],
 	{
