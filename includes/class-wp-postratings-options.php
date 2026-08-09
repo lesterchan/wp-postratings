@@ -373,7 +373,7 @@ class WP_PostRatings_Options {
 				'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%</em>)<br /><em>' . __( 'You need to be a registered member to rate this.', 'wp-postratings' ) . '</em>',
 				'none'         => '%RATINGS_IMAGES_VOTE% (' . __( 'No Ratings Yet', 'wp-postratings' ) . ')<br />%RATINGS_TEXT%',
 				'highestrated' => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> %RATINGS_IMAGES% (%RATINGS_AVERAGE% ' . $out_of . ' %RATINGS_MAX%)</li>',
-				'mostrated'    => '<li><a href="%POST_URL%"  title="%POST_TITLE%">%POST_TITLE%</a> - %RATINGS_USERS% ' . $votes . '</li>',
+				'mostrated'    => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> - %RATINGS_USERS% ' . $votes . '</li>',
 			),
 		);
 	}
@@ -429,11 +429,43 @@ class WP_PostRatings_Options {
 	/**
 	 * Store the settings.
 	 *
+	 * `update_option()` declines to write a value equal to the one `get_option()`
+	 * would return, and `register_setting()` is passed a `default`, which installs
+	 * a `default_option_wp_postratings_options` filter answering with the shipped
+	 * defaults for a row that does not exist. Core's `add_option()` fallback sits
+	 * immediately below that comparison and is unreachable once the two compare
+	 * equal. So the migration -- the only caller that reaches this with a value
+	 * equal to the defaults, which is the commonest install there is -- wrote
+	 * nothing at all, and the markers were stamped complete either way, so the
+	 * upgrade could never run again.
+	 *
+	 * Held off by hook order alone: `maybe_migrate()` runs on `init` and the
+	 * filter is registered on `admin_init`. One `show_in_rest`, one registration
+	 * moved earlier, or any third-party `default_option_*` filter reaches it,
+	 * silently, after the legacy rows have already been deleted.
+	 *
+	 * And hidden by an accident. The sanitiser runs kses over the templates, which
+	 * collapsed a doubled space the "most rated" default carried before 2.0.0, so
+	 * the value written differed from the defaults by that one character and the
+	 * comparison found a difference. The guarantee rested on a typo in a template.
+	 *
+	 * Passing an explicit default to `get_option()` defeats the registered one --
+	 * `filter_default_option()` returns early when a default was passed -- which is
+	 * what lets an absent row be told apart from a defaulted one and added
+	 * outright. `add_option()` runs the sanitize callback exactly as
+	 * `update_option()` does, so nothing else about the stored value changes.
+	 *
 	 * @param array $options Settings to store.
 	 *
 	 * @return void
 	 */
 	public static function update( array $options ) {
+		if ( false === get_option( self::OPTION, false ) ) {
+			add_option( self::OPTION, $options );
+
+			return;
+		}
+
 		update_option( self::OPTION, $options );
 	}
 

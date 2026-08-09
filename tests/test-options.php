@@ -120,6 +120,54 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * The write path creates the row even when the value equals the default.
+	 *
+	 * Pinned at the door rather than through maybe_migrate(), so the guarantee
+	 * belongs to update() rather than to whatever the migration happens to
+	 * compute. The test above can only see this while its fixture keeps producing
+	 * a value equal to the defaults; this one cannot stop seeing it.
+	 *
+	 * @return void
+	 */
+	public function test_update_creates_the_row_when_the_value_equals_the_registered_default() {
+		delete_option( WP_PostRatings_Options::OPTION );
+
+		WP_PostRatings_Settings::register();
+
+		// The precondition the defect needs: a bare read of an absent row answers
+		// with the defaults, so update_option() alone compares equal and declines
+		// to write. Core's add_option() fallback sits below that comparison.
+		$this->assertSame( WP_PostRatings_Options::defaults(), get_option( WP_PostRatings_Options::OPTION ), 'The registered default is what an absent row reads back as.' );
+
+		WP_PostRatings_Options::update( WP_PostRatings_Options::defaults() );
+
+		$this->assertIsArray( get_option( WP_PostRatings_Options::OPTION, false ), 'The row is really there, read raw.' );
+	}
+
+	/**
+	 * The shipped defaults survive the sanitiser unchanged.
+	 *
+	 * The docblock on the migration test above already names this hazard -- "a
+	 * sanitiser which one day leaves clean input alone cannot silently take it
+	 * away" -- and nothing could tell when that day arrived. It arrived: the "most
+	 * rated" default carried a doubled space before an attribute, kses collapsed
+	 * it, and that one character was the whole difference that made the write
+	 * happen.
+	 *
+	 * So if this goes red, the test above has stopped exercising the equal-value
+	 * case and is passing for a reason unrelated to the code.
+	 *
+	 * @return void
+	 */
+	public function test_the_shipped_defaults_survive_sanitisation_unchanged() {
+		WP_PostRatings_Settings::register();
+
+		$defaults = WP_PostRatings_Options::defaults();
+
+		$this->assertSame( $defaults, sanitize_option( WP_PostRatings_Options::OPTION, $defaults ), 'The registered sanitize callback leaves the defaults alone.' );
+	}
+
+	/**
 	 * The row the migration writes into is not one of the rows it deletes.
 	 *
 	 * Deleting it would throw away every setting just merged, which is the
