@@ -15,6 +15,7 @@ const {
 	createRatedPost,
 	saveSettings,
 	uniqueTitle,
+	wpEval,
 } = require( './helpers' );
 
 /**
@@ -68,6 +69,99 @@ async function asGuest( browser, url ) {
 	return { context, page };
 }
 
+/**
+ * Which glyphs a rendered rating is actually drawing, in order.
+ *
+ * The one assertion no PHP test can make. A shape is a CSS mask built from a
+ * chain -- the strip carries `--wp-postratings-shape-up` and `-down` as data
+ * URIs, sets `--wp-postratings-shape` to a `var()` of one of them, and the
+ * stylesheet feeds that to `mask-image` on the glyph inside. PHPUnit can only
+ * assert the chain was written; whether the browser resolves it to the up shape
+ * or the down one is a question about a page.
+ *
+ * Compared against the element's own two custom properties rather than against
+ * hardcoded path data, so redrawing a shape cannot turn this red.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the rating.
+ * @return {Promise<string[]>} 'up' or 'down' per glyph, in document order.
+ */
+async function glyphDirections( page ) {
+	const strip = page.locator( '.wp-postratings-strip' ).first();
+
+	await expect( strip ).toBeVisible( { timeout: 15_000 } );
+
+	return strip.evaluate( ( el ) => {
+		const own = getComputedStyle( el );
+		const normalise = ( value ) => ( value || '' ).replace( /["'\s]/g, '' );
+
+		const up = normalise( own.getPropertyValue( '--wp-postratings-shape-up' ) );
+		const down = normalise( own.getPropertyValue( '--wp-postratings-shape-down' ) );
+
+		return Array.from( el.querySelectorAll( '.wp-postratings-item' ) ).map( ( item ) => {
+			const style = getComputedStyle( item );
+			const mask = normalise( style.maskImage || style.webkitMaskImage );
+
+			if ( up && mask === up ) {
+				return 'up';
+			}
+
+			if ( down && mask === down ) {
+				return 'down';
+			}
+
+			return `unresolved:${ mask.slice( 0, 40 ) }`;
+		} );
+	} );
+}
+
+/**
+ * How much of each step of the vote control the browser has actually filled.
+ *
+ * The other assertion PHP cannot make, and the one that matters most here: the
+ * score is painted into each glyph by a gradient whose stop is a custom
+ * property, so PHPUnit can only prove the property was written. Whether it turns
+ * into paint on the right glyph depends on the stylesheet and on the theme around
+ * it -- and the first version of this feature laid one strip over the whole row
+ * instead, which passed every unit test and was visibly wrong on this very theme,
+ * because a theme putting padding on a label moves that label's glyph without
+ * moving anything the strip could see.
+ *
+ * Keyed by step rather than taken in document order: the row is laid out
+ * reversed so a sibling combinator can reach backwards, so the fifth step comes
+ * first in the markup.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the control.
+ * @return {Promise<Object>} Step number to filled percentage.
+ */
+async function stepFills( page ) {
+	const scale = page.locator( '.wp-postratings-scale' ).first();
+
+	await expect( scale ).toBeVisible( { timeout: 15_000 } );
+
+	return scale.evaluate( ( el ) => {
+		const fills = {};
+
+		el.querySelectorAll( 'label[for]' ).forEach( ( label ) => {
+			const step = Number( label.getAttribute( 'for' ).split( '-' ).pop() );
+			const item = label.querySelector( '.wp-postratings-item' );
+
+			if ( ! item ) {
+				fills[ step ] = 'no glyph';
+				return;
+			}
+
+			// The gradient's two stops sit at the same percentage -- one colour up
+			// to it, the other from it -- so the first is the fill.
+			const painted = getComputedStyle( item ).backgroundImage;
+			const stop = painted.match( /([0-9.]+)%/ );
+
+			fills[ step ] = stop ? Number( stop[ 1 ] ) : `unpainted:${ painted }`;
+		} );
+
+		return fills;
+	} );
+}
+
 test.describe( 'Casting a vote', () => {
 	test.beforeAll( async ( { requestUtils } ) => {
 		await requestUtils.deleteAllPosts();
@@ -89,6 +183,43 @@ test.describe( 'Casting a vote', () => {
 		// The rated markup replaces the control in place, without a reload.
 		await expectAverage( page, '4.00' );
 		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+	} );
+
+	test( 'the vote control opens showing the score so far', async ( { page, requestUtils } ) => {
+		// "Do Not Check" so a post that already has votes still offers the control
+		// to this visitor -- which is the whole situation: a rated post, and a
+		// reader who has not rated it, looking at a control that has to show the
+		// score without pretending the reader cast it.
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'A post already at three and a half' ) );
+
+		wpEval(
+			`update_post_meta( ${ post.id }, 'ratings_users', 2 );
+			update_post_meta( ${ post.id }, 'ratings_score', 7 );
+			update_post_meta( ${ post.id }, 'ratings_average', 3.5 );
+			echo '<<<seeded>>>';`,
+		);
+
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-vote' ) ).toBeVisible();
+
+		// 3.5 of 5: three glyphs full, half of the fourth, nothing on the fifth.
+		// It rendered five empty stars beside its own text saying "average: 3.50",
+		// and then, on the second attempt, filled the right width in the wrong
+		// place. Both are failures a browser sees and an array does not.
+		expect( await stepFills( page ) ).toEqual( { 1: 100, 2: 100, 3: 100, 4: 50, 5: 0 } );
+	} );
+
+	test( 'a post nobody has rated opens the control empty', async ( { page, requestUtils } ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'A post nobody has rated' ) );
+
+		await page.goto( post.link );
+
+		expect( await stepFills( page ) ).toEqual( { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } );
 	} );
 
 	test( 'an up or down rating is two buttons, and a down vote is negative', async ( {
@@ -118,6 +249,55 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.getByRole( 'img', { name: /-1 ratings/ } ) ).toBeVisible( {
 			timeout: 15_000,
 		} );
+
+		// And it is drawn pointing down. Asserting the totals alone is what let a
+		// down vote render as a thumbs up for as long as it did: the score was
+		// right in the label the whole time, so every assertion here passed while
+		// the glyph beside it contradicted them.
+		expect( await glyphDirections( page ) ).toEqual( [ 'down' ] );
+	} );
+
+	test( 'a down vote that ties the post still shows the voter their own vote', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		// The cookie is what remembers a personal vote, so the check has to be one
+		// of the two settings that writes one.
+		await configure( page, {
+			type: 'updown',
+			shape: 'thumb',
+			check: CHECK.cookie,
+			allow: ALLOW.everyone,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'A post about to be tied' ) );
+
+		// One up vote already, so the down vote below lands the post on zero --
+		// which points nowhere, and used to draw a blank pair identical to the
+		// control that had just been clicked.
+		wpEval(
+			`update_post_meta( ${ post.id }, 'ratings_users', 1 );
+			update_post_meta( ${ post.id }, 'ratings_score', 1 );
+			update_post_meta( ${ post.id }, 'ratings_average', 1 );
+			echo '<<<seeded>>>';`,
+		);
+
+		await page.goto( post.link );
+		await page.getByRole( 'button', { name: 'Vote Down' } ).click();
+
+		// The post is tied, and says so.
+		await expect( page.getByRole( 'img', { name: /You rated this down/ } ) ).toBeVisible( {
+			timeout: 15_000,
+		} );
+
+		// One glyph, pointing down: the vote just cast, not the blank pair. This is
+		// the round trip PHPUnit cannot reach -- the reply is rendered in the same
+		// request that sets the cookie, so it has to read a cookie the browser has
+		// not sent back yet.
+		expect( await glyphDirections( page ) ).toEqual( [ 'down' ] );
+
+		// The totals are still the post's own, unchanged by whose vote is drawn.
+		await expect( page.locator( '.wp-postratings' ) ).toContainText( '2' );
 	} );
 
 	test( 'Do Not Check lets the same visitor rate twice', async ( { page, requestUtils } ) => {

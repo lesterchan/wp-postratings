@@ -640,6 +640,48 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * The reply to a vote reports the vote that was just cast.
+	 *
+	 * Goes through process_vote() rather than seeding $_COOKIE, because the seeded
+	 * form is exactly what this cannot prove. setcookie() speaks only to the next
+	 * request, so the reply rendered further down the request that casts a vote
+	 * cannot read the cookie it has just set -- and that reply is the one thing the
+	 * voter sees. record() therefore fills $_COOKIE in as well, and a test that
+	 * sets the cookie itself passes whether that line exists or not.
+	 *
+	 * @return void
+	 */
+	public function test_the_reply_to_a_vote_reports_the_vote_just_cast() {
+		// One up vote already, so the down vote below lands on a tie: the case
+		// where the post itself has no direction left to show.
+		$post_id = $this->make_rated_post( 1, 1 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+		$this->set_option( 'allowtorate', 2 );
+		$this->set_option( 'check_method', 1 );
+		$this->set_option(
+			'ratings',
+			array(
+				'value' => array( -1, 1 ),
+				'text'  => array( 'Vote Down', 'Vote Up' ),
+			)
+		);
+
+		unset( $_COOKIE[ 'rated_' . $post_id ] );
+
+		$reply = WP_PostRatings_Rating::process_vote( $post_id, 1 );
+
+		$this->assertSame( 2, (int) get_post_meta( $post_id, 'ratings_users', true ), 'The vote counted.' );
+		$this->assertSame( 0, (int) get_post_meta( $post_id, 'ratings_score', true ), 'And left the post tied.' );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-down)', $reply, 'The reply shows the down vote that was cast.' );
+		$this->assertStringContainsString( 'You rated this down', $reply, 'And says it is the voter own vote.' );
+		$this->assertStringNotContainsString( 'wp-postratings-undecided', $reply, 'Not the blank pair the tie alone would draw.' );
+	}
+
+	/**
 	 * An address never stands in for the reader.
 	 *
 	 * Matching a repeat vote on an address is over-strict when it is wrong, which

@@ -666,39 +666,50 @@ class WP_PostRatings_Rating {
 
 		$check_method = (int) WP_PostRatings_Options::get( 'check_method' );
 
-		/*
-		 * headers_sent() as well as the setting: a cookie cannot be set once
-		 * anything has been written to the response, so the call is guaranteed to
-		 * fail and its only effect is a "headers already sent" warning. A theme
-		 * or another plugin echoing before this runs is enough to trigger it, and
-		 * a warning printed into a JSON response is what breaks the vote.
-		 */
-		if ( ( 1 === $check_method || 3 === $check_method ) && ! headers_sent() ) {
-			/**
-			 * Filters when the "already rated" cookie expires.
-			 *
-			 * @since 1.84
-			 *
-			 * @param int $expiration Unix timestamp.
+		if ( 1 === $check_method || 3 === $check_method ) {
+			/*
+			 * headers_sent(): a cookie cannot be set once anything has been written
+			 * to the response, so the call is guaranteed to fail and its only
+			 * effect is a "headers already sent" warning. A theme or another plugin
+			 * echoing before this runs is enough to trigger it, and a warning
+			 * printed into a JSON response is what breaks the vote.
 			 */
-			$expiration = apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 );
+			if ( ! headers_sent() ) {
+				/**
+				 * Filters when the "already rated" cookie expires.
+				 *
+				 * @since 1.84
+				 *
+				 * @param int $expiration Unix timestamp.
+				 */
+				$expiration = apply_filters( 'wp_postratings_cookie_expiration', time() + 30000000 );
 
-			/**
-			 * Filters the path the "already rated" cookie is set on.
+				/**
+				 * Filters the path the "already rated" cookie is set on.
+				 *
+				 * @since 1.78
+				 *
+				 * @param string $path Cookie path.
+				 */
+				$cookie_path = apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH );
+
+				setcookie( 'rated_' . $post_id, $rating_value, $expiration, $cookie_path );
+			}
+
+			/*
+			 * And in this request, which setcookie() does not do -- it only asks the
+			 * browser to send the cookie back on the next one. The reply to a vote
+			 * is rendered further down this same request and own_vote() reads
+			 * $_COOKIE, so without this the vote just cast is the one thing the
+			 * response cannot report.
 			 *
-			 * @since 1.78
-			 *
-			 * @param string $path Cookie path.
+			 * Deliberately outside the headers_sent() guard above. Whether the
+			 * header can still go out decides what the *browser* will remember;
+			 * it has no bearing on what this response should say. Written inside
+			 * it at first, which meant a site with a theme echoing early showed the
+			 * voter no sign their vote had registered -- the exact complaint the
+			 * whole own_vote() path exists to answer.
 			 */
-			$cookie_path = apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH );
-
-			setcookie( 'rated_' . $post_id, $rating_value, $expiration, $cookie_path );
-
-			// And in this request, which setcookie() does not do -- it only asks
-			// the browser to send it back on the next one. The reply to a vote is
-			// rendered further down this same request, and own_vote() reads the
-			// cookie, so without this the vote just cast is the one thing the
-			// response cannot report.
 			$_COOKIE[ 'rated_' . $post_id ] = (string) $rating_value;
 		}
 
