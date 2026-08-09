@@ -452,12 +452,32 @@ class WP_PostRatings_Template {
 
 		// The score so far is the control's resting state, so a visitor sees what
 		// the post already scored rather than an empty scale beside text saying it
-		// averages 3.15. The percentage rides on the container as the same custom
-		// property the read-only strip uses, so one rule paints both.
-		$fill  = self::fill_percentage( $post_rating, $ratings_max );
-		$style = self::style_for( $shape, 0, array( '--wp-postratings-fill:' . $fill . '%' ) );
+		// averages 3.15. Each step carries its own share of it -- see the note on
+		// step_fill_percentage() for why it is not one strip over the row.
+		return self::scale_control( $post_id, $shape, self::style_for( $shape ), $ratings_max, $ratings_texts, (float) $post_rating );
+	}
 
-		return self::scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts, $fill );
+	/**
+	 * How much of one step on the scale the score so far fills.
+	 *
+	 * A share per shape rather than one percentage for the row, because a strip
+	 * laid over the row has to assume the row's geometry and cannot: a theme that
+	 * puts padding on a label moves that label's glyph and nothing the strip knows
+	 * about, and the two grids come apart. Asking each glyph how full it is makes
+	 * alignment a non-question.
+	 *
+	 * 3.15 of 5 fills the first three steps, 15% of the fourth and none of the
+	 * fifth.
+	 *
+	 * @param float $rating The score so far.
+	 * @param int   $step   Which point on the scale, from 1.
+	 *
+	 * @return float Percentage, 0 to 100.
+	 */
+	private static function step_fill_percentage( $rating, $step ) {
+		$share = ( (float) $rating - ( (int) $step - 1 ) ) * 100;
+
+		return max( 0.0, min( 100.0, round( $share, 2 ) ) );
 	}
 
 	/**
@@ -472,7 +492,7 @@ class WP_PostRatings_Template {
 	 * @param string $style         Inline custom properties.
 	 * @param int    $ratings_max   Number of points.
 	 * @param array  $ratings_texts Per-value labels.
-	 * @param float  $fill          Percentage of the scale the score so far fills.
+	 * @param float  $fill          The score so far, shared out across the steps.
 	 *
 	 * @return string
 	 */
@@ -485,22 +505,6 @@ class WP_PostRatings_Template {
 		$html  = '<span class="wp-postratings-vote wp-postratings-scale wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
 		$html .= ' role="radiogroup" aria-label="' . esc_attr__( 'Rate this post', 'wp-postratings' ) . '">';
-
-		/*
-		 * The score so far, drawn over the labels and clipped to its percentage.
-		 *
-		 * Only the filled layer is drawn: the labels already paint the unrated
-		 * glyphs, so a track behind them would double every shape. It is
-		 * aria-hidden and pointer-events: none -- the radio group is the control,
-		 * this is only its resting appearance, and the figure it shows is in the
-		 * text beside the scale for anybody reading rather than looking.
-		 *
-		 * Left out entirely at zero, where there is nothing to show and an empty
-		 * layer would still be a box in the flow.
-		 */
-		if ( $fill > 0 ) {
-			$html .= '<span class="wp-postratings-resting" aria-hidden="true">' . self::row( $ratings_max ) . '</span>';
-		}
 
 		for ( $i = $ratings_max; $i >= 1; $i-- ) {
 			if ( isset( $ratings_texts[ $i - 1 ] ) && '' !== $ratings_texts[ $i - 1 ] ) {
@@ -516,8 +520,9 @@ class WP_PostRatings_Template {
 			$html .= ' name="wp-postratings-' . esc_attr( $post_id ) . '"';
 			$html .= ' value="' . esc_attr( $i ) . '" data-rating="' . esc_attr( $i ) . '" />';
 			// Each step carries its own colours, for the reason given in
-			// updown_control(): every step of the scale is on screen at once.
-			$label_style = self::style_for( '', $i );
+			// updown_control(): every step of the scale is on screen at once. It
+			// carries its share of the score so far with them.
+			$label_style = self::style_for( '', $i, array( '--wp-postratings-step-fill:' . self::step_fill_percentage( $fill, $i ) . '%' ) );
 
 			$html .= '<label for="' . esc_attr( $id ) . '"';
 			$html .= '' !== $label_style ? ' style="' . esc_attr( $label_style ) . '"' : '';

@@ -445,27 +445,33 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * The read-only strip had carried the fill all along, which is why the
 	 * widget looked right and the control beside the post did not.
 	 *
+	 * The share is per shape rather than one percentage for the row. A strip laid
+	 * over the row has to assume the row's geometry, and a theme putting padding
+	 * on a label breaks that assumption without touching anything the strip can
+	 * see -- which is exactly what happened when this was tried the other way.
+	 *
 	 * @return void
 	 */
 	public function test_the_vote_control_opens_at_the_score_so_far() {
 		$html = WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 3.15, 'star', '', 0, array() );
 
-		$this->assertStringContainsString( '--wp-postratings-fill:63%', $html, 'The control carries the score so far as a fill percentage.' );
-		$this->assertStringContainsString( 'wp-postratings-resting', $html, 'And draws the layer that shows it.' );
-		$this->assertStringContainsString( 'aria-hidden="true"', $html, 'Hidden from assistive technology, which is told the score in the text instead.' );
+		// 3.15 of 5: three full, then 15% of the fourth, then nothing.
+		$this->assertSame( 3, substr_count( $html, '--wp-postratings-step-fill:100%' ), 'The steps below the score are filled.' );
+		$this->assertStringContainsString( '--wp-postratings-step-fill:15%', $html, 'The step the score falls inside carries its share of it.' );
+		$this->assertStringContainsString( '--wp-postratings-step-fill:0%', $html, 'And the steps above it carry none.' );
 		$this->assertStringContainsString( 'type="radio"', $html, 'The radios are still what does the rating.' );
 	}
 
 	/**
-	 * A post nobody has rated draws no resting layer at all.
+	 * A post nobody has rated fills nothing.
 	 *
 	 * @return void
 	 */
-	public function test_an_unrated_post_gets_no_resting_layer() {
+	public function test_an_unrated_post_fills_no_step() {
 		$html = WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 0, 'star', '', 0, array() );
 
-		$this->assertStringNotContainsString( 'wp-postratings-resting', $html, 'Nothing to show at zero, so the layer is left out rather than emitted empty.' );
-		$this->assertStringContainsString( 'type="radio"', $html, 'The control itself is unaffected.' );
+		$this->assertSame( 5, substr_count( $html, '--wp-postratings-step-fill:0%' ), 'Every step of an unrated post is empty.' );
+		$this->assertStringNotContainsString( '--wp-postratings-step-fill:100%', $html, 'And none of them is filled.' );
 	}
 
 	/**

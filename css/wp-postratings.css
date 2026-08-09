@@ -193,32 +193,42 @@
  * swapping image sources on every mouseover.
  */
 .wp-postratings-scale {
-	position: relative;
 	flex-direction: row-reverse;
 	justify-content: flex-end;
 }
 
-/* The score so far, over the labels and clipped to its percentage. The radios
-   underneath are the control, hence pointer-events: none. */
-.wp-postratings-scale .wp-postratings-resting {
-	position: absolute;
-	inset-block: 0;
-	inset-inline-start: 0;
-	overflow: hidden;
-	pointer-events: none;
-	inline-size: var( --wp-postratings-fill, 0% );
-	color: var( --wp-postratings-color-on, #f5a623 );
+/*
+ * The score so far, painted into each shape rather than as one strip over the
+ * row. A strip has to guess the row's geometry, and it cannot: a theme putting
+ * padding on a label moves that label's glyph without moving anything the strip
+ * knows about, and the two grids drift apart. Each glyph carries its own share
+ * of the score instead, so alignment is not something the CSS has to get right.
+ *
+ * The gradient sits under the mask the shape is cut from, so a step filled 15%
+ * is 15% of that shape.
+ */
+.wp-postratings-scale label .wp-postratings-item {
+	background-image: linear-gradient(
+		to right,
+		var( --wp-postratings-color-on, #f5a623 ) var( --wp-postratings-step-fill, 0% ),
+		var( --wp-postratings-color-off, #d4d4d8 ) var( --wp-postratings-step-fill, 0% )
+	);
 }
 
-/*
- * Interaction wins. Hovering, focusing or having voted all colour the labels
- * themselves, and leaving the resting layer up would show the old score through
- * whatever the visitor is choosing.
- */
-.wp-postratings-scale:hover .wp-postratings-resting,
-.wp-postratings-scale:focus-within .wp-postratings-resting,
-.wp-postratings-scale:has( input:checked ) .wp-postratings-resting {
-	display: none;
+[dir="rtl"] .wp-postratings-scale label .wp-postratings-item {
+	background-image: linear-gradient(
+		to left,
+		var( --wp-postratings-color-on, #f5a623 ) var( --wp-postratings-step-fill, 0% ),
+		var( --wp-postratings-color-off, #d4d4d8 ) var( --wp-postratings-step-fill, 0% )
+	);
+}
+
+/* Interaction wins: hovering, focusing or having voted colours the labels, and
+   the score underneath would otherwise show through the choice being made. */
+.wp-postratings-scale:hover label .wp-postratings-item,
+.wp-postratings-scale:focus-within label .wp-postratings-item,
+.wp-postratings-scale:has( input:checked ) label .wp-postratings-item {
+	background-image: none;
 }
 
 .wp-postratings-scale label:hover,
