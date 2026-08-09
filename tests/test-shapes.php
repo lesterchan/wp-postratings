@@ -438,6 +438,37 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * The vote control opens showing the score so far, not an empty scale.
+	 *
+	 * 2.0.0 discarded the rating here, so a post averaging 3.15 of 5 rendered
+	 * five unrated shapes beside its own text saying "average: 3.15 out of 5".
+	 * The read-only strip had carried the fill all along, which is why the
+	 * widget looked right and the control beside the post did not.
+	 *
+	 * @return void
+	 */
+	public function test_the_vote_control_opens_at_the_score_so_far() {
+		$html = WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 3.15, 'star', '', 0, array() );
+
+		$this->assertStringContainsString( '--wp-postratings-fill:63%', $html, 'The control carries the score so far as a fill percentage.' );
+		$this->assertStringContainsString( 'wp-postratings-resting', $html, 'And draws the layer that shows it.' );
+		$this->assertStringContainsString( 'aria-hidden="true"', $html, 'Hidden from assistive technology, which is told the score in the text instead.' );
+		$this->assertStringContainsString( 'type="radio"', $html, 'The radios are still what does the rating.' );
+	}
+
+	/**
+	 * A post nobody has rated draws no resting layer at all.
+	 *
+	 * @return void
+	 */
+	public function test_an_unrated_post_gets_no_resting_layer() {
+		$html = WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 0, 'star', '', 0, array() );
+
+		$this->assertStringNotContainsString( 'wp-postratings-resting', $html, 'Nothing to show at zero, so the layer is left out rather than emitted empty.' );
+		$this->assertStringContainsString( 'type="radio"', $html, 'The control itself is unaffected.' );
+	}
+
+	/**
 	 * No shipped markup references an image file.
 	 *
 	 * @return void

@@ -193,8 +193,32 @@
  * swapping image sources on every mouseover.
  */
 .wp-postratings-scale {
+	position: relative;
 	flex-direction: row-reverse;
 	justify-content: flex-end;
+}
+
+/* The score so far, over the labels and clipped to its percentage. The radios
+   underneath are the control, hence pointer-events: none. */
+.wp-postratings-scale .wp-postratings-resting {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-start: 0;
+	overflow: hidden;
+	pointer-events: none;
+	inline-size: var( --wp-postratings-fill, 0% );
+	color: var( --wp-postratings-color-on, #f5a623 );
+}
+
+/*
+ * Interaction wins. Hovering, focusing or having voted all colour the labels
+ * themselves, and leaving the resting layer up would show the old score through
+ * whatever the visitor is choosing.
+ */
+.wp-postratings-scale:hover .wp-postratings-resting,
+.wp-postratings-scale:focus-within .wp-postratings-resting,
+.wp-postratings-scale:has( input:checked ) .wp-postratings-resting {
+	display: none;
 }
 
 .wp-postratings-scale label:hover,

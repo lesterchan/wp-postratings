@@ -430,7 +430,7 @@ class WP_PostRatings_Template {
 	 * @param int    $post_id        Post being rated.
 	 * @param int    $ratings_custom Unused since 2.0.0; kept for the signature.
 	 * @param int    $ratings_max    Number of points on the scale.
-	 * @param float  $post_rating    Unused since 2.0.0; the control is unset.
+	 * @param float  $post_rating    The score so far, drawn as the resting state.
 	 * @param string $shape          Shape name, or a pre-2.0.0 image set name.
 	 * @param string $image_alt      Unused since 2.0.0; each value labels itself.
 	 * @param int    $insert_half    Unused since 2.0.0.
@@ -439,19 +439,25 @@ class WP_PostRatings_Template {
 	 * @return string
 	 */
 	public static function ratings_images_vote( $post_id, $ratings_custom, $ratings_max, $post_rating, $shape, $image_alt, $insert_half, $ratings_texts ) {
-		unset( $ratings_custom, $post_rating, $image_alt, $insert_half );
+		unset( $ratings_custom, $image_alt, $insert_half );
 
 		$shape         = self::resolve_shape( $shape );
 		$post_id       = (int) $post_id;
 		$ratings_max   = max( 1, (int) $ratings_max );
 		$ratings_texts = (array) $ratings_texts;
-		$style         = self::style_for( $shape );
 
 		if ( WP_PostRatings_Shapes::is_updown( $shape ) ) {
-			return self::updown_control( $post_id, $shape, $style, $ratings_texts );
+			return self::updown_control( $post_id, $shape, self::style_for( $shape ), $ratings_texts );
 		}
 
-		return self::scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts );
+		// The score so far is the control's resting state, so a visitor sees what
+		// the post already scored rather than an empty scale beside text saying it
+		// averages 3.15. The percentage rides on the container as the same custom
+		// property the read-only strip uses, so one rule paints both.
+		$fill  = self::fill_percentage( $post_rating, $ratings_max );
+		$style = self::style_for( $shape, 0, array( '--wp-postratings-fill:' . $fill . '%' ) );
+
+		return self::scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts, $fill );
 	}
 
 	/**
@@ -466,10 +472,11 @@ class WP_PostRatings_Template {
 	 * @param string $style         Inline custom properties.
 	 * @param int    $ratings_max   Number of points.
 	 * @param array  $ratings_texts Per-value labels.
+	 * @param float  $fill          Percentage of the scale the score so far fills.
 	 *
 	 * @return string
 	 */
-	private static function scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts ) {
+	private static function scale_control( $post_id, $shape, $style, $ratings_max, $ratings_texts, $fill = 0.0 ) {
 		// A <span>, not a <fieldset>: the [ratings] shortcode wraps its output in
 		// a <span>, which is phrasing content, and the parser hoists any flow
 		// element straight back out of it -- leaving the control outside its own
@@ -478,6 +485,22 @@ class WP_PostRatings_Template {
 		$html  = '<span class="wp-postratings-vote wp-postratings-scale wp-postratings-shape-' . esc_attr( $shape ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '" data-post-id="' . esc_attr( $post_id ) . '"';
 		$html .= ' role="radiogroup" aria-label="' . esc_attr__( 'Rate this post', 'wp-postratings' ) . '">';
+
+		/*
+		 * The score so far, drawn over the labels and clipped to its percentage.
+		 *
+		 * Only the filled layer is drawn: the labels already paint the unrated
+		 * glyphs, so a track behind them would double every shape. It is
+		 * aria-hidden and pointer-events: none -- the radio group is the control,
+		 * this is only its resting appearance, and the figure it shows is in the
+		 * text beside the scale for anybody reading rather than looking.
+		 *
+		 * Left out entirely at zero, where there is nothing to show and an empty
+		 * layer would still be a box in the flow.
+		 */
+		if ( $fill > 0 ) {
+			$html .= '<span class="wp-postratings-resting" aria-hidden="true">' . self::row( $ratings_max ) . '</span>';
+		}
 
 		for ( $i = $ratings_max; $i >= 1; $i-- ) {
 			if ( isset( $ratings_texts[ $i - 1 ] ) && '' !== $ratings_texts[ $i - 1 ] ) {
