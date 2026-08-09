@@ -516,6 +516,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 * FIXED: The rating log always claimed to be sorted "Descending" whichever order was chosen.
 * FIXED: Deleting all rating data left every post's cache holding the values that had just been removed.
 * FIXED: Numerous PHP 8 warnings on the admin screens and in an unconfigured widget.
+* FIXED: On a dark colour scheme the unrated shapes stayed the light grey chosen for a light page, and glared. The dark default is a custom property set on the container `the_ratings()` adds -- but the widget, and the shortcode and block when asked for results only, print the rating without that container, so nothing they drew ever inherited it. The same was true of the high-contrast default
 
 ## Upgrade Notice
 

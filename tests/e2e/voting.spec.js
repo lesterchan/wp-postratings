@@ -339,6 +339,48 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-postratings-strip' ).first() ).toBeVisible();
 	} );
 
+	test( 'the unrated shapes darken on a dark scheme, wrapper or no wrapper', async ( {
+		browser,
+		requestUtils,
+	} ) => {
+		// The dark-scheme default is a custom property, and a custom property is
+		// only worth anything to an element that inherits it. `.wp-postratings`
+		// is added by the_ratings() and nothing else, so the results shortcode --
+		// like the widget and the block's results mode, which reach the same
+		// renderer -- prints a bare `.wp-postratings-strip` with no such
+		// ancestor. The track then fell back to #d4d4d8, a grey chosen against a
+		// white page, and glared on a dark one.
+		//
+		// Read as a computed colour rather than asserted against the stylesheet:
+		// the bug was never in the declaration, it was in which elements the
+		// declaration could reach.
+		const post = await requestUtils.createPost( {
+			title: uniqueTitle( 'Dark scheme' ),
+			content: '[ratings results="true"]',
+			status: 'publish',
+		} );
+
+		const context = await browser.newContext( { colorScheme: 'dark', storageState: undefined } );
+
+		try {
+			const guest = await context.newPage();
+			await guest.goto( post.link );
+
+			const track = guest.locator( '.wp-postratings-strip .wp-postratings-track' ).first();
+			await expect( track ).toBeAttached();
+
+			// The wrapper really is absent, or the assertion below would hold
+			// for a reason that has nothing to do with the fix.
+			await expect( guest.locator( '.wp-postratings .wp-postratings-track' ) ).toHaveCount( 0 );
+
+			const colour = await track.evaluate( ( el ) => getComputedStyle( el ).color );
+
+			expect( colour ).toBe( 'rgb(82, 82, 91)' );
+		} finally {
+			await context.close();
+		}
+	} );
+
 	test( 'the rating appears in the posts list column', async ( { page, admin, requestUtils } ) => {
 		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
 

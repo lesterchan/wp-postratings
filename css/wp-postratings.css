@@ -291,7 +291,9 @@
 }
 
 @media (prefers-contrast: more) {
-	.wp-postratings {
+	.wp-postratings,
+	.wp-postratings-strip,
+	.wp-postratings-vote {
 		--wp-postratings-color-off: #6b7280;
 	}
 }
@@ -301,9 +303,21 @@
  * default for those is a light grey chosen against a light page. On a dark one
  * it reads as almost-white, brighter than the rated colour it is meant to sit
  * behind, so it is darkened rather than left to the theme.
+ *
+ * All three roots, and that is the whole point of the list. `.wp-postratings`
+ * is only added by the_ratings(), and two of the three surfaces never go
+ * through it: the widget prints a bare `.wp-postratings-strip` into the
+ * sidebar, and so do the shortcode and the block when asked for results only,
+ * because both reach the_ratings_results() through
+ * WP_PostRatings::render_ratings(). the_ratings_results() and
+ * the_ratings_vote() are public template tags besides, so a theme can print
+ * either on its own. Setting the variable on the container alone left every
+ * one of those reading the light default and glaring on a dark page.
  */
 @media (prefers-color-scheme: dark) {
-	.wp-postratings {
+	.wp-postratings,
+	.wp-postratings-strip,
+	.wp-postratings-vote {
 		--wp-postratings-color-off: #52525b;
 	}
 }
