@@ -516,6 +516,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 * FIXED: The rating log always claimed to be sorted "Descending" whichever order was chosen.
 * FIXED: Deleting all rating data left every post's cache holding the values that had just been removed.
 * FIXED: Numerous PHP 8 warnings on the admin screens and in an unconfigured widget.
+* FIXED: An up/down rating with no verdict was drawn as a vote down. Zero is not a direction: a post nobody has rated, and a post with as many down votes as up, both average zero, and both showed a lit thumbs down. They now show the pair unlit. This also fixes what a site sees after switching from a scale to an up/down control -- an up/down vote is worth -1 or +1, so a score off a scale of stars is far too large to be one, and reading it as a direction showed every previously rated post as a thumbs up that no amount of voting down could shift. Such a post now shows the unlit pair until its up/down votes outweigh its history, and the vote count and score are reported exactly as stored throughout
 * FIXED: On a dark colour scheme the unrated shapes stayed the light grey chosen for a light page, and glared. The dark default is a custom property set on the container `the_ratings()` adds -- but the widget, and the shortcode and block when asked for results only, print the rating without that container, so nothing they drew ever inherited it. The same was true of the high-contrast default
 
 ## Upgrade Notice

@@ -189,6 +189,57 @@ class WP_PostRatings_Template {
 	}
 
 	/**
+	 * Which way an up/down rating went, if it went either way.
+	 *
+	 * Zero is not a direction. Testing `> 0` for up and treating everything else
+	 * as down made a tie -- one up vote and one down vote, average zero -- render
+	 * as a thumbs down, and did the same to a post with no votes at all.
+	 *
+	 * @param float $rating Signed rating, where down is negative and up positive.
+	 *
+	 * @return string 'up', 'down', or '' when the rating names neither.
+	 */
+	private static function updown_direction( $rating ) {
+		$rating = (float) $rating;
+
+		if ( 0.0 === $rating ) {
+			return '';
+		}
+
+		return $rating > 0 ? 'up' : 'down';
+	}
+
+	/**
+	 * An up/down rating with no verdict: both glyphs, neither of them lit.
+	 *
+	 * The alternative was to pick a side anyway, which is what a `> 0` test does
+	 * -- and picking one is a claim the data does not support. Showing the pair
+	 * unlit says what is true: this post is rated up or down, and it is currently
+	 * neither.
+	 *
+	 * @param string $shape     Shape name, already resolved.
+	 * @param string $image_alt Text describing the rating.
+	 *
+	 * @return string
+	 */
+	private static function undecided_pair( $shape, $image_alt ) {
+		$items = '';
+
+		foreach ( array( 'up', 'down' ) as $direction ) {
+			$items .= '<i class="wp-postratings-item" style="' .
+				esc_attr( '--wp-postratings-shape:var(--wp-postratings-shape-' . $direction . ')' ) .
+				'"></i>';
+		}
+
+		// No step, so no per-rating colour: there is no rating to take one from.
+		// The stylesheet paints an undecided pair in the unrated colour.
+		return '<span class="wp-postratings-strip wp-postratings-undecided wp-postratings-shape-' . esc_attr( $shape ) . '"' .
+			' style="' . esc_attr( self::style_for( $shape ) ) . '"' .
+			( '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"' ) .
+			'><span class="wp-postratings-row">' . $items . '</span></span>';
+	}
+
+	/**
 	 * The inline style a rating surface carries.
 	 *
 	 * The single place a rating's appearance is composed. There are four
@@ -318,8 +369,15 @@ class WP_PostRatings_Template {
 			 * not a scale of two, and testing it against a scale's midpoint would
 			 * read every average below 1.5 as a down vote, including a clear win
 			 * for up.
+			 *
+			 * Zero is neither side, so it gets the unlit pair rather than a
+			 * thumbs down.
 			 */
-			return self::single_glyph( $shape, (float) $post_rating > 0 ? 'up' : 'down', $image_alt );
+			$direction = self::updown_direction( $post_rating );
+
+			return '' === $direction
+				? self::undecided_pair( $shape, $image_alt )
+				: self::single_glyph( $shape, $direction, $image_alt );
 		}
 
 		$fill = self::fill_percentage( $post_rating, $ratings_max );
@@ -608,9 +666,13 @@ class WP_PostRatings_Template {
 		$shape = self::resolve_shape( $shape );
 
 		// An up/down vote is one glyph, not a strip: the author voted one way
-		// or the other.
+		// or the other -- or, at zero, neither.
 		if ( WP_PostRatings_Shapes::is_updown( $shape ) || ( $ratings_custom && 2 === (int) $ratings_max ) ) {
-			return self::single_glyph( $shape, $comment_author_rating > 0 ? 'up' : 'down', $image_alt );
+			$direction = self::updown_direction( $comment_author_rating );
+
+			return '' === $direction
+				? self::undecided_pair( $shape, $image_alt )
+				: self::single_glyph( $shape, $direction, $image_alt );
 		}
 
 		return self::ratings_images( 0, $ratings_max, $comment_author_rating, $shape, $image_alt );
@@ -666,6 +728,27 @@ class WP_PostRatings_Template {
 		} else {
 			$post_ratings            = round( $post_ratings_average, 1 );
 			$post_ratings_percentage = round( ( ( $post_ratings_score / $post_ratings_users ) / $ratings_max ) * 100, 2 );
+		}
+
+		/*
+		 * A score a signed pair could not have produced is not a direction.
+		 *
+		 * Every up/down vote is worth -1 or +1, so a post rated that way always
+		 * satisfies abs( score ) <= users. A scale's votes are worth 1 to max, so
+		 * a post rated on one breaks that as soon as anybody votes above 1 -- and
+		 * the totals stay in the meta when a site changes its rating type, because
+		 * they are the site's data and no setting change may throw them away.
+		 *
+		 * Read as a direction they all say "up": four votes averaging 3.75 on a
+		 * five star scale is a positive number, so switching to thumbs showed
+		 * every previously rated post as a thumbs up, and a down vote could not
+		 * shift it -- 15 - 1 over 5 votes is still positive. That is the report
+		 * this exists for. Zeroing it here hands ratings_images() a rating with no
+		 * direction, which draws the pair unlit, while %RATINGS_USERS% and
+		 * %RATINGS_SCORE% go on reporting the totals exactly as stored.
+		 */
+		if ( $ratings_custom && 2 === $ratings_max && abs( $post_ratings_score ) > $post_ratings_users ) {
+			$post_ratings = 0;
 		}
 
 		$post_ratings_text = '<span class="wp-postratings-text" id="wp-postratings-' . $post_id . '-text"></span>';

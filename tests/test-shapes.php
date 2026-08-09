@@ -475,6 +475,99 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * An up/down rating is drawn as the side it actually went.
+	 *
+	 * @return void
+	 */
+	public function test_an_up_down_rating_shows_the_side_it_went() {
+		$down = WP_PostRatings_Template::ratings_images( 1, 2, -1, 'thumb', 'Alt' );
+		$up   = WP_PostRatings_Template::ratings_images( 1, 2, 1, 'thumb', 'Alt' );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-down)', $down, 'A negative rating is a thumbs down.' );
+		$this->assertStringNotContainsString( 'shape:var(--wp-postratings-shape-up)', $down, 'And nothing about it points up.' );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-up)', $up, 'A positive rating is a thumbs up.' );
+		$this->assertStringNotContainsString( 'shape:var(--wp-postratings-shape-down)', $up, 'And nothing about it points down.' );
+	}
+
+	/**
+	 * Zero is neither side, so it is drawn as neither.
+	 *
+	 * An up/down average of zero is a tie -- as many down votes as up -- or a post
+	 * nobody has rated. Both were drawn as a thumbs down, because the test asked
+	 * whether the rating was above zero and called everything else down.
+	 *
+	 * @return void
+	 */
+	public function test_a_tie_takes_neither_side() {
+		$html = WP_PostRatings_Template::ratings_images( 1, 2, 0, 'thumb', 'Alt' );
+
+		$this->assertStringContainsString( 'wp-postratings-undecided', $html, 'A tie is drawn as an undecided pair.' );
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-up)', $html, 'Which shows the up glyph.' );
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-down)', $html, 'And the down glyph beside it.' );
+		$this->assertStringNotContainsString( 'wp-postratings-single', $html, 'Rather than picking a side it cannot know.' );
+	}
+
+	/**
+	 * A scale's score is not a direction, and must not be read as one.
+	 *
+	 * Switching a site to an up/down pair leaves every post's existing totals in
+	 * the meta, where they belong -- but those came off a scale, so they are all
+	 * positive. Read as a direction they said "up" for every post that had ever
+	 * been rated, and a down vote could not shift it: four votes averaging 3.75
+	 * out of five, minus one, is still comfortably positive.
+	 *
+	 * The tell is arithmetic. Every up/down vote is worth -1 or +1, so a genuine
+	 * pair always has abs( score ) <= users, and a scale breaks that as soon as
+	 * anybody votes above 1.
+	 *
+	 * @return void
+	 */
+	public function test_a_scale_score_is_not_read_as_a_direction() {
+		$post_id = $this->make_rated_post( 4, 15 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+
+		$before = WP_PostRatings::render_ratings( $post_id, true );
+
+		$this->assertStringContainsString( 'wp-postratings-undecided', $before, 'A scale score claims neither direction.' );
+
+		// The one down vote a reader can cast against it does not turn it around,
+		// so the point is that it never claimed to have been turned around.
+		update_post_meta( $post_id, 'ratings_users', 5 );
+		update_post_meta( $post_id, 'ratings_score', 14 );
+		update_post_meta( $post_id, 'ratings_average', 2.8 );
+
+		$after = WP_PostRatings::render_ratings( $post_id, true );
+
+		$this->assertStringContainsString( 'wp-postratings-undecided', $after, 'And still claims neither after one.' );
+		$this->assertStringContainsString( '5', $after, 'The totals are reported as stored.' );
+	}
+
+	/**
+	 * Totals a signed pair could have produced are read as a direction.
+	 *
+	 * The guard above must not swallow the real thing: three votes at -1, -1, +1
+	 * is a score of -1 over 3 users, which is within range and is a down vote.
+	 *
+	 * @return void
+	 */
+	public function test_a_signed_score_still_reads_as_a_direction() {
+		$post_id = $this->make_rated_post( 3, -1 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+
+		$html = WP_PostRatings::render_ratings( $post_id, true );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-down)', $html, 'Two down votes against one up is a thumbs down.' );
+		$this->assertStringNotContainsString( 'wp-postratings-undecided', $html, 'Not an undecided pair.' );
+	}
+
+	/**
 	 * No shipped markup references an image file.
 	 *
 	 * @return void

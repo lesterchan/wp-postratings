@@ -115,6 +115,11 @@
 	color: var( --wp-postratings-color-on, #f5a623 );
 }
 
+/* An up/down pair with no verdict yet: both glyphs, in the unrated colour. */
+.wp-postratings-undecided {
+	color: var( --wp-postratings-color-off, #d4d4d8 );
+}
+
 .wp-postratings-single.wp-postratings-shape-thumb,
 .wp-postratings-single.wp-postratings-shape-plusminus,
 .wp-postratings-single.wp-postratings-shape-tickcross,
