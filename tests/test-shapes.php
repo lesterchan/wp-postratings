@@ -640,6 +640,40 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * An address never stands in for the reader.
+	 *
+	 * Matching a repeat vote on an address is over-strict when it is wrong, which
+	 * is why has_rated() may do it. Being wrong here instead tells a visitor who
+	 * has never voted "You rated this down" -- a false statement about them. And
+	 * behind a proxy or a mobile network with no forwarded-for header configured,
+	 * every visitor shares one address, so one person's vote answers for all of
+	 * them. This was written with an IP lookup first and did exactly that on a
+	 * live site.
+	 *
+	 * @return void
+	 */
+	public function test_an_address_is_never_taken_for_the_readers_own_vote() {
+		$post_id = $this->make_rated_post( 2, 0 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+		$this->set_option( 'check_method', 3 );
+
+		// Somebody else voted down from the address this request also comes from.
+		$this->log_rating( $post_id, -1, 'Somebody Else', '203.0.113.1' );
+
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.1';
+
+		$this->assertNull( WP_PostRatings_Rating::own_vote( $post_id ), 'A shared address is not this reader.' );
+
+		$html = WP_PostRatings::render_ratings( $post_id, true );
+
+		$this->assertStringNotContainsString( 'You rated this', $html, 'So nothing is claimed about them.' );
+		$this->assertStringContainsString( 'wp-postratings-undecided', $html, 'And the tie stays blank.' );
+	}
+
+	/**
 	 * No shipped markup references an image file.
 	 *
 	 * @return void

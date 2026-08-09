@@ -185,13 +185,23 @@ class WP_PostRatings_Rating {
 	 * attribute to the post at all. Showing it beats showing nothing, which
 	 * reads as though the vote was never recorded.
 	 *
-	 * The cookie is the cheap answer and has always held the value rather than a
-	 * flag. Checking by IP or username sets no cookie, so those pay one query --
-	 * but only for a post whose verdict is missing, which is the rare case.
+	 * Only two things here identify a person: the cookie, which is per browser and
+	 * has always held the value rather than a flag, and a user id. Both are
+	 * answers about somebody in particular.
 	 *
-	 * "Do Not Check" is told nothing about who anybody is, so it answers null.
-	 * Identifying a visitor it was asked not to identify would be a worse bug
-	 * than the blank glyph this exists to avoid.
+	 * **An address is deliberately not consulted, and must not be added.** It is
+	 * what has_rated() matches on, and that is a different question with a
+	 * different cost of being wrong. Behind a proxy or a mobile network with
+	 * "Header That Contains The IP" left blank -- the default -- every visitor
+	 * shares one REMOTE_ADDR, so one person's vote answers for all of them.
+	 * Refusing a second vote on that basis is merely over-strict; telling a
+	 * visitor who has never voted "You rated this down" is a false statement
+	 * about them, and is worse than the blank glyph this exists to avoid. It was
+	 * written with an IP lookup first and did exactly that on a live site.
+	 *
+	 * So a site checking by IP alone shows no personal vote. Nothing is lost by
+	 * cookie-and-IP, the common setting, because the cookie already answers.
+	 * "Do Not Check" is told nothing about anybody and answers nothing.
 	 *
 	 * @param int $post_id Post id.
 	 *
@@ -206,35 +216,19 @@ class WP_PostRatings_Rating {
 			return (int) sanitize_text_field( wp_unslash( $_COOKIE[ 'rated_' . $post_id ] ) );
 		}
 
-		switch ( (int) WP_PostRatings_Options::get( 'check_method' ) ) {
-			case 2:
-			case 3:
-				// The most recent row, because a site may have cleared its log
-				// and let the same address vote again.
-				$rating = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s ORDER BY rating_timestamp DESC LIMIT 1",
-						$post_id,
-						self::get_ip()
-					)
-				);
-				break;
-			case 4:
-				if ( ! is_user_logged_in() ) {
-					return null;
-				}
-
-				$rating = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d ORDER BY rating_timestamp DESC LIMIT 1",
-						$post_id,
-						get_current_user_id()
-					)
-				);
-				break;
-			default:
-				return null;
+		if ( 4 !== (int) WP_PostRatings_Options::get( 'check_method' ) || ! is_user_logged_in() ) {
+			return null;
 		}
+
+		// The most recent row: a site may have cleared its log and let the same
+		// account vote again.
+		$rating = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d ORDER BY rating_timestamp DESC LIMIT 1",
+				$post_id,
+				get_current_user_id()
+			)
+		);
 
 		return null === $rating ? null : (int) $rating;
 	}
