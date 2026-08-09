@@ -176,6 +176,70 @@ class WP_PostRatings_Rating {
 	}
 
 	/**
+	 * Which way this visitor voted on a post, if anything remembers.
+	 *
+	 * Separate from has_rated(), which answers only whether they voted. The
+	 * direction matters for an up/down pair, because a post can have votes and
+	 * still have no verdict -- a tie, or totals left over from a scale -- and
+	 * then the reader's own vote is the only direction anybody can honestly
+	 * attribute to the post at all. Showing it beats showing nothing, which
+	 * reads as though the vote was never recorded.
+	 *
+	 * The cookie is the cheap answer and has always held the value rather than a
+	 * flag. Checking by IP or username sets no cookie, so those pay one query --
+	 * but only for a post whose verdict is missing, which is the rare case.
+	 *
+	 * "Do Not Check" is told nothing about who anybody is, so it answers null.
+	 * Identifying a visitor it was asked not to identify would be a worse bug
+	 * than the blank glyph this exists to avoid.
+	 *
+	 * @param int $post_id Post id.
+	 *
+	 * @return int|null The rating they gave, or null when nothing knows.
+	 */
+	public static function own_vote( $post_id ) {
+		global $wpdb;
+
+		$post_id = (int) $post_id;
+
+		if ( isset( $_COOKIE[ 'rated_' . $post_id ] ) ) {
+			return (int) sanitize_text_field( wp_unslash( $_COOKIE[ 'rated_' . $post_id ] ) );
+		}
+
+		switch ( (int) WP_PostRatings_Options::get( 'check_method' ) ) {
+			case 2:
+			case 3:
+				// The most recent row, because a site may have cleared its log
+				// and let the same address vote again.
+				$rating = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_ip = %s ORDER BY rating_timestamp DESC LIMIT 1",
+						$post_id,
+						self::get_ip()
+					)
+				);
+				break;
+			case 4:
+				if ( ! is_user_logged_in() ) {
+					return null;
+				}
+
+				$rating = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT rating_rating FROM {$wpdb->ratings} WHERE rating_postid = %d AND rating_userid = %d ORDER BY rating_timestamp DESC LIMIT 1",
+						$post_id,
+						get_current_user_id()
+					)
+				);
+				break;
+			default:
+				return null;
+		}
+
+		return null === $rating ? null : (int) $rating;
+	}
+
+	/**
 	 * Pick the first valid address out of a proxy header.
 	 *
 	 * X-Forwarded-For and friends are a chain -- "client, proxy1, proxy2" -- and
@@ -635,6 +699,13 @@ class WP_PostRatings_Rating {
 			$cookie_path = apply_filters( 'wp_postratings_cookiepath', SITECOOKIEPATH );
 
 			setcookie( 'rated_' . $post_id, $rating_value, $expiration, $cookie_path );
+
+			// And in this request, which setcookie() does not do -- it only asks
+			// the browser to send it back on the next one. The reply to a vote is
+			// rendered further down this same request, and own_vote() reads the
+			// cookie, so without this the vote just cast is the one thing the
+			// response cannot report.
+			$_COOKIE[ 'rated_' . $post_id ] = (string) $rating_value;
 		}
 
 		/*

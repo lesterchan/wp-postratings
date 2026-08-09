@@ -777,6 +777,38 @@ class WP_PostRatings_Template {
 			);
 		}
 
+		/*
+		 * No verdict to show, so show the reader their own vote instead.
+		 *
+		 * An up/down post can have votes and still point nowhere: a tie, or
+		 * totals a scale left behind. Drawing nothing there is correct about the
+		 * post and useless to the person who just voted -- rate a post down, land
+		 * on a tie, and the reply looks identical to the control you clicked, as
+		 * though the vote went nowhere. That is the report this exists for.
+		 *
+		 * Their own vote is the only direction anybody can honestly attribute at
+		 * that point, so it takes the glyph, and the label says whose it is. The
+		 * verdict keeps the glyph whenever there is one: a post 500 to 3 in favour
+		 * must not read as a thumbs down to the one visitor who disagreed. Only
+		 * the vacancy is filled.
+		 *
+		 * %RATINGS_USERS%, %RATINGS_SCORE% and %RATINGS_AVERAGE% are untouched
+		 * either way -- they report the totals, which have not changed meaning.
+		 */
+		if ( $ratings_custom && 2 === $ratings_max && 0.0 === (float) $post_ratings ) {
+			$own_vote = WP_PostRatings_Rating::own_vote( $post_id );
+
+			if ( ! empty( $own_vote ) ) {
+				$post_ratings = $own_vote;
+
+				$post_ratings_alt_text = esc_html(
+					$own_vote > 0
+						? __( 'You rated this up', 'wp-postratings' )
+						: __( 'You rated this down', 'wp-postratings' )
+				);
+			}
+		}
+
 		// Retained only to feed the two rendering calls' signatures; the fill
 		// is derived from the rating itself now.
 		$insert_half = 0;

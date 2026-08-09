@@ -568,6 +568,78 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * With no verdict to show, the reader sees their own vote.
+	 *
+	 * Rating a post down and landing on a tie drew nothing, which looks exactly
+	 * like the control that was clicked -- so the vote appeared not to have been
+	 * recorded at all. A tie points nowhere, but the reader's own vote does.
+	 *
+	 * @return void
+	 */
+	public function test_a_post_with_no_verdict_shows_the_readers_own_vote() {
+		$post_id = $this->make_rated_post( 2, 0 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+
+		$_COOKIE[ 'rated_' . $post_id ] = '-1';
+
+		$html = WP_PostRatings::render_ratings( $post_id, true );
+
+		unset( $_COOKIE[ 'rated_' . $post_id ] );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-down)', $html, 'A tie shows the down vote the reader cast.' );
+		$this->assertStringNotContainsString( 'wp-postratings-undecided', $html, 'Rather than the blank pair.' );
+		$this->assertStringContainsString( 'You rated this down', $html, 'And says whose vote it is, so the glyph is not read as the verdict.' );
+		$this->assertStringContainsString( '2', $html, 'The totals are still reported.' );
+	}
+
+	/**
+	 * A verdict outranks the reader's own vote.
+	 *
+	 * Only the vacancy is filled. A post rated up by everybody else must not read
+	 * as a thumbs down to the one visitor who disagreed -- that would misrepresent
+	 * the post to make one reader feel heard.
+	 *
+	 * @return void
+	 */
+	public function test_a_verdict_outranks_the_readers_own_vote() {
+		$post_id = $this->make_rated_post( 3, 1 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+
+		$_COOKIE[ 'rated_' . $post_id ] = '-1';
+
+		$html = WP_PostRatings::render_ratings( $post_id, true );
+
+		unset( $_COOKIE[ 'rated_' . $post_id ] );
+
+		$this->assertStringContainsString( 'shape:var(--wp-postratings-shape-up)', $html, 'Two votes up against one down is a thumbs up.' );
+		$this->assertStringNotContainsString( 'You rated this', $html, 'And the label describes the verdict, not the reader.' );
+	}
+
+	/**
+	 * Nothing knows how the reader voted, so nothing is claimed.
+	 *
+	 * @return void
+	 */
+	public function test_a_tie_stays_blank_for_a_reader_who_has_not_voted() {
+		$post_id = $this->make_rated_post( 2, 0 );
+
+		$this->set_option( 'shape', 'thumb' );
+		$this->set_option( 'max', 2 );
+		$this->set_option( 'customrating', 1 );
+
+		$html = WP_PostRatings::render_ratings( $post_id, true );
+
+		$this->assertStringContainsString( 'wp-postratings-undecided', $html, 'A tie nobody here voted in draws the blank pair.' );
+		$this->assertStringNotContainsString( 'You rated this', $html, 'And claims nothing about the reader.' );
+	}
+
+	/**
 	 * No shipped markup references an image file.
 	 *
 	 * @return void
