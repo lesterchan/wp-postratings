@@ -415,7 +415,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	public function test_the_path_constants_are_defined() {
 		$this->assertStringEndsWith( '/', WP_POSTRATINGS_DIR, 'The directory constant is slash terminated, so it can be concatenated.' );
 		$this->assertStringEndsWith( '/', WP_POSTRATINGS_URL, 'And so is the URL constant.' );
-		$this->assertSame( WP_POSTRATINGS_VERSION, '2.0.0', 'The version constant is this release.' );
+		$this->assertSame( WP_POSTRATINGS_VERSION, '2.0.1', 'The version constant is this release.' );
 	}
 
 	/**

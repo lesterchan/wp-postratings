@@ -81,6 +81,45 @@ class WP_PostRatings_Rating {
 	}
 
 	/**
+	 * Whether a post is one that may be rated.
+	 *
+	 * Publicly viewable, or readable by whoever is asking. The guard is there to
+	 * stop a stranger seeding a rating onto a post nobody has published -- and
+	 * reading its title and content back out of %POST_TITLE% and %POST_CONTENT%
+	 * in the text template -- not to stop a site rating its own unpublished
+	 * posts, which is a workflow this plugin has always supported and 2.0.0
+	 * broke. `read_post` maps to `edit_post` on every unpublished status, so
+	 * nobody is handed a post they could not already open.
+	 *
+	 * @since 2.0.1
+	 *
+	 * @param int|WP_Post $post Post, or its id.
+	 *
+	 * @return bool
+	 */
+	public static function is_ratable( $post ) {
+		// Resolved from the id rather than passed straight through, because
+		// get_post() answers a null with whichever post the loop is on.
+		$post_id = $post instanceof WP_Post ? (int) $post->ID : (int) $post;
+		$post    = $post_id > 0 ? get_post( $post_id ) : null;
+
+		$ratable = $post instanceof WP_Post
+			&& ! wp_is_post_revision( $post )
+			&& ( is_post_publicly_viewable( $post ) || current_user_can( 'read_post', $post_id ) );
+
+		/**
+		 * Filters whether a post may be rated.
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param bool         $ratable Whether the vote may proceed.
+		 * @param WP_Post|null $post    Post being rated, or null if the id names none.
+		 * @param int          $post_id Post id that was asked about.
+		 */
+		return (bool) apply_filters( 'wp_postratings_is_ratable', $ratable, $post, $post_id );
+	}
+
+	/**
 	 * Whether the visitor has already rated a post.
 	 *
 	 * @param int $post_id Post id.
@@ -577,25 +616,14 @@ class WP_PostRatings_Rating {
 				throw new InvalidArgumentException( esc_html( sprintf( __( 'You Had Already Rated This Post. Post ID #%s.', 'wp-postratings' ), $post_id ) ) );
 			}
 
-			$post = get_post( $post_id );
-
-			/*
-			 * is_post_publicly_viewable() as well, because get_post() plus the
-			 * revision test accepted every other row in wp_posts: drafts,
-			 * pending, private, trashed, auto-drafts, attachments and any
-			 * published-but-not-public custom type. An unauthenticated visitor
-			 * could therefore seed ratings_users, ratings_score and
-			 * ratings_average on a post nobody has published -- so it arrived
-			 * already rated on the day it went live -- and record() copies the
-			 * unpublished title into rating_posttitle, where the Logs screen
-			 * then shows it. On a site that has put %POST_TITLE% or
-			 * %POST_CONTENT% into the text template, the response body returns
-			 * the unpublished content directly.
-			 */
-			if ( ! $post || wp_is_post_revision( $post ) || ! is_post_publicly_viewable( $post ) ) {
+			// Deliberately one message for "no such post" and "not one you may
+			// rate": telling them apart tells a stranger which drafts exist.
+			if ( ! self::is_ratable( $post_id ) ) {
 				/* translators: %s: post id. */
-				throw new InvalidArgumentException( esc_html( sprintf( __( 'Invalid Post ID (#%s).', 'wp-postratings' ), $post_id ) ) );
+				throw new InvalidArgumentException( esc_html( sprintf( __( 'This Post Cannot Be Rated (#%s).', 'wp-postratings' ), $post_id ) ) );
 			}
+
+			$post = get_post( $post_id );
 
 			$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
 

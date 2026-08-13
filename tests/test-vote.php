@@ -13,6 +13,7 @@
  *
  * @covers WP_PostRatings_Rating::process_vote
  * @covers WP_PostRatings_Rating::can_rate
+ * @covers WP_PostRatings_Rating::is_ratable
  * @covers WP_PostRatings_Rating::has_rated
  */
 class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
@@ -95,7 +96,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_unknown_post_is_refused() {
-		$this->assertStringContainsString( 'Invalid Post ID', $this->refusal( 999999, 3 ), 'An unknown post is refused with a reason.' );
+		$this->assertStringContainsString( 'Cannot Be Rated', $this->refusal( 999999, 3 ), 'An unknown post is refused with a reason.' );
 	}
 
 	/**
@@ -112,9 +113,15 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_post_nobody_can_read_cannot_be_rated( array $post_args, $why ) {
+		wp_set_current_user( 0 );
+
+		// Authored by somebody, so that the refusal is the status doing the
+		// work rather than a post_author of 0 matching a logged-out 0.
+		$post_args['post_author'] = self::factory()->user->create( array( 'role' => 'editor' ) );
+
 		$post_id = self::factory()->post->create( $post_args );
 
-		$this->assertStringContainsString( 'Invalid Post ID', $this->refusal( $post_id, 3 ), $why );
+		$this->assertStringContainsString( 'Cannot Be Rated', $this->refusal( $post_id, 3 ), $why );
 		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'And no rating meta is seeded on it.' );
 	}
 
@@ -139,6 +146,93 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
 
 		$this->assertSame( '1', get_post_meta( $post_id, 'ratings_users', true ), 'The feature still works for the posts it is for.' );
+	}
+
+	/**
+	 * Somebody who can already read the post may rate it, published or not.
+	 *
+	 * Sites rate their own unpublished posts -- an editorial queue where the
+	 * readers are the editors -- and 2.0.0 refused every one of them, because
+	 * the guard asked whether the post was public and never who was asking.
+	 *
+	 * @dataProvider data_unpublished_rows
+	 *
+	 * @param array  $post_args Arguments for the row to try.
+	 * @param string $why       What the status stands for.
+	 * @return void
+	 */
+	public function test_an_editor_may_rate_an_unpublished_post( array $post_args, $why ) {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		$post_id = self::factory()->post->create( $post_args );
+
+		$this->assertSame( $post_args['post_status'], get_post_status( $post_id ), 'The row is in the status the case is about.' );
+
+		WP_PostRatings_Rating::process_vote( $post_id, 4 );
+
+		$this->assertSame( '1', get_post_meta( $post_id, 'ratings_users', true ), $why );
+	}
+
+	/**
+	 * Statuses an editorial queue actually uses.
+	 *
+	 * A scheduled post carries its date, because inserting one dated in the past
+	 * publishes it and the case would then prove nothing.
+	 *
+	 * @return array
+	 */
+	public function data_unpublished_rows() {
+		return array(
+			'a draft'     => array( array( 'post_status' => 'draft' ), 'An editor may rate a draft.' ),
+			'a pending'   => array( array( 'post_status' => 'pending' ), 'And one awaiting review.' ),
+			'a private'   => array( array( 'post_status' => 'private' ), 'And a private post, which is published to exactly them.' ),
+			'a scheduled' => array(
+				array(
+					'post_status' => 'future',
+					'post_date'   => '2099-01-01 00:00:00',
+				),
+				'And one that is written and waiting for its date.',
+			),
+		);
+	}
+
+	/**
+	 * Being logged in is not the same as being able to read the post.
+	 *
+	 * @return void
+	 */
+	public function test_a_subscriber_may_not_rate_a_draft() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+
+		$post_id = self::factory()->post->create(
+			array(
+				'post_status' => 'draft',
+				'post_author' => self::factory()->user->create( array( 'role' => 'editor' ) ),
+			)
+		);
+
+		$this->assertStringContainsString( 'Cannot Be Rated', $this->refusal( $post_id, 3 ), 'A subscriber cannot read somebody else\'s draft, so cannot rate it.' );
+		$this->assertSame( '', get_post_meta( $post_id, 'ratings_users', true ), 'And seeds nothing on it.' );
+	}
+
+	/**
+	 * The filter has the last word in both directions.
+	 *
+	 * @return void
+	 */
+	public function test_the_ratable_filter_decides() {
+		$published = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$draft     = self::factory()->post->create( array( 'post_status' => 'draft' ) );
+
+		add_filter( 'wp_postratings_is_ratable', '__return_false' );
+		$this->assertStringContainsString( 'Cannot Be Rated', $this->refusal( $published, 3 ), 'A filter can refuse a post the plugin would have allowed.' );
+		remove_filter( 'wp_postratings_is_ratable', '__return_false' );
+
+		add_filter( 'wp_postratings_is_ratable', '__return_true' );
+		WP_PostRatings_Rating::process_vote( $draft, 4 );
+		remove_filter( 'wp_postratings_is_ratable', '__return_true' );
+
+		$this->assertSame( '1', get_post_meta( $draft, 'ratings_users', true ), 'And allow one it would have refused.' );
 	}
 
 	/**

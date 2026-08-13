@@ -576,4 +576,40 @@ test.describe( 'Casting a vote', () => {
 
 		await expect( row.locator( 'td.ratings' ) ).toContainText( '4.00' );
 	} );
+
+	test( 'a post the public cannot see is still ratable by somebody who can', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		// The reported bug, from the browser rather than from PHP: every vote on
+		// a private post came back "Invalid Post ID", naming an id that was
+		// perfectly valid. What a browser adds over the unit tests is the wiring
+		// around the check -- the control is rendered by the page and carries a
+		// per-post nonce, and process_vote() is reached through the AJAX action
+		// rather than called directly, so this is the only place both halves are
+		// exercised on a post the public cannot see.
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await requestUtils.createPost( {
+			title: uniqueTitle( 'Private but ratable' ),
+			content: '[ratings]',
+			status: 'private',
+		} );
+
+		await page.goto( post.link );
+
+		await rate( page, 4 );
+		await expectAverage( page, '4.00' );
+
+		// And the guard it was added for still holds: the post is not public,
+		// and a visitor who is not signed in reaches no control at all.
+		const { context, page: guest } = await asGuest( browser, post.link );
+
+		try {
+			await expect( guest.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+		} finally {
+			await context.close();
+		}
+	} );
 } );

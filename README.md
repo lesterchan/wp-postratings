@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, vote, ajax, post  
 Requires at least: 6.8  
 Tested up to: 7.0  
-Stable tag: 2.0.0  
+Stable tag: 2.0.1  
 Requires PHP: 8.2  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -81,7 +81,7 @@ Reading is public, because a rating is public. Rating takes the same `wp_postrat
 
 Each response carries the rendered markup as well as the numbers, because your templates and your chosen shape decide what a rating looks like.
 
-**A refusal answers 403**, not 400 — a rating already cast, a rating off the end of the scale, a bad nonce. 400 is kept for a parameter this plugin never had a chance to look at, and a post that does not exist is 404.
+**A refusal answers 403**, not 400 — a rating already cast, a rating off the end of the scale, a bad nonce. 400 is kept for a parameter this plugin never had a chance to look at. A post that does not exist answers 404, and so does one you are not allowed to rate — a draft belonging to somebody else answers exactly as a deleted post does, rather than confirming it is there.
 
 **These routes are an addition.** The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
 
@@ -476,6 +476,11 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 5. The Ratings block in the editor, previewing the control for the post it is pointed at, with the sidebar choosing that post and whether the rating can be cast or only read
 
 ## Changelog
+### 2.0.1
+* FIXED: Nothing unpublished could be rated by anybody, including the people who wrote it. 2.0.0 required a post to be publicly viewable before it would accept a rating — which stops a stranger rating your drafts, and was the point — but it never asked who was rating, so a site whose editors rate their own drafts, pending or private posts got `Invalid Post ID` on every vote. A post you can already read is now ratable whether or not the public can see it, and the message no longer blames the post ID, which is rarely what is wrong with it.
+* NEW: `wp_postratings_is_ratable` filters whether a given post may be rated at all, for sites whose answer is neither of the two above.
+* CHANGED: The REST error code for a post that may not be rated is `wp_postratings_not_ratable` rather than `wp_postratings_no_such_post`. The status is still 404, deliberately: a 403 would tell a stranger that the draft exists.
+
 ### 2.0.0
 * FIXED: Any post ID could be rated, not only a published one. A visitor who was never signed in could seed `ratings_users`, `ratings_score` and `ratings_average` onto a draft, a pending, a private or a trashed post — so it arrived already rated on the day it was published — and the unpublished title was copied into the log table, where the Logs screen then displayed it. On a site that had put `%POST_TITLE%` or `%POST_CONTENT%` into the text template, the reply returned unpublished content directly. Both the AJAX action and the REST route now require a post that is actually publicly viewable
 * NEW: A `wp postratings` WP-CLI command — `list`, `get` and `delete`, with `--what=logs|data|both`.
