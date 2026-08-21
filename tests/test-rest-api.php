@@ -244,7 +244,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 		// postratings_logging_method and the migration renamed it, so setting
 		// the old name here would write a key nothing reads and leave the test
 		// passing on whatever the default happened to be.
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = self::factory()->post->create( array( 'post_status' => 'publish' ) );
 

@@ -110,8 +110,8 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	public function test_a_vote_is_confined_to_its_site() {
 		global $wpdb;
 
-		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$other = $this->make_site();
 
@@ -139,7 +139,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	public function test_settings_are_per_site() {
 		$other = $this->make_site();
 
-		$this->set_option( 'shape', 'stars' );
+		$this->set_options( array( 'shape' => 'stars' ) );
 
 		switch_to_blog( $other );
 		WP_PostRatings_Install::install();
@@ -290,7 +290,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_network_only_permission_rule_works() {
-		$this->set_option( 'allowtorate', 3 );
+		$this->set_options( array( 'allowtorate' => 3 ) );
 
 		$member = self::factory()->user->create();
 		$other  = $this->make_site();

@@ -272,7 +272,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_absent_keys_keep_their_stored_value() {
-		$this->set_option( 'max', 9 );
+		$this->set_options( array( 'max' => 9 ) );
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'templates' => array( 'vote' => 'X' ) ) );
 
@@ -1110,7 +1110,7 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * it, which is what makes the 0 below arrive at all.
 	 */
 	public function test_the_stats_box_can_be_unticked() {
-		$this->set_option( 'stats_display', 1 );
+		$this->set_options( array( 'stats_display' => 1 ) );
 
 		$clean = WP_PostRatings_Options::sanitize( array( 'stats_display' => '0' ) );
 

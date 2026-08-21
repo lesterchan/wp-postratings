@@ -190,7 +190,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_rated_visitor_sees_results() {
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = $this->make_rated_post( 1, 4 );
 		$this->log_rating( $post_id, 4, 'Guest', '203.0.113.1' );
@@ -207,7 +207,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_visitor_without_permission_sees_the_notice() {
-		$this->set_option( 'allowtorate', 1 );
+		$this->set_options( array( 'allowtorate' => 1 ) );
 		wp_set_current_user( 0 );
 
 		$post_id = $this->make_rated_post( 1, 4 );

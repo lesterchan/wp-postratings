@@ -110,15 +110,16 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 	/**
 	 * Set one plugin setting.
 	 *
-	 * @param string $key   Top level setting name.
-	 * @param mixed  $value Value to store.
+	 * Merged into the stored row rather than over the defaults, because the
+	 * suite layers overrides across separate calls and a defaults merge would
+	 * silently drop the earlier ones.
+	 *
+	 * @param array $overrides Setting names to values.
 	 *
 	 * @return void
 	 */
-	protected function set_option( $key, $value ) {
-		$options         = WP_PostRatings_Options::get();
-		$options[ $key ] = $value;
-		WP_PostRatings_Options::update( $options );
+	protected function set_options( array $overrides = array() ) {
+		WP_PostRatings_Options::update( array_merge( WP_PostRatings_Options::get(), $overrides ) );
 	}
 
 	/**

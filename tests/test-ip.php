@@ -60,7 +60,7 @@ class WP_PostRatings_Ip_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_named_header_is_honoured() {
-		$this->set_option( 'ip_header', 'HTTP_X_FORWARDED_FOR' );
+		$this->set_options( array( 'ip_header' => 'HTTP_X_FORWARDED_FOR' ) );
 
 		$_SERVER['REMOTE_ADDR']          = '198.51.100.7';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.9';
@@ -79,7 +79,7 @@ class WP_PostRatings_Ip_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_only_the_first_address_in_the_chain_is_used() {
-		$this->set_option( 'ip_header', 'HTTP_X_FORWARDED_FOR' );
+		$this->set_options( array( 'ip_header' => 'HTTP_X_FORWARDED_FOR' ) );
 
 		$_SERVER['REMOTE_ADDR'] = '198.51.100.7';
 
@@ -100,7 +100,7 @@ class WP_PostRatings_Ip_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_junk_header_falls_back_to_remote_addr() {
-		$this->set_option( 'ip_header', 'HTTP_X_FORWARDED_FOR' );
+		$this->set_options( array( 'ip_header' => 'HTTP_X_FORWARDED_FOR' ) );
 
 		$_SERVER['REMOTE_ADDR']          = '198.51.100.7';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = 'not-an-address, <script>alert(1)</script>';

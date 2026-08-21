@@ -318,11 +318,12 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_junk_colour_keeps_the_stored_value() {
-		$this->set_option(
-			'colors',
+		$this->set_options(
 			array(
-				'on'  => '#123456',
-				'off' => '#abcdef',
+				'colors' => array(
+					'on'  => '#123456',
+					'off' => '#abcdef',
+				),
 			)
 		);
 
@@ -526,9 +527,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_scale_score_is_not_read_as_a_direction() {
 		$post_id = $this->make_rated_post( 4, 15 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
 
 		$before = WP_PostRatings::render_ratings( $post_id, true );
 
@@ -557,9 +558,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_signed_score_still_reads_as_a_direction() {
 		$post_id = $this->make_rated_post( 3, -1 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
 
 		$html = WP_PostRatings::render_ratings( $post_id, true );
 
@@ -579,9 +580,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_post_with_no_verdict_shows_the_readers_own_vote() {
 		$post_id = $this->make_rated_post( 2, 0 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
 
 		$_COOKIE[ 'rated_' . $post_id ] = '-1';
 
@@ -607,9 +608,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_verdict_outranks_the_readers_own_vote() {
 		$post_id = $this->make_rated_post( 3, 1 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
 
 		$_COOKIE[ 'rated_' . $post_id ] = '-1';
 
@@ -629,9 +630,9 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_tie_stays_blank_for_a_reader_who_has_not_voted() {
 		$post_id = $this->make_rated_post( 2, 0 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
 
 		$html = WP_PostRatings::render_ratings( $post_id, true );
 
@@ -656,16 +657,17 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 		// where the post itself has no direction left to show.
 		$post_id = $this->make_rated_post( 1, 1 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
-		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'check_method', 1 );
-		$this->set_option(
-			'ratings',
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		$this->set_options( array( 'check_method' => 1 ) );
+		$this->set_options(
 			array(
-				'value' => array( -1, 1 ),
-				'text'  => array( 'Vote Down', 'Vote Up' ),
+				'ratings' => array(
+					'value' => array( -1, 1 ),
+					'text'  => array( 'Vote Down', 'Vote Up' ),
+				),
 			)
 		);
 
@@ -697,10 +699,10 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_an_address_is_never_taken_for_the_readers_own_vote() {
 		$post_id = $this->make_rated_post( 2, 0 );
 
-		$this->set_option( 'shape', 'thumb' );
-		$this->set_option( 'max', 2 );
-		$this->set_option( 'customrating', 1 );
-		$this->set_option( 'check_method', 3 );
+		$this->set_options( array( 'shape' => 'thumb' ) );
+		$this->set_options( array( 'max' => 2 ) );
+		$this->set_options( array( 'customrating' => 1 ) );
+		$this->set_options( array( 'check_method' => 3 ) );
 
 		// Somebody else voted down from the address this request also comes from.
 		$this->log_rating( $post_id, -1, 'Somebody Else', '203.0.113.1' );

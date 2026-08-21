@@ -179,7 +179,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_a_disabled_wp_stats_section_is_not_offered() {
-		$this->set_option( 'stats_display', 0 );
+		$this->set_options( array( 'stats_display' => 0 ) );
 
 		$this->assertSame( array(), WP_PostRatings_WPStats::register_section( array() ), 'With the section disabled there is nothing to register.' );
 	}
@@ -274,7 +274,7 @@ class WP_PostRatings_Remaining_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_wp_stats_limit_comes_from_our_own_row() {
-		$this->set_option( 'stats_most_limit', 3 );
+		$this->set_options( array( 'stats_most_limit' => 3 ) );
 
 		$this->assertSame( 3, WP_PostRatings_WPStats::most_limit(), 'And the limit is read from the row of this plugin, not the shared one.' );
 	}

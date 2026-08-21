@@ -123,7 +123,7 @@ class WP_PostRatings_Trust_Proxy_Test extends WP_PostRatings_TestCase {
 	public function test_a_named_header_still_wins() {
 		define( 'WP_POSTRATINGS_TRUST_PROXY', true );
 
-		$this->set_option( 'ip_header', 'HTTP_X_REAL_IP' );
+		$this->set_options( array( 'ip_header' => 'HTTP_X_REAL_IP' ) );
 
 		$_SERVER['HTTP_X_REAL_IP']       = '203.0.113.20';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.21';

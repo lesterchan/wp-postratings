@@ -26,8 +26,8 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'check_method', 0 );
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		$this->set_options( array( 'check_method' => 0 ) );
 	}
 
 	/**
@@ -272,7 +272,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logged_in_only_refuses_a_guest() {
-		$this->set_option( 'allowtorate', 1 );
+		$this->set_options( array( 'allowtorate' => 1 ) );
 		wp_set_current_user( 0 );
 
 		$post_id = $this->make_rated_post( 0, 0 );
@@ -288,7 +288,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_guests_only_refuses_a_member() {
-		$this->set_option( 'allowtorate', 0 );
+		$this->set_options( array( 'allowtorate' => 0 ) );
 		wp_set_current_user( self::factory()->user->create() );
 
 		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With guests-only set, a member is refused.' );
@@ -302,7 +302,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_ip_blocks_a_repeat_vote() {
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
@@ -321,7 +321,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_ip_allows_a_different_address() {
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 
@@ -341,7 +341,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_the_log_row_stores_a_hashed_address() {
 		global $wpdb;
 
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = $this->make_rated_post( 0, 0 );
 		WP_PostRatings_Rating::process_vote( $post_id, 4 );
@@ -382,7 +382,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		global $wpdb;
 
 		foreach ( array( 0, 1, 2, 3, 4 ) as $method ) {
-			$this->set_option( 'check_method', $method );
+			$this->set_options( array( 'check_method' => $method ) );
 
 			$wpdb->query( "DELETE FROM {$wpdb->ratings}" );
 
@@ -424,7 +424,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_logging_by_username_blocks_the_same_user() {
-		$this->set_option( 'check_method', 4 );
+		$this->set_options( array( 'check_method' => 4 ) );
 		wp_set_current_user( self::factory()->user->create() );
 
 		$post_id = $this->make_rated_post( 0, 0 );
@@ -447,7 +447,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	public function test_the_logged_title_is_not_double_slashed() {
 		global $wpdb;
 
-		$this->set_option( 'check_method', 2 );
+		$this->set_options( array( 'check_method' => 2 ) );
 
 		$post_id = self::factory()->post->create(
 			array(

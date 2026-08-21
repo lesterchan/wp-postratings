@@ -128,8 +128,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	public function test_voting_leaves_no_lock_behind() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'check_method', 0 );
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		$this->set_options( array( 'check_method' => 0 ) );
 
 		$this->cast_vote( $post_id, 4 );
 
@@ -144,8 +144,8 @@ class WP_PostRatings_Lock_Test extends WP_PostRatings_TestCase {
 	public function test_a_vote_that_cannot_lock_is_refused() {
 		$post_id = $this->make_rated_post( 0, 0 );
 
-		$this->set_option( 'allowtorate', 2 );
-		$this->set_option( 'check_method', 0 );
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		$this->set_options( array( 'check_method' => 0 ) );
 
 		// Hold the lock from a separate handle, as a concurrent request would.
 		$holder = WP_PostRatings_Rating::acquire_lock( $post_id );

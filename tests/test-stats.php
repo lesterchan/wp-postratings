@@ -109,8 +109,8 @@ class WP_PostRatings_Stats_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_an_up_down_scale_ranks_on_score() {
-		$this->set_option( 'customrating', 1 );
-		$this->set_option( 'max', 2 );
+		$this->set_options( array( 'customrating' => 1 ) );
+		$this->set_options( array( 'max' => 2 ) );
 
 		$low  = $this->make_rated_post( 10, 2 );
 		$high = $this->make_rated_post( 10, 40 );
