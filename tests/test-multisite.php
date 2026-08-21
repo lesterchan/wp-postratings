@@ -306,4 +306,30 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'a non-member of the switched site was allowed' );
 		restore_current_blog();
 	}
+
+	/**
+	 * The activation site query is uncapped and asks only for IDs.
+	 *
+	 * Read off pre_get_sites rather than proved with a 101-site fixture:
+	 * get_sites() defaults to 100, so a larger network would silently keep
+	 * its table and settings on every site past the hundredth while activation still
+	 * reported success.
+	 *
+	 * @return void
+	 */
+	public function test_network_activation_queries_sites_without_a_cap() {
+		$captured = array();
+		add_action(
+			'pre_get_sites',
+			function ( $query ) use ( &$captured ) {
+				$captured[] = $query->query_vars;
+			}
+		);
+
+		WP_PostRatings_Install::activate( true );
+
+		$this->assertNotEmpty( $captured, 'Activation never queried the site list.' );
+		$this->assertSame( 0, (int) $captured[0]['number'], 'get_sites() was left at its default cap of 100 sites.' );
+		$this->assertSame( 'ids', $captured[0]['fields'], 'Only the site IDs are needed.' );
+	}
 }
