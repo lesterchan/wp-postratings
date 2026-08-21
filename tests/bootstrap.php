@@ -27,14 +27,14 @@ require_once $_tests_dir . '/includes/functions.php';
  *
  * @return void
  */
-function _postratings_manually_load_plugin() {
+function _wp_postratings_manually_load_plugin() {
 	require dirname( __DIR__ ) . '/wp-postratings.php';
 
 	// register_activation_hook() never fires in the test environment, so the
 	// table and the capability have to be created by hand.
 	WP_PostRatings_Install::install();
 }
-tests_add_filter( 'muplugins_loaded', '_postratings_manually_load_plugin' );
+tests_add_filter( 'muplugins_loaded', '_wp_postratings_manually_load_plugin' );
 
 require $_tests_dir . '/includes/bootstrap.php';
 
