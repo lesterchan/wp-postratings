@@ -44,6 +44,10 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 	private function enter_loop( $post_id ) {
 		global $post;
 
+		// collect() stands aside when the display is off, and these tests are
+		// about the map it builds -- so opt in the way a theme would.
+		add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
+
 		$post = get_post( $post_id );
 		setup_postdata( $post );
 
@@ -72,6 +76,45 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		);
 
 		$comment = get_comment( $comment_id );
+	}
+
+	/**
+	 * A loop with the feature off never touches the ratings table.
+	 *
+	 * On loop_start, collect() runs for every WP_Query, and the map it builds
+	 * is only ever read on behalf of the opt-in comment author display -- so
+	 * with the filter at its default the query is pure cost, unbounded on a
+	 * heavily rated post.
+	 *
+	 * @return void
+	 */
+	public function test_a_loop_with_the_feature_off_queries_nothing() {
+		global $wpdb;
+
+		// A real request, not a bare WP_Query: the global $post has to be
+		// registered before loop_start fires, as WP::register_globals() does on
+		// every page load, or collect() has nothing to look up and the test
+		// passes for the wrong reason.
+		$this->go_to( get_permalink( $this->post_id ) );
+
+		$ratings_queries = array();
+
+		add_filter(
+			'query',
+			function ( $sql ) use ( &$ratings_queries, $wpdb ) {
+				if ( false !== strpos( $sql, $wpdb->ratings ) ) {
+					$ratings_queries[] = $sql;
+				}
+
+				return $sql;
+			}
+		);
+
+		while ( have_posts() ) {
+			the_post();
+		}
+
+		$this->assertSame( array(), $ratings_queries, 'With comment author ratings off, which is the default, a loop must not query the ratings table.' );
 	}
 
 	/**
@@ -205,11 +248,16 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 		$this->enter_loop( $this->post_id );
 		$this->enter_comment( 'Alice' );
 
+		remove_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
+
 		$this->assertSame( 'Body.', WP_PostRatings_Comments::append_to_comment( 'Body.' ), 'Without the option the comment body comes back untouched.' );
 
 		add_filter( 'wp_postratings_display_comment_author_ratings', '__return_true' );
 
-		$this->assertStringContainsString( 'wp-postratings-comment-author', WP_PostRatings_Comments::append_to_comment( 'Body.' ), 'With it the strip is appended.' );
+		$html = WP_PostRatings_Comments::append_to_comment( 'Body.' );
+
+		$this->assertStringContainsString( 'wp-postratings-comment-author', $html, 'With it the strip is appended.' );
+		$this->assertStringContainsString( 'Alice gives a rating of 4', $html, 'And it still shows the rating the author gave.' );
 	}
 
 	/**

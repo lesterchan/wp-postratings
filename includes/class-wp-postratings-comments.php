@@ -46,6 +46,22 @@ class WP_PostRatings_Comments {
 			return;
 		}
 
+		/**
+		 * Filters whether to append each comment author's rating to their comment.
+		 *
+		 * Checked here as well as at display time, because the map below is only
+		 * ever read on behalf of that display: with the feature off -- the
+		 * default -- the query would fetch every rating the post has, on every
+		 * loop, for nothing.
+		 *
+		 * @since 1.83
+		 *
+		 * @param bool $display Whether to display them. Off by default.
+		 */
+		if ( ! apply_filters( 'wp_postratings_display_comment_author_ratings', false ) ) {
+			return;
+		}
+
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT rating_username, rating_rating, rating_ip FROM {$wpdb->ratings} WHERE rating_postid = %d",
@@ -154,13 +170,7 @@ class WP_PostRatings_Comments {
 	public static function append_to_comment( $comment_text ) {
 		global $comment;
 
-		/**
-		 * Filters whether to append each comment author's rating to their comment.
-		 *
-		 * @since 1.83
-		 *
-		 * @param bool $display Whether to display them. Off by default.
-		 */
+		/** This filter is documented in includes/class-wp-postratings-comments.php */
 		if ( ! apply_filters( 'wp_postratings_display_comment_author_ratings', false ) ) {
 			return $comment_text;
 		}
