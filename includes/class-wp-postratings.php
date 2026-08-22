@@ -52,7 +52,7 @@ class WP_PostRatings {
 		// old option rows, until somebody happened to log in. Gated on one
 		// autoloaded option, so an already-migrated install pays a lookup.
 		add_action( 'init', array( 'WP_PostRatings_Install', 'maybe_upgrade' ), 5 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
+		add_action( 'wp_footer', array( $this, 'scripts' ) );
 		add_action( 'enqueue_block_assets', array( $this, 'block_editor_styles' ) );
 
 		add_shortcode( 'ratings', array( $this, 'shortcode' ) );
@@ -129,11 +129,21 @@ class WP_PostRatings {
 	}
 
 	/**
-	 * Enqueue the front end assets.
+	 * Enqueue the front end assets, if anything on this page rendered a rating.
+	 *
+	 * On wp_footer rather than wp_enqueue_scripts: a rating can come from a
+	 * theme's template tag as easily as from post content, so the only reliable
+	 * signal is that one actually rendered -- and by the footer, everything in
+	 * the body has had its say. WordPress prints late styles and footer scripts
+	 * after this hook's default priority, so both still make the page.
 	 *
 	 * @return void
 	 */
 	public function scripts() {
+		if ( ! WP_PostRatings_Template::needs_assets() ) {
+			return;
+		}
+
 		$this->styles();
 
 		// The empty dependency array is the point: the script is vanilla
@@ -187,7 +197,8 @@ class WP_PostRatings {
 	 * The block wraps its preview in `inert` for the same reason.
 	 *
 	 * Guarded on is_admin() because `enqueue_block_assets` fires on the front
-	 * end too, where scripts() has already done this on `wp_enqueue_scripts`.
+	 * end too, where the footer enqueue covers every page that renders a
+	 * rating and a page that renders none wants nothing.
 	 *
 	 * @return void
 	 */

@@ -33,6 +33,36 @@ class WP_PostRatings_Template {
 	const COLORS_NONE    = 'none';
 
 	/**
+	 * Whether anything on this request has rendered rating markup.
+	 *
+	 * @var bool
+	 */
+	private static $needs_assets = false;
+
+	/**
+	 * Whether the front end stylesheet and script should be enqueued.
+	 *
+	 * @return bool
+	 */
+	public static function needs_assets() {
+		return self::$needs_assets;
+	}
+
+	/**
+	 * Ask for the front end assets on this request.
+	 *
+	 * Anything emitting rating markup must come through here. expand() covers
+	 * the template tags, the shortcode, the block, the widget and the stats
+	 * lists; the comment author strip asks on its own because it expands no
+	 * template, and its shapes are CSS masks from the same stylesheet.
+	 *
+	 * @return void
+	 */
+	public static function request_assets() {
+		self::$needs_assets = true;
+	}
+
+	/**
 	 * Echo markup this plugin built itself.
 	 *
 	 * The one place the plugin prints rendered markup, and therefore the one
@@ -661,6 +691,8 @@ class WP_PostRatings_Template {
 	 * @return string
 	 */
 	public static function ratings_images_comment_author( $ratings_custom, $ratings_max, $comment_author_rating, $shape, $image_alt ) {
+		self::request_assets();
+
 		$shape = self::resolve_shape( $shape );
 
 		// An up/down vote is one glyph, not a strip: the author voted one way
@@ -688,6 +720,8 @@ class WP_PostRatings_Template {
 	 * @return string
 	 */
 	public static function expand( $template, $post_data, $post_ratings_data = null, $max_post_title_chars = 0, $is_main_loop = true ) {
+		self::request_assets();
+
 		// Nothing here touches the global $post any more. It used to be
 		// reassigned so get_the_content() and friends would read the post the
 		// template named, and restored afterwards -- which worked, but meant

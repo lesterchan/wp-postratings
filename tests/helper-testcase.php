@@ -60,6 +60,11 @@ abstract class WP_PostRatings_TestCase extends WP_UnitTestCase {
 		$_SERVER['REMOTE_ADDR']     = '203.0.113.1';
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (phpunit)';
 
+		// The assets flag is request-scoped in production; here the process is
+		// the request, so it is put back by hand.
+		$needs_assets = new ReflectionProperty( 'WP_PostRatings_Template', 'needs_assets' );
+		$needs_assets->setValue( null, false );
+
 		wp_cache_flush();
 	}
 
