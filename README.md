@@ -109,7 +109,7 @@ Before 2.0.0 a different colour meant a whole extra folder of images, which is w
 
 ### How do I use my own rating shape?
 
-Register it with the `wp_postratings_shapes` filter. It then appears on the Ratings Options screen like any built-in shape, and unlike the old approach of dropping a folder into `wp-content/plugins/wp-postratings/images/`, it survives an update.
+Register it with the `wp_postratings_shapes` filter. It then appears on the Ratings Settings screen like any built-in shape, and unlike the old approach of dropping a folder into `wp-content/plugins/wp-postratings/images/`, it survives an update.
 
 ```php
 add_filter( 'wp_postratings_shapes', function ( $shapes ) {
@@ -128,7 +128,7 @@ The path is SVG path data drawn in a 24x24 box. For an up/down control use `'typ
 
 ### Every visitor can rate over and over, or every rating log entry shows the same IP
 
-This is about the **Header That Contains The IP** field on the Ratings Options screen.
+This is about the **Header That Contains The IP** field on the Ratings Settings screen.
 
 Leave it blank unless your site is genuinely behind a reverse proxy or CDN such as Cloudflare. Blank means the plugin uses the address your web server actually saw, which is what you want on a normal host.
 
@@ -492,7 +492,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 * BREAKING: The vote images no longer carry inline `onmouseover`/`onclick` attributes; hovering and clicking are handled by one delegated listener. Custom CSS or JavaScript that targeted those inline handlers, or that called `current_rating()` or `rate_post()` directly, needs updating.
 * BREAKING: The `rate_post` action is renamed `wp_postratings_rate_post` and the old name is gone, with no deprecation shim. Its three arguments are unchanged.
 * BREAKING: Every class is renamed to `WP_PostRatings_*`, and the plugin's own classes are no longer called `Postratings_*`. `RATINGS_IMG_EXT` is now `WP_POSTRATINGS_IMG_EXT`.
-* BREAKING: The settings screen moved to `WP-Admin -> Ratings -> Settings`, at `admin.php?page=wp-postratings-settings`. Ratings Options and Ratings Templates are the two tabs of that one page rather than two menu entries.
+* BREAKING: The settings screen moved to `WP-Admin -> Ratings -> Settings`, at `admin.php?page=wp-postratings-settings`. Settings and Templates are the two tabs of that one page rather than two menu entries.
 * BREAKING: The option rows are renamed. The fifteen `postratings_*` rows become one `wp_postratings_options`, and the two separate version markers become one `wp_postratings_version`. Your settings are migrated automatically on the first load after the update.
 * BREAKING: The shared, unprefixed `stats_display` and `stats_mostlimit` option rows are no longer read. WP-Stats integration is now two settings of this plugin's own, on the Settings tab, and WP-Stats asks each plugin for its section through the `wp_stats_sections` filter rather than reading anybody's options. Update all seven WP-Stats-aware plugins together; see the Upgrade Notice.
 * BREAKING: If you set "Header That Contains The IP" (for Cloudflare, a load balancer or any reverse proxy), that header is now parsed as the forwarded-for chain it is, and only the first valid address in it is used. Previously the whole header value was stored, so a visitor could rate repeatedly just by appending another address to it. Existing rating logs recorded through such a header will no longer match, so some visitors may be able to rate once more. Leave the field blank unless you are actually behind a proxy. See the FAQ.
@@ -535,7 +535,7 @@ Requires WordPress 6.8 and PHP 8.2.
 
 **Update all seven WP-Stats plugins together.** WP-Stats, WP-PostRatings, WP-Polls, WP-EMail, WP-PostViews, WP-DownloadManager and WP-DraftsForFriends shared two unprefixed rows, `stats_display` and `stats_mostlimit`. Each now keeps its own copy and deletes the shared rows once it has read them, so whichever you update first takes them from the rest. A missing row means "show", so a block you had switched off may reappear — switch it off again under **Ratings -> Settings -> WP-Stats**, where the setting and the entries-per-list figure now live.
 
-**The settings screen is at Ratings -> Settings**, with Ratings Options and Ratings Templates as two tabs of it. `admin.php?page=wp-postratings-options` is now `admin.php?page=wp-postratings-settings`. The capability is still `manage_ratings`.
+**The settings screen is at Ratings -> Settings**, with Settings and Templates as two tabs of it. `admin.php?page=wp-postratings-options` is now `admin.php?page=wp-postratings-settings`. The capability is still `manage_ratings`.
 
 **Two Google rich snippet settings became one, defaulting to No.** "Enable Google Rich Snippets?" and "Enable Ratings In Rich Snippets?" are now **Show ratings in Google results?**. The old markup declared `schema.org/Article`, and Google shows ratings only for Book, Course, Event, Local Business, Movie, Organization, Product, Recipe, Software App and a few subtypes — so on an ordinary post it never produced a rich result.
 
