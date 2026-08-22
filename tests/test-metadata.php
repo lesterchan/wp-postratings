@@ -146,11 +146,11 @@ class WP_PostRatings_Metadata_Test extends Plugin_Metadata_TestCase {
 	 * @return void
 	 */
 	protected function register_plugin_assets() {
-		// scripts() stands aside on a page that rendered no rating, and the
-		// shared checks are about the handles it registers when it does run.
+		// The footer pass stands aside on a page that rendered no rating, and
+		// the shared checks are about the handles it registers when it does run.
 		WP_PostRatings_Template::request_assets();
 
-		WP_PostRatings::get_instance()->scripts();
+		WP_PostRatings::get_instance()->footer_scripts();
 
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( $this->create_admin() );

@@ -28,7 +28,7 @@ class WP_PostRatings_Assets_Test extends WP_PostRatings_TestCase {
 	public function set_up() {
 		parent::set_up();
 
-		unset( $GLOBALS['wp_scripts'], $GLOBALS['wp_styles'] );
+		unset( $GLOBALS['wp_scripts'], $GLOBALS['wp_styles'], $GLOBALS['_wp_sidebars_widgets'] );
 	}
 
 	/**
@@ -116,6 +116,78 @@ class WP_PostRatings_Assets_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * A post holding the ratings shortcode gets both assets from the head.
+	 *
+	 * @return void
+	 */
+	public function test_a_post_holding_the_ratings_shortcode_enqueues_both_assets() {
+		$this->shape_a_rating_page( '[ratings]' );
+
+		do_action( 'wp_enqueue_scripts' );
+
+		$this->assertTrue( wp_style_is( 'wp-postratings', 'enqueued' ), 'The ratings shortcode is a reason to load the stylesheet.' );
+		$this->assertTrue( wp_script_is( 'wp-postratings', 'enqueued' ), 'And the vote script.' );
+	}
+
+	/**
+	 * A post holding the block gets both assets from the head.
+	 *
+	 * The check reads the block comment delimiter out of post_content, so this
+	 * holds on a checkout that has never built the block too.
+	 *
+	 * @return void
+	 */
+	public function test_a_post_holding_the_ratings_block_enqueues_both_assets() {
+		$this->shape_a_rating_page( '<!-- wp:wp-postratings/ratings {"id":1} /-->' );
+
+		do_action( 'wp_enqueue_scripts' );
+
+		$this->assertTrue( wp_style_is( 'wp-postratings', 'enqueued' ), 'The Ratings block is a reason to load the stylesheet.' );
+		$this->assertTrue( wp_script_is( 'wp-postratings', 'enqueued' ), 'And the vote script.' );
+	}
+
+	/**
+	 * An active widget gets both assets from the head.
+	 *
+	 * The widget renders in the sidebar, well after `wp_enqueue_scripts`, but
+	 * whether it is in a sidebar at all is already on record by then.
+	 *
+	 * @return void
+	 */
+	public function test_an_active_widget_enqueues_both_assets() {
+		wp_set_sidebars_widgets( array( 'sidebar-1' => array( 'ratings-widget-2' ) ) );
+
+		do_action( 'wp_enqueue_scripts' );
+
+		$this->assertTrue( wp_style_is( 'wp-postratings', 'enqueued' ), 'An active widget is a reason to load the stylesheet.' );
+		$this->assertTrue( wp_script_is( 'wp-postratings', 'enqueued' ), 'And the vote script.' );
+	}
+
+	/**
+	 * Both passes running on one request localizes the script once.
+	 *
+	 * Localized data appends rather than replaces, so an unguarded second
+	 * pass would print the script's data twice.
+	 *
+	 * @return void
+	 */
+	public function test_the_footer_pass_does_not_double_the_localized_data() {
+		$post_id = $this->make_rated_post();
+		$this->shape_a_rating_page( '[ratings]' );
+
+		do_action( 'wp_enqueue_scripts' );
+		the_ratings( 'div', $post_id, false );
+
+		ob_start();
+		do_action( 'wp_footer' );
+		ob_end_clean();
+
+		$data = (string) wp_scripts()->get_data( 'wp-postratings', 'data' );
+
+		$this->assertSame( 1, substr_count( $data, 'wpPostRatingsL10n' ), 'The footer pass localized the script a second time.' );
+	}
+
+	/**
 	 * The comment author strip asks for the assets.
 	 *
 	 * It bypasses the template expansion the other paths go through, so it has
@@ -128,5 +200,19 @@ class WP_PostRatings_Assets_Test extends WP_PostRatings_TestCase {
 		WP_PostRatings_Template::ratings_images_comment_author( 0, 5, 4, 'star', 'Alice gives a rating of 4' );
 
 		$this->assertTrue( WP_PostRatings_Template::needs_assets(), 'A rendered comment author strip did not ask for the assets.' );
+	}
+
+	/**
+	 * Put the request into the shape of a singular page carrying a rating.
+	 *
+	 * The head pass reads the current post, so a test asserting on what it
+	 * enqueues first needs a post carrying one.
+	 *
+	 * @param string $content What the post carries.
+	 *
+	 * @return void
+	 */
+	private function shape_a_rating_page( $content ) {
+		$GLOBALS['post'] = get_post( self::factory()->post->create( array( 'post_content' => $content ) ) );
 	}
 }
