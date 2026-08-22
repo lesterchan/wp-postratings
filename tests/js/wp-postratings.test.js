@@ -7,7 +7,7 @@
  * contract the PHP handler depends on.
  */
 import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helper-dom.js';
+import { l10nFixture, loadScript, updownMarkup, voteMarkup } from './helpers.js';
 
 describe( 'wp-postratings front end', () => {
 	beforeAll( () => {
