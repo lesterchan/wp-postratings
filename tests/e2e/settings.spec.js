@@ -15,7 +15,7 @@ const {
 	openSettings,
 	saveSettings,
 	swatches,
-} = require( './helpers' );
+} = require( './helpers.js' );
 
 test.describe( 'Ratings appearance', () => {
 	test.beforeEach( async ( { page } ) => {

@@ -17,7 +17,7 @@ const {
 	openSettings,
 	resetTemplates,
 	saveSettings,
-} = require( './helpers' );
+} = require( './helpers.js' );
 
 test.describe( 'Ratings templates', () => {
 	test.beforeAll( async ( { requestUtils } ) => {

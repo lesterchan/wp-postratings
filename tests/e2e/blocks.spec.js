@@ -21,7 +21,7 @@
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 
-const { uniqueTitle } = require( './helpers' );
+const { uniqueTitle } = require( './helpers.js' );
 
 /** The block this plugin registers. */
 const BLOCK = 'wp-postratings/ratings';

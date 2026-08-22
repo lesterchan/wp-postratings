@@ -16,7 +16,7 @@ const {
 	saveSettings,
 	uniqueTitle,
 	wpEval,
-} = require( './helpers' );
+} = require( './helpers.js' );
 
 /**
  * Click a point on the scale.

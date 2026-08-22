@@ -11,7 +11,7 @@
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 
-const { ALLOW, CHECK, configure, createRatedPost, uniqueTitle } = require( './helpers' );
+const { ALLOW, CHECK, configure, createRatedPost, uniqueTitle } = require( './helpers.js' );
 
 const LOGS_URL = '/wp-admin/admin.php?page=wp-postratings';
 
