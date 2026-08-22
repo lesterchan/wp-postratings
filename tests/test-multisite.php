@@ -216,7 +216,7 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	 *
 	 * @return void
 	 */
-	public function test_single_site_activation_does_not_touch_the_network() {
+	public function test_single_site_activation_leaves_other_sites_alone() {
 		global $wpdb;
 
 		$other = $this->make_site();
@@ -236,28 +236,26 @@ class WP_PostRatings_Multisite_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * The switch stack is left balanced.
+	 * The blog stack is left unwound and the original site is current.
 	 *
-	 * Switching pushes onto a stack; restoring once after many switches leaves
-	 * it unwound by exactly one, and every later switch is then off by one
-	 * site.
+	 * Calling switch_to_blog() pushes onto a stack. Restoring once after the loop
+	 * rather than once per iteration leaves the stack short, so whatever runs next
+	 * operates against the last site visited instead of the one it thinks it is on.
 	 *
 	 * @return void
 	 */
-	public function test_network_activation_leaves_the_switch_stack_balanced() {
+	public function test_network_activation_unwinds_the_blog_stack() {
+		$original = get_current_blog_id();
 		global $wpdb;
 
 		$this->make_site();
 		$this->make_site();
 
-		$before = get_current_blog_id();
-		$depth  = count( $GLOBALS['_wp_switched_stack'] );
-
 		WP_PostRatings_Install::activate( true );
 
-		$this->assertSame( $before, get_current_blog_id(), 'activation left the wrong site current' );
-		$this->assertCount( $depth, $GLOBALS['_wp_switched_stack'], 'the switch stack was left unbalanced' );
-		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings, 'Network activation leaves the switch stack where it found it.' );
+		$this->assertFalse( ms_is_switched(), 'The blog stack was left switched.' );
+		$this->assertSame( $original, get_current_blog_id(), 'The original site is no longer current.' );
+		$this->assertSame( $wpdb->prefix . 'ratings', $wpdb->ratings, 'The table name no longer points at the current site.' );
 	}
 
 	/**
