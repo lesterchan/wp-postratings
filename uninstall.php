@@ -9,9 +9,7 @@
  * @package WP-PostRatings
  */
 
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
-}
+defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 require_once __DIR__ . '/includes/class-wp-postratings-options.php';
 require_once __DIR__ . '/includes/class-wp-postratings-settings.php';
