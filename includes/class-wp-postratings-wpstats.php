@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
 class WP_PostRatings_WPStats {
 
 	/**
-	 * Offer the section to WP-Stats.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */

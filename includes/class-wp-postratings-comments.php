@@ -23,7 +23,7 @@ class WP_PostRatings_Comments {
 	private static $ratings = array();
 
 	/**
-	 * Hook into the loop and the comment output.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */
