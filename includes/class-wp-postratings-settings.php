@@ -95,7 +95,7 @@ class WP_PostRatings_Settings {
 	 */
 	public static function capability( $context = 'settings' ) {
 		/**
-		 * Filters the capability required to manage the plugin.
+		 * Filters the capability required to reach a WP-PostRatings screen.
 		 *
 		 * @since 2.0.0
 		 *
@@ -118,13 +118,36 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * Register the settings.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */
 	public static function init() {
 		add_action( 'admin_init', array( __CLASS__, 'register' ) );
 		add_action( 'wp_ajax_wp_postratings_rating_fields', array( __CLASS__, 'ajax_rating_fields' ) );
+		add_filter(
+			'plugin_action_links_' . plugin_basename( WP_POSTRATINGS_MAIN_FILE ),
+			array( __CLASS__, 'action_links' )
+		);
+	}
+
+	/**
+	 * Add a Settings link on the Plugins screen row.
+	 *
+	 * @param string[] $links Existing action links.
+	 * @return string[]
+	 */
+	public static function action_links( $links ) {
+		array_unshift(
+			$links,
+			sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( add_query_arg( 'page', self::page(), admin_url( 'admin.php' ) ) ),
+				esc_html__( 'Settings', 'wp-postratings' )
+			)
+		);
+
+		return $links;
 	}
 
 	/**

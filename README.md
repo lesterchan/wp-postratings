@@ -477,6 +477,8 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Changelog
 ### 2.0.1
+* NEW: A Settings link on the plugin's row on the Plugins screen
+* CHANGED: A stylesheet named `wp-postratings.css` in the parent theme now overrides the plugin's copy too; a child theme's copy still wins over both
 * FIXED: The comment author ratings display, which is off unless a theme opts in, still cost its query: every page with a loop fetched every rating the displayed post had ever received, then threw them away. Sites that have not opted in no longer pay it — one query fewer on every page, and on a heavily rated post it was not a small one.
 * CHANGED: The stylesheet and script load only on pages that actually render a rating — from the template tags, the shortcode, the block, the widget, the statistics lists or the comment author display. Pages with no rating on them no longer carry either file; pages with one get both — in the head where the page's content already shows a rating coming, in the footer for the renders the head cannot see.
 * FIXED: Nothing unpublished could be rated by anybody, including the people who wrote it. 2.0.0 required a post to be publicly viewable before it would accept a rating — which stops a stranger rating your drafts, and was the point — but it never asked who was rating, so a site whose editors rate their own drafts, pending or private posts got `Invalid Post ID` on every vote. A post you can already read is now ratable whether or not the public can see it, and the message no longer blames the post ID, which is rarely what is wrong with it.

@@ -40,12 +40,12 @@ class WP_PostRatings {
 	private function __construct() {
 		$this->register_table();
 
-		// register_activation_hook() has to run at file load time, which is
-		// where WordPress requires it.
+		// Must be registered at file-load time, which is when this runs.
 		register_activation_hook( WP_POSTRATINGS_MAIN_FILE, array( 'WP_PostRatings_Install', 'activate' ) );
 
 		// Deliberately on init rather than admin_init. Activation does not fire
-		// on a plugin *update*, and an automatic background update runs on
+		// on a plugin update, which is the single most common reason a
+		// migration never runs -- and an automatic background update runs on
 		// cron, which is not an admin request: hooking this to the admin only
 		// would leave such a site serving its front end with default settings
 		// -- default templates, default scale -- while its real ones sat in the
@@ -270,7 +270,8 @@ class WP_PostRatings {
 	/**
 	 * URL of a stylesheet, preferring a copy shipped by the active theme.
 	 *
-	 * The theme may place it at the root or under css/.
+	 * A copy in the child theme wins, then one in the parent theme, then the
+	 * plugin's own. The theme may place it at the root or under css/.
 	 *
 	 * @param string $file Stylesheet file name.
 	 *
@@ -280,6 +281,10 @@ class WP_PostRatings {
 		foreach ( array( $file, 'css/' . $file ) as $candidate ) {
 			if ( file_exists( get_stylesheet_directory() . '/' . $candidate ) ) {
 				return get_stylesheet_directory_uri() . '/' . $candidate;
+			}
+
+			if ( file_exists( get_template_directory() . '/' . $candidate ) ) {
+				return get_template_directory_uri() . '/' . $candidate;
 			}
 		}
 
