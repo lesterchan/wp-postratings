@@ -79,8 +79,7 @@ class WP_PostRatings_Install {
 		}
 
 		// 'number' => 0 lifts WP_Site_Query's default cap of 100, which would
-		// otherwise leave the options and tables behind on every site past the
-		// hundredth while uninstall still reported success.
+		// otherwise skip every site past the hundredth while reporting success.
 		$site_ids = get_sites(
 			array(
 				'fields' => 'ids',
