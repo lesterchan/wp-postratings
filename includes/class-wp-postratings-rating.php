@@ -47,13 +47,13 @@ class WP_PostRatings_Rating {
 	);
 
 	/**
-	 * Hook the AJAX endpoints.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'wp_ajax_wp_postratings', array( __CLASS__, 'handle_vote' ) );
-		add_action( 'wp_ajax_nopriv_wp_postratings', array( __CLASS__, 'handle_vote' ) );
+		add_action( 'wp_ajax_wp_postratings', array( __CLASS__, 'ajax_vote' ) );
+		add_action( 'wp_ajax_nopriv_wp_postratings', array( __CLASS__, 'ajax_vote' ) );
 	}
 
 	/**
@@ -529,7 +529,7 @@ class WP_PostRatings_Rating {
 	 *
 	 * @return void
 	 */
-	public static function handle_vote() {
+	public static function ajax_vote() {
 		$rate    = isset( $_REQUEST['rate'] ) ? (int) $_REQUEST['rate'] : 0;
 		$post_id = isset( $_REQUEST['pid'] ) ? (int) $_REQUEST['pid'] : 0;
 
@@ -555,7 +555,7 @@ class WP_PostRatings_Rating {
 	/**
 	 * Apply a vote and build the response.
 	 *
-	 * Split out from handle_vote() so it can be driven from a test: the handler
+	 * Split out from ajax_vote() so it can be driven from a test: the handler
 	 * ends in exit(), which takes the runner with it.
 	 *
 	 * **Returns on success and throws on every refusal**, which is the same

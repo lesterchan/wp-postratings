@@ -27,13 +27,13 @@ class WP_PostRatings_Admin {
 	private static $table = null;
 
 	/**
-	 * Hook the admin.
+	 * Hook registration.
 	 *
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'scripts' ) );
+		add_action( 'admin_menu', array( __CLASS__, 'add_page' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
 
 		add_filter( 'manage_posts_columns', array( __CLASS__, 'column_title' ) );
 		add_filter( 'manage_pages_columns', array( __CLASS__, 'column_title' ) );
@@ -54,7 +54,7 @@ class WP_PostRatings_Admin {
 	 *
 	 * @return void
 	 */
-	public static function menu() {
+	public static function add_page() {
 		/*
 		 * Settings first, the log second.
 		 *
@@ -409,7 +409,7 @@ class WP_PostRatings_Admin {
 	 *
 	 * @return void
 	 */
-	public static function scripts( $hook_suffix ) {
+	public static function enqueue( $hook_suffix ) {
 		if ( ! in_array( $hook_suffix, self::screen_hooks(), true ) ) {
 			return;
 		}

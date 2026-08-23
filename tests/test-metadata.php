@@ -155,13 +155,13 @@ class WP_PostRatings_Metadata_Test extends Plugin_Metadata_TestCase {
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( $this->create_admin() );
 
-		WP_PostRatings_Admin::menu();
+		WP_PostRatings_Admin::add_page();
 
 		$hooks = WP_PostRatings_Admin::screen_hooks();
 
 		$this->assertNotEmpty( $hooks, 'The menu registered no screens to enqueue on.' );
 
-		WP_PostRatings_Admin::scripts( $hooks[0] );
+		WP_PostRatings_Admin::enqueue( $hooks[0] );
 	}
 
 	/**

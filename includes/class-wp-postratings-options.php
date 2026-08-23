@@ -500,13 +500,13 @@ class WP_PostRatings_Options {
 	 * runs it on every save. Templates are echoed verbatim by the template tags,
 	 * so they are sanitized on the way in rather than on the way out.
 	 *
-	 * @param mixed $options Submitted settings.
+	 * @param mixed $input Submitted settings.
 	 *
 	 * @return array
 	 */
-	public static function sanitize( $options ) {
-		if ( ! is_array( $options ) ) {
-			$options = array();
+	public static function sanitize( $input ) {
+		if ( ! is_array( $input ) ) {
+			$input = array();
 		}
 
 		$defaults = self::defaults();
@@ -517,12 +517,12 @@ class WP_PostRatings_Options {
 		// value rather than reverting to the default.
 		$clean = $current;
 
-		if ( isset( $options['shape'] ) ) {
+		if ( isset( $input['shape'] ) ) {
 			// The allow list is the shape registry the settings picker also reads
 			// from, so the screen cannot offer a shape the sanitizer rejects.
 			// A pre-2.0.0 image set name is accepted and mapped, so an install
 			// that has not migrated yet still saves correctly.
-			$shape = WP_PostRatings_Template::resolve_shape_strict( $options['shape'] );
+			$shape = WP_PostRatings_Template::resolve_shape_strict( $input['shape'] );
 
 			$clean['shape'] = '' !== $shape ? $shape : $current['shape'];
 		}
@@ -541,8 +541,8 @@ class WP_PostRatings_Options {
 			)
 		) ? 1 : 0;
 
-		if ( isset( $options['schema_type'] ) ) {
-			$type                 = (string) $options['schema_type'];
+		if ( isset( $input['schema_type'] ) ) {
+			$type                 = (string) $input['schema_type'];
 			$clean['schema_type'] = array_key_exists( $type, self::schema_types() ) ? $type : '';
 		}
 
@@ -573,7 +573,7 @@ class WP_PostRatings_Options {
 		$now = isset( $clean['shape'] ) ? $clean['shape'] : $was;
 
 		if ( WP_PostRatings_Shapes::is_updown( $was ) !== WP_PostRatings_Shapes::is_updown( $now )
-			&& ! self::table_fits_type( $options, $now ) ) {
+			&& ! self::table_fits_type( $input, $now ) ) {
 			$fresh = self::defaults_for_type( $now );
 
 			$clean['ratings'] = $fresh['ratings'];
@@ -596,53 +596,53 @@ class WP_PostRatings_Options {
 
 		if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $shape ) ) ) {
 			$clean['max'] = 2;
-		} elseif ( isset( $options['ratings']['text'] ) && is_array( $options['ratings']['text'] ) ) {
-			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), count( $options['ratings']['text'] ) ) );
-		} elseif ( isset( $options['max'] ) ) {
-			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), (int) $options['max'] ) );
+		} elseif ( isset( $input['ratings']['text'] ) && is_array( $input['ratings']['text'] ) ) {
+			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), count( $input['ratings']['text'] ) ) );
+		} elseif ( isset( $input['max'] ) ) {
+			$clean['max'] = max( self::MIN_SCALE, min( self::max_scale(), (int) $input['max'] ) );
 		}
 
-		if ( isset( $options['allowtorate'] ) ) {
-			$allowtorate          = (int) $options['allowtorate'];
+		if ( isset( $input['allowtorate'] ) ) {
+			$allowtorate          = (int) $input['allowtorate'];
 			$clean['allowtorate'] = in_array( $allowtorate, array( 0, 1, 2, 3 ), true ) ? $allowtorate : $defaults['allowtorate'];
 		}
 
-		if ( isset( $options['check_method'] ) ) {
-			$check_method          = (int) $options['check_method'];
+		if ( isset( $input['check_method'] ) ) {
+			$check_method          = (int) $input['check_method'];
 			$clean['check_method'] = in_array( $check_method, array( 0, 1, 2, 3, 4 ), true ) ? $check_method : $defaults['check_method'];
 		}
 
-		if ( isset( $options['ip_header'] ) ) {
+		if ( isset( $input['ip_header'] ) ) {
 			// A header name, not a value: anything outside the shape PHP uses
 			// for $_SERVER keys cannot match and is dropped.
-			$ip_header          = strtoupper( sanitize_text_field( trim( (string) $options['ip_header'] ) ) );
+			$ip_header          = strtoupper( sanitize_text_field( trim( (string) $input['ip_header'] ) ) );
 			$clean['ip_header'] = preg_match( '/^[A-Z0-9_]*$/', $ip_header ) ? $ip_header : '';
 		}
 
 		foreach ( array( 'stats_display' ) as $key ) {
-			if ( isset( $options[ $key ] ) ) {
-				$clean[ $key ] = empty( $options[ $key ] ) ? 0 : 1;
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 			}
 		}
 
-		if ( isset( $options['stats_most_limit'] ) ) {
-			$clean['stats_most_limit'] = max( 1, (int) $options['stats_most_limit'] );
+		if ( isset( $input['stats_most_limit'] ) ) {
+			$clean['stats_most_limit'] = max( 1, (int) $input['stats_most_limit'] );
 		}
 
-		if ( isset( $options['ratings'] ) && is_array( $options['ratings'] ) ) {
-			if ( isset( $options['ratings']['text'] ) && is_array( $options['ratings']['text'] ) ) {
+		if ( isset( $input['ratings'] ) && is_array( $input['ratings'] ) ) {
+			if ( isset( $input['ratings']['text'] ) && is_array( $input['ratings']['text'] ) ) {
 				$clean['ratings']['text'] = array_values(
 					array_map(
 						static function ( $text ) {
 							return wp_kses_post( trim( (string) $text ) );
 						},
-						$options['ratings']['text']
+						$input['ratings']['text']
 					)
 				);
 			}
 
-			if ( isset( $options['ratings']['value'] ) && is_array( $options['ratings']['value'] ) ) {
-				$clean['ratings']['value'] = array_values( array_map( 'intval', $options['ratings']['value'] ) );
+			if ( isset( $input['ratings']['value'] ) && is_array( $input['ratings']['value'] ) ) {
+				$clean['ratings']['value'] = array_values( array_map( 'intval', $input['ratings']['value'] ) );
 			}
 
 			/*
@@ -652,7 +652,7 @@ class WP_PostRatings_Options {
 			 * rendered has no value -- and still means "use the site-wide one".
 			 */
 			foreach ( array( 'color', 'color_off' ) as $key ) {
-				if ( ! isset( $options['ratings'][ $key ] ) || ! is_array( $options['ratings'][ $key ] ) ) {
+				if ( ! isset( $input['ratings'][ $key ] ) || ! is_array( $input['ratings'][ $key ] ) ) {
 					continue;
 				}
 
@@ -666,16 +666,16 @@ class WP_PostRatings_Options {
 
 							return null === $color ? '' : $color;
 						},
-						$options['ratings'][ $key ]
+						$input['ratings'][ $key ]
 					)
 				);
 			}
 		}
 
-		if ( isset( $options['templates'] ) && is_array( $options['templates'] ) ) {
+		if ( isset( $input['templates'] ) && is_array( $input['templates'] ) ) {
 			foreach ( $defaults['templates'] as $name => $default ) {
-				if ( isset( $options['templates'][ $name ] ) && ! is_array( $options['templates'][ $name ] ) ) {
-					$clean['templates'][ $name ] = wp_kses_post( trim( (string) $options['templates'][ $name ] ) );
+				if ( isset( $input['templates'][ $name ] ) && ! is_array( $input['templates'][ $name ] ) ) {
+					$clean['templates'][ $name ] = wp_kses_post( trim( (string) $input['templates'][ $name ] ) );
 				}
 			}
 		}

@@ -328,7 +328,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		// menu() is called directly, not through do_action( 'admin_menu' ):
 		// WP_PostRatings_Admin::init() is behind is_admin(), which is false under
 		// PHPUnit, so the action has nothing hooked to it here.
-		WP_PostRatings_Admin::menu();
+		WP_PostRatings_Admin::add_page();
 
 		$parent = WP_PostRatings_Settings::page();
 
@@ -371,7 +371,7 @@ class WP_PostRatings_Admin_Pages_Test extends WP_PostRatings_TestCase {
 		get_role( 'administrator' )->add_cap( WP_PostRatings_Settings::CAPABILITY );
 		wp_set_current_user( $user );
 
-		WP_PostRatings_Admin::menu();
+		WP_PostRatings_Admin::add_page();
 
 		$parent   = WP_PostRatings_Settings::page();
 		$expected = array( get_plugin_page_hookname( $parent, '' ) );

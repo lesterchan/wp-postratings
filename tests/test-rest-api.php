@@ -275,7 +275,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 	 * @return void
 	 */
 	public function test_the_ajax_endpoint_is_still_registered() {
-		$this->assertNotFalse( has_action( 'wp_ajax_wp_postratings', array( 'WP_PostRatings_Rating', 'handle_vote' ) ), 'The logged-in AJAX action survives the REST routes.' );
-		$this->assertNotFalse( has_action( 'wp_ajax_nopriv_wp_postratings', array( 'WP_PostRatings_Rating', 'handle_vote' ) ), 'And so does the logged-out one.' );
+		$this->assertNotFalse( has_action( 'wp_ajax_wp_postratings', array( 'WP_PostRatings_Rating', 'ajax_vote' ) ), 'The logged-in AJAX action survives the REST routes.' );
+		$this->assertNotFalse( has_action( 'wp_ajax_nopriv_wp_postratings', array( 'WP_PostRatings_Rating', 'ajax_vote' ) ), 'And so does the logged-out one.' );
 	}
 }
