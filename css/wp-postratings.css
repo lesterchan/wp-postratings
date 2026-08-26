@@ -114,9 +114,21 @@
 	font-style: normal;
 	font-size: calc( var( --wp-postratings-size, 20px ) * 0.85 );
 	font-weight: 600;
-	line-height: var( --wp-postratings-size, 20px );
 	font-variant-numeric: tabular-nums;
-	text-align: center;
+
+	/*
+	 * Centred as a box rather than placed on a baseline.
+	 *
+	 * A line box as tall as the cell lets the font's own ascent and descent
+	 * decide where the glyph lands, and digits have no descender -- so the room
+	 * kept for one sits unused below them and the row reads high. Centring the
+	 * line box instead is not perfect either, because what is centred is the box
+	 * and not the ink, but it is off by less and it stays that way when a theme
+	 * changes the font, which a hand-tuned nudge would not.
+	 */
+	display: grid;
+	place-items: center;
+	line-height: 1;
 }
 
 /* --- read-only display --------------------------------------------------- */
