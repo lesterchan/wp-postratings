@@ -351,13 +351,21 @@ test.describe( 'What a shape shows for a score', () => {
 			// No score, so no point on the scale carries any of it.
 			expect( await stepFills( page ) ).toEqual( { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } );
 
+			// Somewhere the pointer is not. configure() leaves it wherever it last
+			// clicked on the settings screen, and that position survives the
+			// navigation -- so without this the scale can be under it, and a test
+			// about the resting state reads a hover.
+			await page.mouse.move( 0, 0 );
+
 			// And every point reads unrated. A scale that opened already coloured
 			// would tell a visitor they had rated a post they had not.
-			const colors = await labelColors( page );
-
-			Object.values( colors ).forEach( ( color ) =>
-				expect( color ).toBe( rgb( COLORS.unrated ) ),
-			);
+			await expect.poll( () => labelColors( page ) ).toEqual( {
+				1: rgb( COLORS.unrated ),
+				2: rgb( COLORS.unrated ),
+				3: rgb( COLORS.unrated ),
+				4: rgb( COLORS.unrated ),
+				5: rgb( COLORS.unrated ),
+			} );
 		} );
 
 		test( `a rated ${ shape } scale opens showing the score so far`, async ( {
@@ -402,13 +410,21 @@ test.describe( 'What a shape shows for a score', () => {
 			 * backwards from the hovered label. Nothing but a browser can say
 			 * whether that works, and nothing in the suite asked until now.
 			 */
-			const colors = await labelColors( page );
-
-			[ 1, 2, 3 ].forEach( ( step ) =>
-				expect( colors[ step ] ).toBe( rgb( COLORS.rated ) ),
-			);
-
-			[ 4, 5 ].forEach( ( step ) => expect( colors[ step ] ).toBe( rgb( COLORS.unrated ) ) );
+			/*
+			 * Polled, because the colour is transitioned and not switched.
+			 *
+			 * The stylesheet eases it over 120ms, so reading straight after the
+			 * pointer lands catches a blend on its way -- and a blend is a real
+			 * colour that equals neither end, so the assertion fails on a control
+			 * that is working. What is being asserted is where it arrives.
+			 */
+			await expect.poll( () => labelColors( page ) ).toEqual( {
+				1: rgb( COLORS.rated ),
+				2: rgb( COLORS.rated ),
+				3: rgb( COLORS.rated ),
+				4: rgb( COLORS.unrated ),
+				5: rgb( COLORS.unrated ),
+			} );
 		} );
 	}
 
@@ -599,19 +615,25 @@ test.describe( 'What a shape shows for a score', () => {
 
 		const colorOf = ( button ) => button.evaluate( ( el ) => getComputedStyle( el ).color );
 
+		// The pointer is wherever the settings screen left it, which can be over
+		// one of these buttons once the post has loaded.
+		await page.mouse.move( 0, 0 );
+
 		// Neither side is chosen until the pointer says so, so both rest unrated.
-		expect( await colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
-		expect( await colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+		// Polled throughout: these colours are eased over 120ms, so every reading
+		// taken the instant the pointer moves is of a blend on its way somewhere.
+		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
+		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
 
 		// And each takes its own colour rather than the pair taking one: two
 		// opposing actions read green and red, which is the case per-step colours
 		// exist for.
 		await up.hover();
-		expect( await colorOf( up ) ).toBe( rgb( COLORS.up ) );
-		expect( await colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.up ) );
+		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
 
 		await down.hover();
-		expect( await colorOf( down ) ).toBe( rgb( COLORS.down ) );
-		expect( await colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
+		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.down ) );
+		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
 	} );
 } );
