@@ -17,7 +17,20 @@
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 
-const { ALLOW, CHECK, configure, createRatedPost, uniqueTitle } = require( './helpers.js' );
+const {
+	ALLOW,
+	CHECK,
+	COLORS,
+	configure,
+	createRatedPost,
+	rgb,
+	stepFills,
+	uniqueTitle,
+	wpEval,
+} = require( './helpers.js' );
+
+/** The two scale families, which differ in how a point is drawn and in nothing else. */
+const SCALES = [ 'star', 'number' ];
 
 /**
  * Publish a post showing the rating read-only.
@@ -79,6 +92,82 @@ async function glyphText( page, scope ) {
 				item.textContent.trim(),
 			),
 		);
+}
+
+/**
+ * The colour each step of a scale is currently drawn in.
+ *
+ * Read from the label rather than from the glyph inside it, because the label is
+ * where the state lives for every scale shape: a mask takes its colour from
+ * there through currentColor, and a numeric cell takes both its digit and its
+ * tint from there. One reading therefore covers both families.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the control.
+ * @return {Promise<Object>} Step number to computed colour.
+ */
+function labelColors( page ) {
+	return page
+		.locator( '.wp-postratings-scale' )
+		.first()
+		.evaluate( ( el ) => {
+			const colors = {};
+
+			el.querySelectorAll( 'label[for]' ).forEach( ( label ) => {
+				const step = Number( label.getAttribute( 'for' ).split( '-' ).pop() );
+
+				colors[ step ] = getComputedStyle( label ).color;
+			} );
+
+			return colors;
+		} );
+}
+
+/**
+ * Put the pointer on one point of a scale and leave it there.
+ *
+ * @param {import('@playwright/test').Page} page   Page showing the control.
+ * @param {number}                          postId Post being rated.
+ * @param {number}                          step   Which point to hover.
+ * @return {Promise<void>} Resolves once the pointer has landed.
+ */
+async function hoverStep( page, postId, step ) {
+	await page.locator( `label[for="wp-postratings-${ postId }-${ step }"]` ).hover();
+}
+
+/**
+ * Give a post a score without going through the control.
+ *
+ * @param {number} postId  Post to seed.
+ * @param {number} users   Voter count.
+ * @param {number} score   Total score.
+ * @param {number} average Average.
+ * @return {void}
+ */
+function seedRating( postId, users, score, average ) {
+	wpEval(
+		`update_post_meta( ${ postId }, 'ratings_users', ${ users } );
+		update_post_meta( ${ postId }, 'ratings_score', ${ score } );
+		update_post_meta( ${ postId }, 'ratings_average', ${ average } );
+		echo '<<<seeded>>>';`,
+	);
+}
+
+/**
+ * How much of the read-only strip the browser actually painted, as a fraction.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the strip.
+ * @return {Promise<number>} The filled share of the bar, 0 to 1.
+ */
+function filledShare( page ) {
+	return page
+		.locator( '.wp-postratings-strip' )
+		.first()
+		.evaluate( ( el ) => {
+			const track = el.querySelector( '.wp-postratings-track .wp-postratings-row' );
+			const fill = el.querySelector( '.wp-postratings-fill' );
+
+			return fill.getBoundingClientRect().width / track.getBoundingClientRect().width;
+		} );
 }
 
 test.describe( 'The three shape families', () => {
@@ -227,5 +316,174 @@ test.describe( 'The three shape families', () => {
 		// the padding box while the track sits in the content box -- which draws
 		// one row of digits over another, offset, and nothing else would see it.
 		expect( geometry.fillStart ).toBeCloseTo( geometry.trackStart, 1 );
+	} );
+} );
+
+test.describe( 'What a shape shows for a score', () => {
+	test.beforeAll( async ( { requestUtils } ) => {
+		await requestUtils.deleteAllPosts();
+	} );
+
+	for ( const shape of SCALES ) {
+		test( `nothing is lit on an unrated ${ shape } scale`, async ( { page, requestUtils } ) => {
+			await configure( page, { shape, check: CHECK.never, allow: ALLOW.everyone } );
+
+			const post = await createRatedPost( requestUtils, uniqueTitle( `Unrated ${ shape }` ) );
+			await page.goto( post.link );
+
+			// No score, so no point on the scale carries any of it.
+			expect( await stepFills( page ) ).toEqual( { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } );
+
+			// And every point reads unrated. A scale that opened already coloured
+			// would tell a visitor they had rated a post they had not.
+			const colors = await labelColors( page );
+
+			Object.values( colors ).forEach( ( color ) =>
+				expect( color ).toBe( rgb( COLORS.unrated ) ),
+			);
+		} );
+
+		test( `a rated ${ shape } scale opens showing the score so far`, async ( {
+			page,
+			requestUtils,
+		} ) => {
+			await configure( page, { shape, check: CHECK.never, allow: ALLOW.everyone } );
+
+			const post = await createRatedPost( requestUtils, uniqueTitle( `Rated ${ shape }` ) );
+
+			seedRating( post.id, 2, 7, 3.5 );
+
+			await page.goto( post.link );
+
+			// 3.5 of 5: three points full, half of the fourth, nothing on the fifth.
+			// A numeric scale paints that share into the digit with background-clip
+			// rather than through a mask, so the two families reach it differently
+			// and both are asserted.
+			expect( await stepFills( page ) ).toEqual( { 1: 100, 2: 100, 3: 100, 4: 50, 5: 0 } );
+		} );
+
+		test( `hovering a ${ shape } scale lights that point and everything below`, async ( {
+			page,
+			requestUtils,
+		} ) => {
+			await configure( page, { shape, check: CHECK.never, allow: ALLOW.everyone } );
+
+			const post = await createRatedPost( requestUtils, uniqueTitle( `Hovered ${ shape }` ) );
+			await page.goto( post.link );
+
+			await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( {
+				timeout: 15_000,
+			} );
+
+			await hoverStep( page, post.id, 3 );
+
+			/*
+			 * Hovering is the one behaviour with no PHP behind it at all.
+			 *
+			 * Before 2.0.0 a script rewrote every image's src on mouseover; now the
+			 * row is laid out in reverse so a plain sibling combinator can reach
+			 * backwards from the hovered label. Nothing but a browser can say
+			 * whether that works, and nothing in the suite asked until now.
+			 */
+			const colors = await labelColors( page );
+
+			[ 1, 2, 3 ].forEach( ( step ) =>
+				expect( colors[ step ] ).toBe( rgb( COLORS.rated ) ),
+			);
+
+			[ 4, 5 ].forEach( ( step ) => expect( colors[ step ] ).toBe( rgb( COLORS.unrated ) ) );
+		} );
+	}
+
+	test( 'a hovered numeric point tints its whole cell, not just the digit', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, { shape: 'number', check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Hovered cell' ) );
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		await hoverStep( page, post.id, 3 );
+
+		// The cell is what carries a numeric point's state -- that is the whole
+		// difference between this shape and a mask one -- so the lit side of the
+		// boundary has to differ from the unlit side by more than the digit.
+		const cells = await page
+			.locator( '.wp-postratings-scale' )
+			.first()
+			.evaluate( ( el, id ) => {
+				const read = ( step ) =>
+					getComputedStyle(
+						el.querySelector( `label[for="wp-postratings-${ id }-${ step }"]` ),
+					).backgroundColor;
+
+				return { lit: read( 3 ), unlit: read( 4 ) };
+			}, post.id );
+
+		expect( cells.lit ).not.toBe( cells.unlit );
+		expect( cells.lit ).not.toBe( 'rgba(0, 0, 0, 0)' );
+	} );
+
+	for ( const shape of SCALES ) {
+		test( `the ${ shape } result strip fills in proportion to the score`, async ( {
+			page,
+			requestUtils,
+		} ) => {
+			await configure( page, { shape, check: CHECK.never, allow: ALLOW.everyone } );
+
+			const post = await createResultsPost( requestUtils, uniqueTitle( `Strip ${ shape }` ) );
+
+			await page.goto( post.link );
+
+			// Unrated: the fill layer is there and covers nothing.
+			expect( await filledShare( page ) ).toBeCloseTo( 0, 2 );
+
+			seedRating( post.id, 2, 7, 3.5 );
+			await page.reload();
+
+			// 3.5 of 5 is 70% of the bar, painted rather than rounded to the nearest
+			// half glyph the way the pre-2.0.0 image sets had to be.
+			expect( await filledShare( page ) ).toBeCloseTo( 0.7, 2 );
+		} );
+	}
+
+	test( 'an up or down button takes its own colour under the pointer', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, {
+			type: 'updown',
+			shape: 'thumb',
+			check: CHECK.never,
+			allow: ALLOW.everyone,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Hovered thumb' ) );
+		await page.goto( post.link );
+
+		const up = page.getByRole( 'button', { name: 'Vote Up' } );
+		const down = page.getByRole( 'button', { name: 'Vote Down' } );
+
+		await expect( up ).toBeVisible( { timeout: 15_000 } );
+
+		const colorOf = ( button ) => button.evaluate( ( el ) => getComputedStyle( el ).color );
+
+		// Neither side is chosen until the pointer says so, so both rest unrated.
+		expect( await colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
+		expect( await colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+
+		// And each takes its own colour rather than the pair taking one: two
+		// opposing actions read green and red, which is the case per-step colours
+		// exist for.
+		await up.hover();
+		expect( await colorOf( up ) ).toBe( rgb( COLORS.up ) );
+		expect( await colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+
+		await down.hover();
+		expect( await colorOf( down ) ).toBe( rgb( COLORS.down ) );
+		expect( await colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
 	} );
 } );

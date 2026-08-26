@@ -14,6 +14,7 @@ const {
 	configure,
 	createRatedPost,
 	saveSettings,
+	stepFills,
 	uniqueTitle,
 	wpEval,
 } = require( './helpers.js' );
@@ -111,54 +112,6 @@ async function glyphDirections( page ) {
 
 			return `unresolved:${ mask.slice( 0, 40 ) }`;
 		} );
-	} );
-}
-
-/**
- * How much of each step of the vote control the browser has actually filled.
- *
- * The other assertion PHP cannot make, and the one that matters most here: the
- * score is painted into each glyph by a gradient whose stop is a custom
- * property, so PHPUnit can only prove the property was written. Whether it turns
- * into paint on the right glyph depends on the stylesheet and on the theme around
- * it -- and the first version of this feature laid one strip over the whole row
- * instead, which passed every unit test and was visibly wrong on this very theme,
- * because a theme putting padding on a label moves that label's glyph without
- * moving anything the strip could see.
- *
- * Keyed by step rather than taken in document order: the row is laid out
- * reversed so a sibling combinator can reach backwards, so the fifth step comes
- * first in the markup.
- *
- * @param {import('@playwright/test').Page} page Page showing the control.
- * @return {Promise<Object>} Step number to filled percentage.
- */
-async function stepFills( page ) {
-	const scale = page.locator( '.wp-postratings-scale' ).first();
-
-	await expect( scale ).toBeVisible( { timeout: 15_000 } );
-
-	return scale.evaluate( ( el ) => {
-		const fills = {};
-
-		el.querySelectorAll( 'label[for]' ).forEach( ( label ) => {
-			const step = Number( label.getAttribute( 'for' ).split( '-' ).pop() );
-			const item = label.querySelector( '.wp-postratings-item' );
-
-			if ( ! item ) {
-				fills[ step ] = 'no glyph';
-				return;
-			}
-
-			// The gradient's two stops sit at the same percentage -- one colour up
-			// to it, the other from it -- so the first is the fill.
-			const painted = getComputedStyle( item ).backgroundImage;
-			const stop = painted.match( /([0-9.]+)%/ );
-
-			fills[ step ] = stop ? Number( stop[ 1 ] ) : `unpainted:${ painted }`;
-		} );
-
-		return fills;
 	} );
 }
 
