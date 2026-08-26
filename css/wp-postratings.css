@@ -131,6 +131,88 @@
 	line-height: 1;
 }
 
+/*
+ * The cells, and the rule around them.
+ *
+ * A row of digits with air between them reads as five separate numbers, and a
+ * scale is one thing -- so the cells sit flush and a rule closes the ends. The
+ * gap keeps its custom property and only changes default, rather than having a
+ * value forced on it: a site that sets one still gets it.
+ */
+.wp-postratings-numeric .wp-postratings-row,
+.wp-postratings-numeric.wp-postratings-vote {
+	gap: var( --wp-postratings-gap, 0 );
+}
+
+.wp-postratings-numeric.wp-postratings-strip,
+.wp-postratings-numeric.wp-postratings-scale {
+	border-inline: 1px solid var( --wp-postratings-color-off, #d4d4d8 );
+}
+
+/*
+ * The rules along the top and bottom are shadows, not a border, so the bar
+ * stays exactly --wp-postratings-size tall. A border all round adds two pixels
+ * to it and pushes every digit down by one.
+ *
+ * The ends are a border, because those two do widen the bar -- which is what a
+ * cap is for. Padding would not work: the fill layer is positioned against the
+ * padding box, so padding on the bar slides it out from under the track.
+ */
+.wp-postratings-numeric .wp-postratings-track,
+.wp-postratings-numeric .wp-postratings-fill,
+.wp-postratings-numeric.wp-postratings-scale label {
+	box-shadow:
+		inset 0 1px 0 var( --wp-postratings-color-off, #d4d4d8 ),
+		inset 0 -1px 0 var( --wp-postratings-color-off, #d4d4d8 );
+}
+
+/*
+ * Each cell takes a tint of the colour its own digit is drawn in, so a point's
+ * state is the block it sits in rather than the weight of one glyph.
+ *
+ * Derived from currentColor rather than declared, which is the whole point: the
+ * shape carries no palette of its own and follows the Rated and Not rated
+ * settings like every other shape. A browser without color-mix drops the tint
+ * and keeps the framed bar, which is the same design with less of it.
+ */
+.wp-postratings-numeric .wp-postratings-track .wp-postratings-item,
+.wp-postratings-numeric .wp-postratings-fill .wp-postratings-item {
+	background-color: color-mix( in srgb, currentColor 16%, transparent );
+}
+
+/*
+ * Voting, at rest.
+ *
+ * currentColor is the unrated colour on every label until something is hovered
+ * or chosen, so a tint taken from it would be flat and say nothing. The score
+ * so far is in --wp-postratings-step-fill instead -- the share of this step the
+ * average covers -- which puts the boundary inside a cell where it belongs.
+ */
+.wp-postratings-numeric.wp-postratings-scale label {
+	background-image: linear-gradient(
+		to right,
+		color-mix( in srgb, var( --wp-postratings-color-on, #f5a623 ) 16%, transparent ) var( --wp-postratings-step-fill, 0% ),
+		color-mix( in srgb, var( --wp-postratings-color-off, #d4d4d8 ) 16%, transparent ) var( --wp-postratings-step-fill, 0% )
+	);
+}
+
+[dir="rtl"] .wp-postratings-numeric.wp-postratings-scale label {
+	background-image: linear-gradient(
+		to left,
+		color-mix( in srgb, var( --wp-postratings-color-on, #f5a623 ) 16%, transparent ) var( --wp-postratings-step-fill, 0% ),
+		color-mix( in srgb, var( --wp-postratings-color-off, #d4d4d8 ) 16%, transparent ) var( --wp-postratings-step-fill, 0% )
+	);
+}
+
+/* And once the pointer or a vote does say something, the cell follows its digit
+   again -- so the resting score underneath has to get out of the way. */
+.wp-postratings-numeric.wp-postratings-scale:hover label,
+.wp-postratings-numeric.wp-postratings-scale:focus-within label,
+.wp-postratings-numeric.wp-postratings-scale:has( input:checked ) label {
+	background-image: none;
+	background-color: color-mix( in srgb, currentColor 16%, transparent );
+}
+
 /* --- read-only display --------------------------------------------------- */
 
 .wp-postratings-strip {

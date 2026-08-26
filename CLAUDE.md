@@ -87,6 +87,14 @@ single-source-of-truth tidiness.
   `font-style`. And a numeric glyph is real text inside the `<label>`, so it
   joins the radio's accessible name unless it is `aria-hidden` — leave it
   exposed and every value announces itself twice, "3 3 Stars".
+* **Never put padding on a rating bar.** The numeric shape draws cells, so the
+  obvious way to space them off the ends is `padding-inline` on
+  `.wp-postratings-strip` — and that silently breaks the result display, because
+  `.wp-postratings-fill` is absolutely positioned and resolves against the
+  padding box while the track sits in the content box. The two rows come apart
+  by exactly the padding. The end caps are a border, which widens the bar the
+  way the caps are meant to; the top and bottom rules are inset shadows, which
+  do not, so the bar stays exactly `--wp-postratings-size` tall.
 * **The shape picker groups its rows by family, not by type.** The radios above
   it offer two choices, because there are two controls: one value out of N, or a
   pair of opposing actions. A shape's type is finer than that, so grouping the
