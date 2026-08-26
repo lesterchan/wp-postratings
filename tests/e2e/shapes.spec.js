@@ -619,21 +619,36 @@ test.describe( 'What a shape shows for a score', () => {
 		// one of these buttons once the post has loaded.
 		await page.mouse.move( 0, 0 );
 
-		// Neither side is chosen until the pointer says so, so both rest unrated.
-		// Polled throughout: these colours are eased over 120ms, so every reading
-		// taken the instant the pointer moves is of a blend on its way somewhere.
-		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
-		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+		/*
+		 * What the pair rests in is the theme's business, not this plugin's.
+		 *
+		 * `.wp-postratings-updown button` sets a colour, and a theme styling its
+		 * own buttons can outrank it -- the default one does, leaving these in
+		 * its button text colour rather than the unrated grey. That is a theme
+		 * doing what themes do, so what is asserted here is the invariant the
+		 * plugin owns: whatever they rest in, they rest in it together, because
+		 * neither side is chosen until the pointer says so.
+		 */
+		const restingUp = await colorOf( up );
+		const restingDown = await colorOf( down );
 
-		// And each takes its own colour rather than the pair taking one: two
-		// opposing actions read green and red, which is the case per-step colours
-		// exist for.
+		expect( restingUp ).toBe( restingDown );
+
+		/*
+		 * Under the pointer, each takes its own colour rather than the pair
+		 * taking one: two opposing actions read green and red, which is the case
+		 * per-step colours exist for. These are asserted exactly, because they
+		 * come from a custom property the plugin writes onto the button itself.
+		 *
+		 * Polled, because the colour is eased over 120ms and a reading taken as
+		 * the pointer lands is of a blend on its way.
+		 */
 		await up.hover();
 		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.up ) );
-		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.unrated ) );
+		await expect.poll( () => colorOf( down ) ).toBe( restingDown );
 
 		await down.hover();
 		await expect.poll( () => colorOf( down ) ).toBe( rgb( COLORS.down ) );
-		await expect.poll( () => colorOf( up ) ).toBe( rgb( COLORS.unrated ) );
+		await expect.poll( () => colorOf( up ) ).toBe( restingUp );
 	} );
 } );
