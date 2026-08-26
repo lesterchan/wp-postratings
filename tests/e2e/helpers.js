@@ -133,11 +133,11 @@ async function chooseShape( page, shape, steps ) {
 /**
  * Put the plugin into a known rating and save it.
  *
- * @param {import('@playwright/test').Page} page              Page under test.
- * @param {Object}                          settings          What to select.
- * @param {string}                          [settings.type]   'scale' or 'updown'.
- * @param {string}                          [settings.shape]  Shape name.
- * @param {number}                          [settings.steps]  Expected row count.
+ * @param {import('@playwright/test').Page} page                Page under test.
+ * @param {Object}                          settings            What to select.
+ * @param {string}                          [settings.type]     'scale' or 'updown'.
+ * @param {string}                          [settings.shape]    Shape name.
+ * @param {number}                          [settings.steps]    Expected row count.
  * @param {string}                          [settings.allow]    A value from ALLOW.
  * @param {string}                          [settings.check]    A value from CHECK.
  * @param {string}                          [settings.schema]   A schema.org type, or ''.

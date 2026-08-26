@@ -67,8 +67,11 @@ async function expectAverage( page, average ) {
 /**
  * A logged-out page on the same site.
  *
- * @param {import('@playwright/test').Browser} browser Playwright browser.
- * @param {string}                             url     Where to go.
+ * @param {import('@playwright/test').Browser} browser                Playwright browser.
+ * @param {string}                             url                    Where to go.
+ * @param {Object}                             [options]              How this visitor differs.
+ * @param {string}                             [options.address]      Address to arrive from.
+ * @param {Object}                             [options.storageState] Cookies to arrive carrying.
  * @return {Promise<Object>} The context and the page, for closing afterwards.
  */
 async function asGuest( browser, url, options = {} ) {
