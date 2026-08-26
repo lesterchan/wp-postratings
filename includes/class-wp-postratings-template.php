@@ -195,16 +195,17 @@ class WP_PostRatings_Template {
 	/**
 	 * One row of shapes.
 	 *
-	 * @param int    $count Number of shapes.
-	 * @param string $extra Extra style for each item.
+	 * @param int    $count    Number of shapes.
+	 * @param string $extra    Extra style for each item.
+	 * @param bool   $numbered Whether each shape is drawn as its own position.
 	 *
 	 * @return string
 	 */
-	private static function row( $count, $extra = '', $numeric = false ) {
+	private static function row( $count, $extra = '', $numbered = false ) {
 		$style = '' !== $extra ? ' style="' . esc_attr( $extra ) . '"' : '';
 		$count = max( 0, (int) $count );
 
-		if ( ! $numeric ) {
+		if ( ! $numbered ) {
 			$item = '<i class="wp-postratings-item"' . $style . '></i>';
 
 			return '<span class="wp-postratings-row">' . str_repeat( $item, $count ) . '</span>';
@@ -467,14 +468,14 @@ class WP_PostRatings_Template {
 	 */
 	private static function strip( $shape, $steps, $style, $image_alt ) {
 		$item_style = '';
-		$numeric    = WP_PostRatings_Shapes::is_numeric_shape( $shape );
+		$numbered   = WP_PostRatings_Shapes::is_numeric_shape( $shape );
 
 		$html  = '<span class="wp-postratings-strip ' . esc_attr( self::shape_classes( $shape ) ) . '"';
 		$html .= ' style="' . esc_attr( $style ) . '"';
 		$html .= '' !== $image_alt ? ' role="img" aria-label="' . esc_attr( $image_alt ) . '"' : ' aria-hidden="true"';
 		$html .= '>';
-		$html .= '<span class="wp-postratings-track" aria-hidden="true">' . self::row( $steps, $item_style, $numeric ) . '</span>';
-		$html .= '<span class="wp-postratings-fill" aria-hidden="true">' . self::row( $steps, $item_style, $numeric ) . '</span>';
+		$html .= '<span class="wp-postratings-track" aria-hidden="true">' . self::row( $steps, $item_style, $numbered ) . '</span>';
+		$html .= '<span class="wp-postratings-fill" aria-hidden="true">' . self::row( $steps, $item_style, $numbered ) . '</span>';
 		$html .= '</span>';
 
 		return $html;
@@ -654,6 +655,7 @@ class WP_PostRatings_Template {
 			$html .= '<label for="' . esc_attr( $id ) . '"';
 			$html .= '' !== $label_style ? ' style="' . esc_attr( $label_style ) . '"' : '';
 			$html .= '>';
+
 			/*
 			 * The digit is hidden from assistive technology, and has to be.
 			 *

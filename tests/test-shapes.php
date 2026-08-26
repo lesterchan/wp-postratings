@@ -131,8 +131,8 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	/**
 	 * A numeric shape carries no mask, and says so rather than emitting an empty one.
 	 *
-	 * url() wrapped around an empty data URI is a parse error, and a browser
-	 * drops the whole declaration when it hits one -- silently, which is how an
+	 * An empty data URI wrapped in url() is a parse error, and a browser drops
+	 * the whole declaration when it hits one -- silently, which is how an
 	 * invisible rating gets shipped.
 	 *
 	 * @return void
