@@ -107,6 +107,16 @@ single-source-of-truth tidiness.
   `wp_postratings_schema_itemtype` still has the last word. Marking a blog post
   as a `Product` to collect stars is spammy structured markup and costs a manual
   action.
+* **A comment reaches `comment_text` as an argument, not as a global.** Comment
+  author ratings looked switched off on every block theme, for the whole of the
+  time block themes have been the default: the filter read
+  `$GLOBALS['comment']`, which a classic theme's comment loop sets and the
+  comment template block does not — it carries the comment as block context and
+  leaves the global empty. Take the comment from the filter's second argument
+  (so the hook has to be registered with `10, 2`) and pass it down to
+  `get_comment_type()`, `get_comment_author()` and `get_comment_author_IP()`,
+  each of which otherwise falls back to that same global. A unit test cannot see
+  this, because its comment loop is one the test set up by hand.
 * **`setcookie()` is guarded by `headers_sent()`.**
 * **Only the first valid address in the trusted proxy header is read.** Logs
   recorded through the old whole-chain behaviour no longer match, so a few

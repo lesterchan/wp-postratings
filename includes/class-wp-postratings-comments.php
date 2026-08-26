@@ -29,7 +29,7 @@ class WP_PostRatings_Comments {
 	 */
 	public static function init() {
 		add_action( 'loop_start', array( __CLASS__, 'collect' ) );
-		add_filter( 'comment_text', array( __CLASS__, 'append_to_comment' ) );
+		add_filter( 'comment_text', array( __CLASS__, 'append_to_comment' ), 10, 2 );
 	}
 
 	/**
@@ -92,11 +92,12 @@ class WP_PostRatings_Comments {
 	 * Looking it up with a raw address never matched, so this fallback had been
 	 * dead since ratings started being hashed.
 	 *
-	 * @param string $comment_author Author name.
+	 * @param string          $comment_author Author name.
+	 * @param WP_Comment|null $comment        Comment being displayed, or null for the current one.
 	 *
 	 * @return int
 	 */
-	public static function rating_for( $comment_author ) {
+	public static function rating_for( $comment_author, $comment = null ) {
 		$check_method = (int) WP_PostRatings_Options::get( 'check_method' );
 
 		$rating = isset( self::$ratings[ $comment_author ] ) ? (int) self::$ratings[ $comment_author ] : 0;
@@ -106,13 +107,16 @@ class WP_PostRatings_Comments {
 			return $rating;
 		}
 
-		// get_comment_author_IP() reads the current comment, so outside a
-		// comment loop there is nothing to read and it errors on PHP 8.
-		if ( empty( $GLOBALS['comment'] ) ) {
+		// get_comment_author_IP() falls back to the current comment, and outside
+		// a comment loop there is nothing to fall back to: it errors on PHP 8. A
+		// block theme never sets that global, so the comment is passed in.
+		$comment = $comment ? $comment : ( isset( $GLOBALS['comment'] ) ? $GLOBALS['comment'] : null );
+
+		if ( empty( $comment ) ) {
 			return 0;
 		}
 
-		$comment_author_ip = get_comment_author_IP();
+		$comment_author_ip = get_comment_author_IP( $comment );
 
 		if ( empty( $comment_author_ip ) ) {
 			return 0;
@@ -126,12 +130,13 @@ class WP_PostRatings_Comments {
 	/**
 	 * The rating images for a comment author.
 	 *
-	 * @param string $comment_author_specific Author name, or '' for the current comment.
+	 * @param string          $comment_author_specific Author name, or '' for the current comment.
+	 * @param WP_Comment|null $comment                 Comment being displayed, or null for the current one.
 	 *
 	 * @return string
 	 */
-	public static function author_ratings( $comment_author_specific = '' ) {
-		if ( 'comment' !== get_comment_type() ) {
+	public static function author_ratings( $comment_author_specific = '', $comment = null ) {
+		if ( 'comment' !== get_comment_type( $comment ) ) {
 			return '';
 		}
 
@@ -139,8 +144,8 @@ class WP_PostRatings_Comments {
 		$ratings_max    = (int) $options['max'];
 		$ratings_custom = (int) $options['customrating'];
 
-		$comment_author = '' !== $comment_author_specific ? $comment_author_specific : get_comment_author();
-		$rating         = self::rating_for( $comment_author );
+		$comment_author = '' !== $comment_author_specific ? $comment_author_specific : get_comment_author( $comment );
+		$rating         = self::rating_for( $comment_author, $comment );
 
 		if ( 0 === $rating ) {
 			return '';
@@ -163,24 +168,34 @@ class WP_PostRatings_Comments {
 	 *
 	 * Off unless a theme opts in through the filter.
 	 *
-	 * @param string $comment_text Comment markup.
+	 * **The comment comes from the filter, not from a global.** A classic theme
+	 * walks its comments with a loop that sets `$GLOBALS['comment']`; a block
+	 * theme renders each one through the comment-template block, which passes the
+	 * comment down as block context and never touches that global. Reading the
+	 * global was therefore reading nothing on every default theme since 2022, and
+	 * this returned the comment untouched -- the feature looked switched off. The
+	 * filter has passed the comment since 2.9, so take it from there and keep the
+	 * global as the fallback for anything calling this directly.
+	 *
+	 * @param string          $comment_text   Comment markup.
+	 * @param WP_Comment|null $comment_object Comment being displayed.
 	 *
 	 * @return string
 	 */
-	public static function append_to_comment( $comment_text ) {
-		global $comment;
-
+	public static function append_to_comment( $comment_text, $comment_object = null ) {
 		/** This filter is documented in includes/class-wp-postratings-comments.php */
 		if ( ! apply_filters( 'wp_postratings_display_comment_author_ratings', false ) ) {
 			return $comment_text;
 		}
 
-		if ( is_feed() || is_admin() || empty( $comment ) || 'comment' !== get_comment_type() ) {
+		$comment = $comment_object ? $comment_object : ( isset( $GLOBALS['comment'] ) ? $GLOBALS['comment'] : null );
+
+		if ( is_feed() || is_admin() || empty( $comment ) || 'comment' !== get_comment_type( $comment ) ) {
 			return $comment_text;
 		}
 
-		$images = self::author_ratings();
-		$author = get_comment_author();
+		$images = self::author_ratings( '', $comment );
+		$author = get_comment_author( $comment );
 
 		$output = '<div class="wp-postratings-comment-author">';
 
