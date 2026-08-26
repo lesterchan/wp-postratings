@@ -170,6 +170,38 @@ function seedRating( postId, users, score, average ) {
 }
 
 /**
+ * Which way every score gradient on a scale runs.
+ *
+ * Collected from the labels and the glyphs inside them, because the two scale
+ * families carry the gradient on different elements -- a mask shape paints it
+ * into the glyph, a numeric one also tints the cell around it -- and a rule that
+ * was flipped for one and forgotten for the other is exactly what this is for.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the control.
+ * @return {Promise<string[]>} The distinct directions found, sorted.
+ */
+function fillDirections( page ) {
+	return page
+		.locator( '.wp-postratings-scale' )
+		.first()
+		.evaluate( ( el ) => {
+			const directions = new Set();
+
+			el.querySelectorAll( 'label, label .wp-postratings-item' ).forEach( ( node ) => {
+				const found = getComputedStyle( node ).backgroundImage.match(
+					/linear-gradient\((to [a-z]+)/,
+				);
+
+				if ( found ) {
+					directions.add( found[ 1 ] );
+				}
+			} );
+
+			return [ ...directions ].sort();
+		} );
+}
+
+/**
  * How much of the read-only strip the browser actually painted, as a fraction.
  *
  * @param {import('@playwright/test').Page} page Page showing the strip.
@@ -480,6 +512,43 @@ test.describe( 'What a shape shows for a score', () => {
 			// 3.5 of 5 is 70% of the bar, painted rather than rounded to the nearest
 			// half glyph the way the pre-2.0.0 image sets had to be.
 			expect( await filledShare( page ) ).toBeCloseTo( 0.7, 2 );
+		} );
+	}
+
+	for ( const shape of SCALES ) {
+		test( `a ${ shape } scale fills from the other end when the page is right to left`, async ( {
+			page,
+			requestUtils,
+		} ) => {
+			await configure( page, { shape, check: CHECK.never, allow: ALLOW.everyone } );
+
+			const post = await createRatedPost( requestUtils, uniqueTitle( `Reversed ${ shape }` ) );
+
+			seedRating( post.id, 2, 7, 3.5 );
+
+			await page.goto( post.link );
+
+			await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( {
+				timeout: 15_000,
+			} );
+
+			expect( await fillDirections( page ) ).toEqual( [ 'to right' ] );
+
+			/*
+			 * WordPress puts dir="rtl" on the html element through
+			 * language_attributes() when the site's language reads that way, and
+			 * the stylesheet keys off that attribute -- so setting it asks the
+			 * same question without installing a language pack.
+			 *
+			 * Every gradient is collected rather than one, because the direction
+			 * is written out per rule: the score is painted into the glyph for a
+			 * mask shape and into the cell as well for a numeric one, and a rule
+			 * flipped for one family and forgotten for the other reads correctly
+			 * in the stylesheet and wrong on the page.
+			 */
+			await page.evaluate( () => document.documentElement.setAttribute( 'dir', 'rtl' ) );
+
+			await expect.poll( () => fillDirections( page ) ).toEqual( [ 'to left' ] );
 		} );
 	}
 

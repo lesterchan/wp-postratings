@@ -313,6 +313,75 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
 	} );
 
+	test( 'a second vote sent while the first is in flight is refused, not queued', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Rated twice at once' ) );
+
+		// Hold the vote open, so there is a moment during which a second one can
+		// be sent. Nothing else about the request is changed.
+		let release;
+		const held = new Promise( ( resolve ) => {
+			release = resolve;
+		} );
+
+		let sent = 0;
+
+		await page.route( '**/admin-ajax.php', async ( route ) => {
+			if ( ( route.request().postData() || '' ).includes( 'action=wp_postratings' ) ) {
+				sent++;
+				await held;
+			}
+
+			await route.continue();
+		} );
+
+		const warned = [];
+
+		page.on( 'dialog', ( dialog ) => {
+			warned.push( dialog.message() );
+			dialog.dismiss();
+		} );
+
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		/*
+		 * Sent from the keyboard, and it has to be.
+		 *
+		 * The stylesheet puts pointer-events: none on the control while it is
+		 * busy, so a second *click* never reaches a label -- the guard in the
+		 * script is what catches everything else, and a keyboard is the
+		 * everything else: arrow keys move between the values whatever the
+		 * pointer is allowed to do.
+		 */
+		await page.locator( `#wp-postratings-${ post.id }-5` ).focus();
+		await page.keyboard.press( 'ArrowDown' );
+
+		// The region says it is updating, which is the half of this that a screen
+		// reader hears rather than sees.
+		await expect( page.locator( `#wp-postratings-${ post.id }` ) ).toHaveAttribute(
+			'aria-busy',
+			'true',
+		);
+
+		await page.keyboard.press( 'ArrowDown' );
+
+		// Warned rather than queued: a second vote is not sent and not stored up
+		// to be sent later.
+		await expect.poll( () => warned.length ).toBe( 1 );
+
+		release();
+
+		await expectAverage( page, '4.00' );
+
+		expect( sent ).toBe( 1 );
+	} );
+
 	test( 'two ratings on one page are rated independently', async ( { page, requestUtils } ) => {
 		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
 
