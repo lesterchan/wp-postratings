@@ -261,6 +261,38 @@ class WP_PostRatings_Comments_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
+	 * A block theme hands the comment to the filter rather than to a global.
+	 *
+	 * The comment-template block passes each comment down as block context and
+	 * never sets $GLOBALS['comment'], so a filter reading that global read
+	 * nothing on any block theme and handed the comment body straight back --
+	 * the feature looked switched off. The `comment_text` filter has passed the
+	 * comment itself since 2.9, which is where it comes from now.
+	 *
+	 * Driven through apply_filters() rather than by calling the method, because
+	 * half of what this asserts is that the hook was registered asking for the
+	 * second argument at all.
+	 *
+	 * @return void
+	 */
+	public function test_a_comment_reaches_the_filter_without_the_global() {
+		$this->log_rating( $this->post_id, 4, 'Alice' );
+		$this->enter_loop( $this->post_id );
+		$this->enter_comment( 'Alice' );
+
+		$comment = $GLOBALS['comment'];
+
+		unset( $GLOBALS['comment'] );
+
+		$html = apply_filters( 'comment_text', 'Body.', $comment, array() );
+
+		$GLOBALS['comment'] = $comment;
+
+		$this->assertStringContainsString( 'wp-postratings-comment-author', $html, 'The strip is appended from the comment the filter passed.' );
+		$this->assertStringContainsString( 'Alice gives a rating of 4', $html, 'And it is the rating that author gave.' );
+	}
+
+	/**
 	 * A commenter's name is escaped in the appended markup.
 	 *
 	 * @return void

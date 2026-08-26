@@ -14,9 +14,20 @@ const {
 	configure,
 	createRatedPost,
 	saveSettings,
+	stepFills,
 	uniqueTitle,
 	wpEval,
 } = require( './helpers.js' );
+
+/**
+ * The $_SERVER key the proxy tests ask the settings screen to trust.
+ *
+ * Playwright sets the header, PHP exposes it under this name, and the plugin
+ * reads whichever key the site named -- so the three have to agree.
+ *
+ * @type {string}
+ */
+const PROXY_HEADER = 'HTTP_X_FORWARDED_FOR';
 
 /**
  * Click a point on the scale.
@@ -56,17 +67,39 @@ async function expectAverage( page, average ) {
 /**
  * A logged-out page on the same site.
  *
- * @param {import('@playwright/test').Browser} browser Playwright browser.
- * @param {string}                             url     Where to go.
+ * @param {import('@playwright/test').Browser} browser                Playwright browser.
+ * @param {string}                             url                    Where to go.
+ * @param {Object}                             [options]              How this visitor differs.
+ * @param {string}                             [options.address]      Address to arrive from.
+ * @param {Object}                             [options.storageState] Cookies to arrive carrying.
  * @return {Promise<Object>} The context and the page, for closing afterwards.
  */
-async function asGuest( browser, url ) {
-	const context = await browser.newContext( { storageState: undefined } );
+async function asGuest( browser, url, options = {} ) {
+	const { address, storageState } = options;
+
+	const context = await browser.newContext( {
+		storageState,
+		// The header the settings screen has been told to trust. Two contexts
+		// otherwise arrive from one address -- the container's -- so this is the
+		// only way to ask what the plugin does with two different visitors.
+		...( address ? { extraHTTPHeaders: { 'X-Forwarded-For': address } } : {} ),
+	} );
+
 	const page = await context.newPage();
 
 	await page.goto( url );
 
 	return { context, page };
+}
+
+/**
+ * Whether the visitor looking at this page is being offered the control.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the post.
+ * @return {Promise<boolean>} Whether a vote is on offer.
+ */
+async function canRate( page ) {
+	return ( await page.locator( '.wp-postratings-vote' ).count() ) > 0;
 }
 
 /**
@@ -111,54 +144,6 @@ async function glyphDirections( page ) {
 
 			return `unresolved:${ mask.slice( 0, 40 ) }`;
 		} );
-	} );
-}
-
-/**
- * How much of each step of the vote control the browser has actually filled.
- *
- * The other assertion PHP cannot make, and the one that matters most here: the
- * score is painted into each glyph by a gradient whose stop is a custom
- * property, so PHPUnit can only prove the property was written. Whether it turns
- * into paint on the right glyph depends on the stylesheet and on the theme around
- * it -- and the first version of this feature laid one strip over the whole row
- * instead, which passed every unit test and was visibly wrong on this very theme,
- * because a theme putting padding on a label moves that label's glyph without
- * moving anything the strip could see.
- *
- * Keyed by step rather than taken in document order: the row is laid out
- * reversed so a sibling combinator can reach backwards, so the fifth step comes
- * first in the markup.
- *
- * @param {import('@playwright/test').Page} page Page showing the control.
- * @return {Promise<Object>} Step number to filled percentage.
- */
-async function stepFills( page ) {
-	const scale = page.locator( '.wp-postratings-scale' ).first();
-
-	await expect( scale ).toBeVisible( { timeout: 15_000 } );
-
-	return scale.evaluate( ( el ) => {
-		const fills = {};
-
-		el.querySelectorAll( 'label[for]' ).forEach( ( label ) => {
-			const step = Number( label.getAttribute( 'for' ).split( '-' ).pop() );
-			const item = label.querySelector( '.wp-postratings-item' );
-
-			if ( ! item ) {
-				fills[ step ] = 'no glyph';
-				return;
-			}
-
-			// The gradient's two stops sit at the same percentage -- one colour up
-			// to it, the other from it -- so the first is the fill.
-			const painted = getComputedStyle( item ).backgroundImage;
-			const stop = painted.match( /([0-9.]+)%/ );
-
-			fills[ step ] = stop ? Number( stop[ 1 ] ) : `unpainted:${ painted }`;
-		} );
-
-		return fills;
 	} );
 }
 
@@ -300,6 +285,140 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-postratings' ) ).toContainText( '2' );
 	} );
 
+	test( 'a scale can be rated from the keyboard', async ( { page, requestUtils } ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Rated without a mouse' ) );
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		/*
+		 * The reason the control is a radio group at all.
+		 *
+		 * Before 2.0.0 each point was an image carrying role="button" and an
+		 * inline onclick, which a screen reader read as five unrelated buttons
+		 * and a keyboard could not work at once. Now the browser's own radio
+		 * behaviour moves between the values, and the script listens for
+		 * "change" rather than a click so that arrowing onto a value votes for
+		 * it -- a claim the code makes in a comment and nothing checked.
+		 *
+		 * The row is emitted highest first, so the arrow that moves forward
+		 * through the markup moves down through the scale.
+		 */
+		await page.locator( `#wp-postratings-${ post.id }-5` ).focus();
+		await page.keyboard.press( 'ArrowDown' );
+
+		await expectAverage( page, '4.00' );
+		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+	} );
+
+	test( 'a second vote sent while the first is in flight is refused, not queued', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Rated twice at once' ) );
+
+		// Hold the vote open, so there is a moment during which a second one can
+		// be sent. Nothing else about the request is changed.
+		let release;
+		const held = new Promise( ( resolve ) => {
+			release = resolve;
+		} );
+
+		let sent = 0;
+
+		await page.route( '**/admin-ajax.php', async ( route ) => {
+			if ( ( route.request().postData() || '' ).includes( 'action=wp_postratings' ) ) {
+				sent++;
+				await held;
+			}
+
+			await route.continue();
+		} );
+
+		const warned = [];
+
+		page.on( 'dialog', ( dialog ) => {
+			warned.push( dialog.message() );
+			dialog.dismiss();
+		} );
+
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		/*
+		 * Sent from the keyboard, and it has to be.
+		 *
+		 * The stylesheet puts pointer-events: none on the control while it is
+		 * busy, so a second *click* never reaches a label -- the guard in the
+		 * script is what catches everything else, and a keyboard is the
+		 * everything else: arrow keys move between the values whatever the
+		 * pointer is allowed to do.
+		 */
+		await page.locator( `#wp-postratings-${ post.id }-5` ).focus();
+		await page.keyboard.press( 'ArrowDown' );
+
+		// The region says it is updating, which is the half of this that a screen
+		// reader hears rather than sees.
+		await expect( page.locator( `#wp-postratings-${ post.id }` ) ).toHaveAttribute(
+			'aria-busy',
+			'true',
+		);
+
+		await page.keyboard.press( 'ArrowDown' );
+
+		// Warned rather than queued: a second vote is not sent and not stored up
+		// to be sent later.
+		await expect.poll( () => warned.length ).toBe( 1 );
+
+		release();
+
+		await expectAverage( page, '4.00' );
+
+		expect( sent ).toBe( 1 );
+	} );
+
+	test( 'two ratings on one page are rated independently', async ( { page, requestUtils } ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const first = await createRatedPost( requestUtils, uniqueTitle( 'The one being rated' ) );
+		const second = await createRatedPost( requestUtils, uniqueTitle( 'The one left alone' ) );
+
+		// One page carrying both, which is what an archive or a "highest rated"
+		// list is. The script keeps no per-control state -- one delegated
+		// listener on the document covers every rating on the page -- so the
+		// thing worth checking is that it tells them apart.
+		const host = await requestUtils.createPost( {
+			title: uniqueTitle( 'Two ratings' ),
+			content: `[ratings id="${ first.id }"]<hr />[ratings id="${ second.id }"]`,
+			status: 'publish',
+		} );
+
+		await page.goto( host.link );
+
+		const one = page.locator( `#wp-postratings-${ first.id }` );
+		const other = page.locator( `#wp-postratings-${ second.id }` );
+
+		await expect( one.locator( '.wp-postratings-vote' ) ).toBeVisible( { timeout: 15_000 } );
+		await expect( other.locator( '.wp-postratings-vote' ) ).toBeVisible();
+
+		await page.locator( `label[for="wp-postratings-${ first.id }-4"]` ).click();
+
+		// The one that was clicked is replaced by its result...
+		await expect( one.getByRole( 'img', { name: /average: 4\.00/ } ) ).toBeVisible( {
+			timeout: 15_000,
+		} );
+		await expect( one.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+
+		// ...and the other is untouched, still offering a vote nobody has cast.
+		await expect( other.locator( '.wp-postratings-vote' ) ).toBeVisible();
+		await expect( other.getByRole( 'img', { name: /average/ } ) ).toHaveCount( 0 );
+	} );
+
 	test( 'Do Not Check lets the same visitor rate twice', async ( { page, requestUtils } ) => {
 		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
 
@@ -422,6 +541,107 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-list-table tbody tr', { hasText: title } ) ).toHaveCount(
 			1,
 		);
+	} );
+
+	test( 'Check By Cookie And IP catches a repeat by the address alone', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		// The default, and until now the one setting with no test of its own.
+		await configure( page, {
+			check: CHECK.cookieAndIp,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per either' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+		await first.context.close();
+
+		// A browser with no cookie at all, arriving from the address that voted.
+		// Only the address half can catch this one.
+		const second = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		expect( await canRate( second.page ) ).toBe( false );
+		await second.context.close();
+	} );
+
+	test( 'Check By Cookie And IP catches a repeat by the cookie alone', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, {
+			check: CHECK.cookieAndIp,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per cookie' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+
+		const voted = await first.context.storageState();
+		await first.context.close();
+
+		// The same visitor's cookie carried to a different address. The address
+		// half cannot catch this, so a refusal here is the cookie's doing.
+		const moved = await asGuest( browser, post.link, {
+			address: '203.0.113.20',
+			storageState: voted,
+		} );
+		expect( await canRate( moved.page ) ).toBe( false );
+		await moved.context.close();
+
+		// And the control that makes that reading honest: the same new address
+		// without the cookie is still offered a vote, so it was the cookie that
+		// refused the one above and not the address.
+		const stranger = await asGuest( browser, post.link, { address: '203.0.113.20' } );
+		expect( await canRate( stranger.page ) ).toBe( true );
+		await stranger.context.close();
+	} );
+
+	test( 'the trusted proxy header decides which address a vote is matched against', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		// Checking by address alone, so nothing but the address can refuse.
+		await configure( page, {
+			check: CHECK.ip,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per real address' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+		await first.context.close();
+
+		/*
+		 * Two visitors the container cannot tell apart.
+		 *
+		 * Every context here arrives from one address, so without the header this
+		 * second visitor is the first one and gets refused -- which is exactly
+		 * what the test above this asserts when no header is trusted. Being
+		 * offered a vote is therefore proof the header was read and believed.
+		 */
+		const elsewhere = await asGuest( browser, post.link, { address: '203.0.113.20' } );
+		expect( await canRate( elsewhere.page ) ).toBe( true );
+		await elsewhere.context.close();
+
+		// And the address it names is matched, not merely read: the first
+		// visitor's address is refused a second time.
+		const again = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		expect( await canRate( again.page ) ).toBe( false );
+		await again.context.close();
 	} );
 
 	test( 'Check By IP refuses a second vote from another browser', async ( {

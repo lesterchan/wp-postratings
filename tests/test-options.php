@@ -831,11 +831,16 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 	 * what makes that derivation total: a shape registered through
 	 * wp_postratings_shapes without a type would otherwise silently become a
 	 * scale.
+	 *
+	 * Asked of the family rather than of the type, because there are three types
+	 * and two controls -- a numeric scale is a scale that draws its positions as
+	 * digits. A shape whose family is neither is one the settings screen has no
+	 * radio for, which is the failure this guards.
 	 */
 	public function test_every_shape_has_a_rating_type() {
 		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
 			$this->assertContains(
-				$shape['type'],
+				WP_PostRatings_Shapes::family( $name ),
 				array( WP_PostRatings_Shapes::SCALE, WP_PostRatings_Shapes::UPDOWN ),
 				$name . ' has no rating type'
 			);

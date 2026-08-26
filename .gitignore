@@ -4,8 +4,11 @@ node_modules/
 .phpunit.result.cache
 .wp-env.override.json
 
-# Playwright traces and screenshots from a failing run.
+# Playwright traces and screenshots from a failing run. The configured output
+# directory is the first; the second is where Playwright puts them when it is
+# run with any other config, which is how two of them once reached a commit.
 artifacts/
+test-results/
 
 # Compiled block sources. Generated from src/ by bin/build, which the deploy
 # runs before it copies anything -- so this being absent from a fresh clone is

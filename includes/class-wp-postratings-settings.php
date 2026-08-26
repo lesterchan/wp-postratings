@@ -365,9 +365,7 @@ class WP_PostRatings_Settings {
 		 * actions, and two places holding one fact is how they end up
 		 * disagreeing.
 		 */
-		$current_type = WP_PostRatings_Shapes::is_updown( $selected )
-			? WP_PostRatings_Shapes::UPDOWN
-			: WP_PostRatings_Shapes::SCALE;
+		$current_type = WP_PostRatings_Shapes::family( $selected );
 
 		echo '<p class="wp-postratings-type-choice">';
 
@@ -390,12 +388,17 @@ class WP_PostRatings_Settings {
 		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
 			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
 
+			// The family the row belongs to, not the shape's own type: grouping by
+			// the type puts a numeric scale in a group no radio names, and the
+			// picker then hides it permanently.
+			$family = WP_PostRatings_Shapes::family( $name );
+
 			// Wrapped in .wp-postratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
 			printf(
 				'<p class="wp-postratings-shape-row" data-rating-type="%1$s"%2$s>',
-				esc_attr( $shape['type'] ),
-				$shape['type'] === $current_type ? '' : ' hidden'
+				esc_attr( $family ),
+				$family === $current_type ? '' : ' hidden'
 			);
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />',

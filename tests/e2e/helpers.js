@@ -133,14 +133,15 @@ async function chooseShape( page, shape, steps ) {
 /**
  * Put the plugin into a known rating and save it.
  *
- * @param {import('@playwright/test').Page} page              Page under test.
- * @param {Object}                          settings          What to select.
- * @param {string}                          [settings.type]   'scale' or 'updown'.
- * @param {string}                          [settings.shape]  Shape name.
- * @param {number}                          [settings.steps]  Expected row count.
- * @param {string}                          [settings.allow]  A value from ALLOW.
- * @param {string}                          [settings.check]  A value from CHECK.
- * @param {string}                          [settings.schema] A schema.org type, or ''.
+ * @param {import('@playwright/test').Page} page                Page under test.
+ * @param {Object}                          settings            What to select.
+ * @param {string}                          [settings.type]     'scale' or 'updown'.
+ * @param {string}                          [settings.shape]    Shape name.
+ * @param {number}                          [settings.steps]    Expected row count.
+ * @param {string}                          [settings.allow]    A value from ALLOW.
+ * @param {string}                          [settings.check]    A value from CHECK.
+ * @param {string}                          [settings.schema]   A schema.org type, or ''.
+ * @param {string}                          [settings.ipHeader] A $_SERVER key to trust, or ''.
  * @return {Promise<void>} Resolves once the settings are saved.
  */
 async function configure( page, settings = {} ) {
@@ -151,6 +152,7 @@ async function configure( page, settings = {} ) {
 		allow = ALLOW.everyone,
 		check = CHECK.never,
 		schema = '',
+		ipHeader = '',
 	} = settings;
 
 	await openSettings( page );
@@ -161,6 +163,11 @@ async function configure( page, settings = {} ) {
 	await page.locator( '#wp_postratings_allowtorate' ).selectOption( allow );
 	await page.locator( '#wp_postratings_check_method' ).selectOption( check );
 	await page.locator( '#wp_postratings_schema_type' ).selectOption( schema );
+
+	// Written on every call, empty included. It decides which address a vote is
+	// matched against, so a test that set one and did not clear it would keep
+	// deciding that for every test after it.
+	await page.locator( '#wp_postratings_ip_header' ).fill( ipHeader );
 
 	await saveSettings( page );
 }
@@ -414,6 +421,168 @@ function swatches( page, property = '--wp-postratings-color-on' ) {
 }
 
 /**
+ * How much of each step of a vote control the browser has actually filled.
+ *
+ * The assertion PHP cannot make. The score is painted into each glyph by a
+ * gradient whose stop is a custom property, so PHPUnit can only prove the
+ * property was written; whether it turns into paint on the right glyph depends
+ * on the stylesheet and on the theme around it -- and the first version of this
+ * feature laid one strip over the whole row instead, which passed every unit
+ * test and was visibly wrong, because a theme putting padding on a label moves
+ * that label's glyph without moving anything the strip could see.
+ *
+ * Keyed by step rather than taken in document order: the row is laid out
+ * reversed so a sibling combinator can reach backwards, so the fifth step comes
+ * first in the markup.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the control.
+ * @return {Promise<Object>} Step number to filled percentage.
+ */
+async function stepFills( page ) {
+	const scale = page.locator( '.wp-postratings-scale' ).first();
+
+	await expect( scale ).toBeVisible( { timeout: 15_000 } );
+
+	return scale.evaluate( ( el ) => {
+		const fills = {};
+
+		el.querySelectorAll( 'label[for]' ).forEach( ( label ) => {
+			const step = Number( label.getAttribute( 'for' ).split( '-' ).pop() );
+			const item = label.querySelector( '.wp-postratings-item' );
+
+			if ( ! item ) {
+				fills[ step ] = 'no glyph';
+				return;
+			}
+
+			// The gradient's two stops sit at the same percentage -- one colour up
+			// to it, the other from it -- so the first is the fill.
+			const painted = getComputedStyle( item ).backgroundImage;
+			const stop = painted.match( /([0-9.]+)%/ );
+
+			fills[ step ] = stop ? Number( stop[ 1 ] ) : `unpainted:${ painted }`;
+		} );
+
+		return fills;
+	} );
+}
+
+/**
+ * The PHP a couple of surfaces need before a browser can reach them.
+ *
+ * Two things this plugin does have no page of their own. A widget is placed
+ * through the block widgets editor, which is a test of that editor rather than
+ * of this plugin; and comment author ratings are off unless a theme turns them
+ * on with a filter, so there is no setting to switch. Both are reached here the
+ * way a theme would reach them -- through the plugin's own public entry points,
+ * the widget class and the filter -- rather than by writing rows.
+ *
+ * The filter is gated on an option so it is off for every other test, which is
+ * the state the rest of the suite is written against.
+ *
+ * @type {string}
+ */
+const FIXTURE_PHP = `<?php
+/**
+ * Plugin Name: WP-PostRatings e2e fixtures
+ */
+
+add_shortcode(
+	'ratings_widget',
+	function ( $atts ) {
+		$atts = shortcode_atts(
+			array( 'type' => 'highest_rated', 'limit' => '10', 'min_votes' => '0' ),
+			$atts
+		);
+
+		ob_start();
+
+		the_widget(
+			'WP_PostRatings_Widget',
+			array(
+				'title'     => 'Ratings',
+				'type'      => $atts['type'],
+				'limit'     => (int) $atts['limit'],
+				'min_votes' => (int) $atts['min_votes'],
+			),
+			array(
+				'before_widget' => '<section class="e2e-widget">',
+				'after_widget'  => '</section>',
+				'before_title'  => '<h2>',
+				'after_title'   => '</h2>',
+			)
+		);
+
+		return ob_get_clean();
+	}
+);
+
+add_filter(
+	'wp_postratings_display_comment_author_ratings',
+	function ( $display ) {
+		return get_option( 'wp_postratings_e2e_comment_ratings' ) ? true : $display;
+	}
+);
+`;
+
+/**
+ * Put the fixture plugin in place.
+ *
+ * @return {void}
+ */
+function installFixtures() {
+	const encoded = Buffer.from( FIXTURE_PHP, 'utf8' ).toString( 'base64' );
+
+	wpEval(
+		`wp_mkdir_p( WPMU_PLUGIN_DIR );
+		file_put_contents( WPMU_PLUGIN_DIR . '/wp-postratings-e2e.php', base64_decode( '${ encoded }' ) );
+		echo '<<<installed>>>';`,
+	);
+}
+
+/**
+ * Take it away again, so the rest of the suite runs against a plain install.
+ *
+ * @return {void}
+ */
+function removeFixtures() {
+	wpEval(
+		`delete_option( 'wp_postratings_e2e_comment_ratings' );
+		$file = WPMU_PLUGIN_DIR . '/wp-postratings-e2e.php';
+		if ( file_exists( $file ) ) {
+			unlink( $file );
+		}
+		echo '<<<removed>>>';`,
+	);
+}
+
+/**
+ * Turn the comment author ratings display on or off for the fixture filter.
+ *
+ * @param {boolean} on Whether comment author ratings should show.
+ * @return {void}
+ */
+function showCommentAuthorRatings( on ) {
+	wpEval(
+		on
+			? `update_option( 'wp_postratings_e2e_comment_ratings', 1 ); echo '<<<on>>>';`
+			: `delete_option( 'wp_postratings_e2e_comment_ratings' ); echo '<<<off>>>';`,
+	);
+}
+
+/**
+ * A colour from COLORS, as the browser reports computed colours.
+ *
+ * @param {string} hex A six-digit hex colour.
+ * @return {string} The same colour as an rgb() string.
+ */
+function rgb( hex ) {
+	const [ , r, g, b ] = hex.match( /^#(..)(..)(..)$/ );
+
+	return `rgb(${ parseInt( r, 16 ) }, ${ parseInt( g, 16 ) }, ${ parseInt( b, 16 ) })`;
+}
+
+/**
  * A post title no earlier run can have used.
  *
  * Deleting the posts between tests does not delete the log, because a log row is
@@ -455,14 +624,19 @@ module.exports = {
 	configure,
 	createRatedPost,
 	defaultOptions,
+	installFixtures,
 	installLegacyRows,
 	legacyRowNames,
 	openSettings,
 	rawOptions,
 	resetPlugin,
 	resetTemplates,
+	removeFixtures,
+	rgb,
 	runningVersions,
 	saveSettings,
+	showCommentAuthorRatings,
+	stepFills,
 	survivingLegacyRows,
 	swatches,
 	uniqueTitle,
