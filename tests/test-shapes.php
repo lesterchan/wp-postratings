@@ -125,6 +125,11 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	public function test_a_numeric_shape_is_still_a_scale() {
 		$this->assertTrue( WP_PostRatings_Shapes::is_numeric_shape( 'number' ), 'The shipped numeric shape is numeric.' );
 		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'number' ), 'And is not an up/down pair.' );
+		$this->assertSame(
+			WP_PostRatings_Shapes::SCALE,
+			WP_PostRatings_Shapes::family( 'number' ),
+			'So the settings screen offers it under the scale radio.'
+		);
 		$this->assertFalse( WP_PostRatings_Shapes::is_numeric_shape( 'star' ), 'A mask shape is not numeric.' );
 	}
 

@@ -242,6 +242,26 @@ class WP_PostRatings_Shapes {
 	}
 
 	/**
+	 * Which of the two controls a shape is, whatever its type.
+	 *
+	 * There are three types and two controls: one value out of N, or a pair of
+	 * opposing actions. A numeric scale is a scale that draws its positions as
+	 * digits, so the type is finer than the question the settings screen asks --
+	 * and the screen offers exactly two radios, so anything that lands outside
+	 * them is a shape nobody can select.
+	 *
+	 * Derived in one place, because the picker and the tests both need the
+	 * answer and a second copy is how they come to disagree.
+	 *
+	 * @param string $name Shape name.
+	 *
+	 * @return string Either self::SCALE or self::UPDOWN.
+	 */
+	public static function family( $name ) {
+		return self::is_updown( $name ) ? self::UPDOWN : self::SCALE;
+	}
+
+	/**
 	 * A shape's SVG as a data URI, for use as a CSS mask.
 	 *
 	 * Encoded only where it must be, which is smaller and more legible than
