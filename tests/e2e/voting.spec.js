@@ -282,6 +282,71 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-postratings' ) ).toContainText( '2' );
 	} );
 
+	test( 'a scale can be rated from the keyboard', async ( { page, requestUtils } ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Rated without a mouse' ) );
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		/*
+		 * The reason the control is a radio group at all.
+		 *
+		 * Before 2.0.0 each point was an image carrying role="button" and an
+		 * inline onclick, which a screen reader read as five unrelated buttons
+		 * and a keyboard could not work at once. Now the browser's own radio
+		 * behaviour moves between the values, and the script listens for
+		 * "change" rather than a click so that arrowing onto a value votes for
+		 * it -- a claim the code makes in a comment and nothing checked.
+		 *
+		 * The row is emitted highest first, so the arrow that moves forward
+		 * through the markup moves down through the scale.
+		 */
+		await page.locator( `#wp-postratings-${ post.id }-5` ).focus();
+		await page.keyboard.press( 'ArrowDown' );
+
+		await expectAverage( page, '4.00' );
+		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+	} );
+
+	test( 'two ratings on one page are rated independently', async ( { page, requestUtils } ) => {
+		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
+
+		const first = await createRatedPost( requestUtils, uniqueTitle( 'The one being rated' ) );
+		const second = await createRatedPost( requestUtils, uniqueTitle( 'The one left alone' ) );
+
+		// One page carrying both, which is what an archive or a "highest rated"
+		// list is. The script keeps no per-control state -- one delegated
+		// listener on the document covers every rating on the page -- so the
+		// thing worth checking is that it tells them apart.
+		const host = await requestUtils.createPost( {
+			title: uniqueTitle( 'Two ratings' ),
+			content: `[ratings id="${ first.id }"]<hr />[ratings id="${ second.id }"]`,
+			status: 'publish',
+		} );
+
+		await page.goto( host.link );
+
+		const one = page.locator( `#wp-postratings-${ first.id }` );
+		const other = page.locator( `#wp-postratings-${ second.id }` );
+
+		await expect( one.locator( '.wp-postratings-vote' ) ).toBeVisible( { timeout: 15_000 } );
+		await expect( other.locator( '.wp-postratings-vote' ) ).toBeVisible();
+
+		await page.locator( `label[for="wp-postratings-${ first.id }-4"]` ).click();
+
+		// The one that was clicked is replaced by its result...
+		await expect( one.getByRole( 'img', { name: /average: 4\.00/ } ) ).toBeVisible( {
+			timeout: 15_000,
+		} );
+		await expect( one.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+
+		// ...and the other is untouched, still offering a vote nobody has cast.
+		await expect( other.locator( '.wp-postratings-vote' ) ).toBeVisible();
+		await expect( other.getByRole( 'img', { name: /average/ } ) ).toHaveCount( 0 );
+	} );
+
 	test( 'Do Not Check lets the same visitor rate twice', async ( { page, requestUtils } ) => {
 		await configure( page, { check: CHECK.never, allow: ALLOW.everyone } );
 

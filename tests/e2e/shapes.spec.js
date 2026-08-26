@@ -23,7 +23,9 @@ const {
 	COLORS,
 	configure,
 	createRatedPost,
+	openSettings,
 	rgb,
+	saveSettings,
 	stepFills,
 	uniqueTitle,
 	wpEval,
@@ -510,6 +512,70 @@ test.describe( 'What a shape shows for a score', () => {
 
 		// Four of five, painted rather than rounded to the nearest whole digit.
 		expect( await filledShare( page ) ).toBeCloseTo( 0.8, 2 );
+	} );
+
+	test( 'a ten point numeric scale keeps every cell the same width', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, { shape: 'number', check: CHECK.never, allow: ALLOW.everyone } );
+
+		// Five more steps, through the screen that adds them.
+		await openSettings( page );
+
+		for ( let i = 0; i < 5; i++ ) {
+			await page.locator( '#wp-postratings-add-step' ).click();
+		}
+
+		await expect( page.locator( '#wp-postratings-rating-fields tbody tr' ) ).toHaveCount( 10 );
+		await saveSettings( page );
+
+		const post = await createResultsPost( requestUtils, uniqueTitle( 'Rated out of ten' ) );
+
+		seedRating( post.id, 2, 10, 5 );
+		await page.goto( post.link );
+
+		expect( await glyphText( page, '.wp-postratings-strip' ) ).toEqual(
+			[ ...Array( 10 ) ].map( ( _, i ) => String( i + 1 ) ).concat(
+				[ ...Array( 10 ) ].map( ( _, i ) => String( i + 1 ) ),
+			),
+		);
+
+		const geometry = await page
+			.locator( '.wp-postratings-strip' )
+			.first()
+			.evaluate( ( el ) => {
+				const items = Array.from(
+					el.querySelectorAll( '.wp-postratings-track .wp-postratings-item' ),
+				);
+				const row = el
+					.querySelector( '.wp-postratings-track .wp-postratings-row' )
+					.getBoundingClientRect();
+				const fill = el.querySelector( '.wp-postratings-fill' ).getBoundingClientRect();
+
+				return {
+					widths: items.map( ( i ) => i.getBoundingClientRect().width ),
+					fifthEnds: items[ 4 ].getBoundingClientRect().right - row.left,
+					fillEnds: fill.right - row.left,
+				};
+			} );
+
+		/*
+		 * Ten is two glyphs wide where every other point is one.
+		 *
+		 * The cell reserves the shape's size and the digits are tabular, so two
+		 * of them come to about 95% of it and the last cell stays the width of
+		 * the rest. That is a close enough thing to be worth holding: widen the
+		 * font against the cell and the tenth cell grows, which is not just
+		 * untidy -- the fill is a percentage of the whole bar, so a bar whose
+		 * cells are not equal fills to the wrong place.
+		 */
+		geometry.widths.forEach( ( width ) =>
+			expect( width ).toBeCloseTo( geometry.widths[ 0 ], 1 ),
+		);
+
+		// Five of ten, so the boundary is the edge of the fifth cell.
+		expect( geometry.fillEnds ).toBeCloseTo( geometry.fifthEnds, 1 );
 	} );
 
 	test( 'an up or down button takes its own colour under the pointer', async ( {
