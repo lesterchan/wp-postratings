@@ -20,6 +20,16 @@ const {
 } = require( './helpers.js' );
 
 /**
+ * The $_SERVER key the proxy tests ask the settings screen to trust.
+ *
+ * Playwright sets the header, PHP exposes it under this name, and the plugin
+ * reads whichever key the site named -- so the three have to agree.
+ *
+ * @type {string}
+ */
+const PROXY_HEADER = 'HTTP_X_FORWARDED_FOR';
+
+/**
  * Click a point on the scale.
  *
  * The radio itself is visually hidden behind its label -- that is how the
@@ -61,13 +71,32 @@ async function expectAverage( page, average ) {
  * @param {string}                             url     Where to go.
  * @return {Promise<Object>} The context and the page, for closing afterwards.
  */
-async function asGuest( browser, url ) {
-	const context = await browser.newContext( { storageState: undefined } );
+async function asGuest( browser, url, options = {} ) {
+	const { address, storageState } = options;
+
+	const context = await browser.newContext( {
+		storageState,
+		// The header the settings screen has been told to trust. Two contexts
+		// otherwise arrive from one address -- the container's -- so this is the
+		// only way to ask what the plugin does with two different visitors.
+		...( address ? { extraHTTPHeaders: { 'X-Forwarded-For': address } } : {} ),
+	} );
+
 	const page = await context.newPage();
 
 	await page.goto( url );
 
 	return { context, page };
+}
+
+/**
+ * Whether the visitor looking at this page is being offered the control.
+ *
+ * @param {import('@playwright/test').Page} page Page showing the post.
+ * @return {Promise<boolean>} Whether a vote is on offer.
+ */
+async function canRate( page ) {
+	return ( await page.locator( '.wp-postratings-vote' ).count() ) > 0;
 }
 
 /**
@@ -375,6 +404,107 @@ test.describe( 'Casting a vote', () => {
 		await expect( page.locator( '.wp-list-table tbody tr', { hasText: title } ) ).toHaveCount(
 			1,
 		);
+	} );
+
+	test( 'Check By Cookie And IP catches a repeat by the address alone', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		// The default, and until now the one setting with no test of its own.
+		await configure( page, {
+			check: CHECK.cookieAndIp,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per either' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+		await first.context.close();
+
+		// A browser with no cookie at all, arriving from the address that voted.
+		// Only the address half can catch this one.
+		const second = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		expect( await canRate( second.page ) ).toBe( false );
+		await second.context.close();
+	} );
+
+	test( 'Check By Cookie And IP catches a repeat by the cookie alone', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		await configure( page, {
+			check: CHECK.cookieAndIp,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per cookie' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+
+		const voted = await first.context.storageState();
+		await first.context.close();
+
+		// The same visitor's cookie carried to a different address. The address
+		// half cannot catch this, so a refusal here is the cookie's doing.
+		const moved = await asGuest( browser, post.link, {
+			address: '203.0.113.20',
+			storageState: voted,
+		} );
+		expect( await canRate( moved.page ) ).toBe( false );
+		await moved.context.close();
+
+		// And the control that makes that reading honest: the same new address
+		// without the cookie is still offered a vote, so it was the cookie that
+		// refused the one above and not the address.
+		const stranger = await asGuest( browser, post.link, { address: '203.0.113.20' } );
+		expect( await canRate( stranger.page ) ).toBe( true );
+		await stranger.context.close();
+	} );
+
+	test( 'the trusted proxy header decides which address a vote is matched against', async ( {
+		browser,
+		page,
+		requestUtils,
+	} ) => {
+		// Checking by address alone, so nothing but the address can refuse.
+		await configure( page, {
+			check: CHECK.ip,
+			allow: ALLOW.everyone,
+			ipHeader: PROXY_HEADER,
+		} );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'One vote per real address' ) );
+
+		const first = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		await rate( first.page, 4 );
+		await expectAverage( first.page, '4.00' );
+		await first.context.close();
+
+		/*
+		 * Two visitors the container cannot tell apart.
+		 *
+		 * Every context here arrives from one address, so without the header this
+		 * second visitor is the first one and gets refused -- which is exactly
+		 * what the test above this asserts when no header is trusted. Being
+		 * offered a vote is therefore proof the header was read and believed.
+		 */
+		const elsewhere = await asGuest( browser, post.link, { address: '203.0.113.20' } );
+		expect( await canRate( elsewhere.page ) ).toBe( true );
+		await elsewhere.context.close();
+
+		// And the address it names is matched, not merely read: the first
+		// visitor's address is refused a second time.
+		const again = await asGuest( browser, post.link, { address: '203.0.113.10' } );
+		expect( await canRate( again.page ) ).toBe( false );
+		await again.context.close();
 	} );
 
 	test( 'Check By IP refuses a second vote from another browser', async ( {

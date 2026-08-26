@@ -138,9 +138,10 @@ async function chooseShape( page, shape, steps ) {
  * @param {string}                          [settings.type]   'scale' or 'updown'.
  * @param {string}                          [settings.shape]  Shape name.
  * @param {number}                          [settings.steps]  Expected row count.
- * @param {string}                          [settings.allow]  A value from ALLOW.
- * @param {string}                          [settings.check]  A value from CHECK.
- * @param {string}                          [settings.schema] A schema.org type, or ''.
+ * @param {string}                          [settings.allow]    A value from ALLOW.
+ * @param {string}                          [settings.check]    A value from CHECK.
+ * @param {string}                          [settings.schema]   A schema.org type, or ''.
+ * @param {string}                          [settings.ipHeader] A $_SERVER key to trust, or ''.
  * @return {Promise<void>} Resolves once the settings are saved.
  */
 async function configure( page, settings = {} ) {
@@ -151,6 +152,7 @@ async function configure( page, settings = {} ) {
 		allow = ALLOW.everyone,
 		check = CHECK.never,
 		schema = '',
+		ipHeader = '',
 	} = settings;
 
 	await openSettings( page );
@@ -161,6 +163,11 @@ async function configure( page, settings = {} ) {
 	await page.locator( '#wp_postratings_allowtorate' ).selectOption( allow );
 	await page.locator( '#wp_postratings_check_method' ).selectOption( check );
 	await page.locator( '#wp_postratings_schema_type' ).selectOption( schema );
+
+	// Written on every call, empty included. It decides which address a vote is
+	// matched against, so a test that set one and did not clear it would keep
+	// deciding that for every test after it.
+	await page.locator( '#wp_postratings_ip_header' ).fill( ipHeader );
 
 	await saveSettings( page );
 }
