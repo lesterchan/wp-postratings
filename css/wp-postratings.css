@@ -90,6 +90,35 @@
 	mask-size: contain;
 }
 
+/* --- numbers instead of a mask ------------------------------------------- */
+
+/*
+ * A numeric shape draws the position rather than a mask, so the item is text:
+ * no mask to cut it out of, and no background colour to be cut. Keyed to the
+ * type rather than to the shipped shape's name, so a numeric shape a site
+ * registers itself gets the same treatment.
+ *
+ * The box still reserves the shape's own size, so a row of digits lines up
+ * with a row of stars and a theme that sized one has sized the other.
+ */
+.wp-postratings-numeric .wp-postratings-item {
+	inline-size: auto;
+	min-inline-size: var( --wp-postratings-size, 20px );
+	background-color: transparent;
+	-webkit-mask-image: none;
+	mask-image: none;
+
+	/* The glyph is an <i>, which every other shape leaves empty and which the
+	   browser's own stylesheet italicises. A row of digits is the first thing
+	   ever put inside one, and it came out slanted. */
+	font-style: normal;
+	font-size: calc( var( --wp-postratings-size, 20px ) * 0.85 );
+	font-weight: 600;
+	line-height: var( --wp-postratings-size, 20px );
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+
 /* --- read-only display --------------------------------------------------- */
 
 .wp-postratings-strip {
@@ -226,6 +255,26 @@
 		var( --wp-postratings-color-on, #f5a623 ) var( --wp-postratings-step-fill, 0% ),
 		var( --wp-postratings-color-off, #d4d4d8 ) var( --wp-postratings-step-fill, 0% )
 	);
+}
+
+/*
+ * The same gradient, cut to the digit instead of to a mask.
+ *
+ * background-clip needs the text drawn in no colour of its own, which makes
+ * every rule that turns the gradient off a rule that would otherwise leave the
+ * digits invisible -- so the pair below hands the colour back wherever
+ * interaction takes the gradient away.
+ */
+.wp-postratings-numeric.wp-postratings-scale label .wp-postratings-item {
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.wp-postratings-numeric.wp-postratings-scale:hover label .wp-postratings-item,
+.wp-postratings-numeric.wp-postratings-scale:focus-within label .wp-postratings-item,
+.wp-postratings-numeric.wp-postratings-scale:has( input:checked ) label .wp-postratings-item {
+	color: currentColor;
 }
 
 /* Interaction wins: hovering, focusing or having voted colours the labels, and

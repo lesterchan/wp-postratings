@@ -390,12 +390,24 @@ class WP_PostRatings_Settings {
 		foreach ( WP_PostRatings_Shapes::all() as $name => $shape ) {
 			$is_updown = WP_PostRatings_Shapes::UPDOWN === $shape['type'];
 
+			/*
+			 * The family the row belongs to, not the shape's own type.
+			 *
+			 * The radios above offer two choices, because there are two
+			 * controls: one value out of N, or a pair of opposing actions.
+			 * A shape's type is finer than that -- a numeric scale is a scale
+			 * that draws its positions as digits -- so grouping the rows by it
+			 * puts those shapes in a group no radio names, and the picker hides
+			 * them permanently.
+			 */
+			$family = $is_updown ? WP_PostRatings_Shapes::UPDOWN : WP_PostRatings_Shapes::SCALE;
+
 			// Wrapped in .wp-postratings so the preview inherits the colours the
 			// site has chosen: they are scoped to the wrapper, not to :root.
 			printf(
 				'<p class="wp-postratings-shape-row" data-rating-type="%1$s"%2$s>',
-				esc_attr( $shape['type'] ),
-				$shape['type'] === $current_type ? '' : ' hidden'
+				esc_attr( $family ),
+				$family === $current_type ? '' : ' hidden'
 			);
 			printf(
 				'<input type="radio" name="%s" value="%s"%s data-custom="%d" data-max="%d" class="wp-postratings-shape-choice" />',

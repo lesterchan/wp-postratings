@@ -78,6 +78,20 @@ single-source-of-truth tidiness.
   All paths are drawn in a 24×24 viewBox so one set of sizing rules covers them.
   A custom image folder falls back to stars; registering a shape through the
   filter is the replacement, and it survives an update.
+* **The numeric shape is the exception, and had to be.** Every mask shape is one
+  path repeated once per point, so a set of digits could not be one: the glyph
+  differs per position. `WP_PostRatings_Shapes::NUMERIC` carries no path at all
+  and the position supplies the glyph, which is why `row()` is the one row that
+  is not a `str_repeat()`. Two things bite. The glyph is an `<i>`, which every
+  other shape leaves empty and the browser italicises, so the stylesheet resets
+  `font-style`. And a numeric glyph is real text inside the `<label>`, so it
+  joins the radio's accessible name unless it is `aria-hidden` — leave it
+  exposed and every value announces itself twice, "3 3 Stars".
+* **The shape picker groups its rows by family, not by type.** The radios above
+  it offer two choices, because there are two controls: one value out of N, or a
+  pair of opposing actions. A shape's type is finer than that, so grouping the
+  rows by it puts a numeric shape in a group no radio names and hides it for
+  good.
 * **Rich snippets default to No, and that is a correctness fix.** The old markup
   declared `schema.org/Article`, and Google shows ratings only for Book, Course,
   Event, Local Business, Movie, Organization, Product, Recipe, Software App and a
@@ -167,7 +181,7 @@ into one row, and two settings come out of the shared WP-Stats rows.
 
 What a browser adds over `test-upgrade.php` is the shape question. The shape a
 site chose years ago is a *folder name* that no longer exists — the sixteen
-image folders became nine SVG shapes — and whether the migration turned it into
+image folders became ten shapes — and whether the migration turned it into
 one the settings screen can actually **draw** is a question about a page, not
 about an array. `tests/e2e/upgrade.spec.js` asserts the resolved shape comes back
 checked in the picker, and that an unrecognised folder lands on stars rather

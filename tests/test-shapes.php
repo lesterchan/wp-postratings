@@ -55,6 +55,12 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 	 */
 	public function test_every_shape_produces_a_data_uri() {
 		foreach ( WP_PostRatings_Shapes::names() as $name ) {
+			// Except a numeric one, which draws the position instead of a mask
+			// and is asserted on below.
+			if ( WP_PostRatings_Shapes::is_numeric_shape( $name ) ) {
+				continue;
+			}
+
 			$variants = WP_PostRatings_Shapes::is_updown( $name ) ? array( 'up', 'down' ) : array( '' );
 
 			foreach ( $variants as $variant ) {
@@ -104,6 +110,119 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 		}
 	}
 
+	// --- the numeric family -----------------------------------------------
+
+	/**
+	 * A numeric shape is a scale, not a third kind of control.
+	 *
+	 * It answers a scale's question -- one value out of N -- and differs only
+	 * in what a point on it is drawn with. Anything that branches on is_updown()
+	 * therefore has to go on treating it as a scale, or a five point rating
+	 * turns into a two way vote.
+	 *
+	 * @return void
+	 */
+	public function test_a_numeric_shape_is_still_a_scale() {
+		$this->assertTrue( WP_PostRatings_Shapes::is_numeric_shape( 'number' ), 'The shipped numeric shape is numeric.' );
+		$this->assertFalse( WP_PostRatings_Shapes::is_updown( 'number' ), 'And is not an up/down pair.' );
+		$this->assertFalse( WP_PostRatings_Shapes::is_numeric_shape( 'star' ), 'A mask shape is not numeric.' );
+	}
+
+	/**
+	 * A numeric shape carries no mask, and says so rather than emitting an empty one.
+	 *
+	 * url() wrapped around an empty data URI is a parse error, and a browser
+	 * drops the whole declaration when it hits one -- silently, which is how an
+	 * invisible rating gets shipped.
+	 *
+	 * @return void
+	 */
+	public function test_a_numeric_shape_emits_no_mask() {
+		$this->assertSame( '', WP_PostRatings_Shapes::data_uri( 'number' ), 'A numeric shape has no data URI.' );
+
+		$markup = WP_PostRatings_Template::ratings_images( 0, 5, 3.7, 'number', '' );
+
+		$this->assertStringNotContainsString( '--wp-postratings-shape:', $markup, 'And emits no mask custom property.' );
+		$this->assertStringNotContainsString( 'url(', $markup, 'And no url() at all.' );
+	}
+
+	/**
+	 * Every position on a numeric scale draws its own number.
+	 *
+	 * The reason it could not be registered as an ordinary shape: every other
+	 * shape is one path repeated once per point, and a set of digits needs the
+	 * glyph to differ per position.
+	 *
+	 * @return void
+	 */
+	public function test_a_numeric_scale_draws_its_positions() {
+		$markup = WP_PostRatings_Template::ratings_images( 0, 5, 3.7, 'number', '' );
+
+		// Once in the track and once in the fill laid over it.
+		foreach ( range( 1, 5 ) as $step ) {
+			$this->assertSame(
+				2,
+				substr_count( $markup, '>' . $step . '</i>' ),
+				'Position ' . $step . ' is drawn in both the track and the fill.'
+			);
+		}
+	}
+
+	/**
+	 * The digits are hidden from assistive technology.
+	 *
+	 * A label's text is the radio's accessible name. Every other shape adds
+	 * nothing to it, because the glyph is an empty element carrying a mask; a
+	 * numeric glyph is real text, so left exposed every value announces itself
+	 * twice.
+	 *
+	 * @return void
+	 */
+	public function test_a_numeric_glyph_is_hidden_from_assistive_technology() {
+		$markup = WP_PostRatings_Template::ratings_images_vote( 1, 0, 5, 0, 'number', '', 0, array( '1', '2', '3', '4', '5' ) );
+
+		$this->assertStringContainsString( '<i class="wp-postratings-item" aria-hidden="true">3</i>', $markup, 'The digit is hidden.' );
+		$this->assertStringContainsString( '<span>3</span>', $markup, 'And the label beside it still names the value.' );
+	}
+
+	/**
+	 * A numeric rating is marked by type as well as by name.
+	 *
+	 * The stylesheet has to reach any numeric shape rather than only the one
+	 * this plugin ships, because a site registering its own gets a name of its
+	 * own and rules keyed to a name would miss it.
+	 *
+	 * @return void
+	 */
+	public function test_a_numeric_rating_is_marked_by_type() {
+		add_filter(
+			'wp_postratings_shapes',
+			static function ( $shapes ) {
+				$shapes['points'] = array(
+					'type'  => WP_PostRatings_Shapes::NUMERIC,
+					'label' => 'Points',
+				);
+				return $shapes;
+			}
+		);
+
+		$this->assertTrue( WP_PostRatings_Shapes::is_valid( WP_PostRatings_Shapes::get( 'points' ) ), 'A numeric shape needs no path to be valid.' );
+
+		foreach ( array( 'number', 'points' ) as $name ) {
+			$this->assertStringContainsString(
+				'wp-postratings-numeric',
+				WP_PostRatings_Template::ratings_images( 0, 5, 3.7, $name, '' ),
+				$name . ' is not marked as numeric'
+			);
+		}
+
+		$this->assertStringNotContainsString(
+			'wp-postratings-numeric',
+			WP_PostRatings_Template::ratings_images( 0, 5, 3.7, 'star', '' ),
+			'A mask shape is not marked numeric.'
+		);
+	}
+
 	// --- the legacy mapping -----------------------------------------------
 
 	/**
@@ -136,6 +255,19 @@ class WP_PostRatings_Shapes_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 'plusminus', WP_PostRatings_Shapes::from_legacy( 'plusminus_crystal' ), 'A finish variant collapses onto the shape it drew.' );
 		$this->assertSame( 'heart', WP_PostRatings_Shapes::from_legacy( 'heart_crystal' ), 'For every finish, not just the first.' );
+	}
+
+	/**
+	 * The numbers set keeps its digits.
+	 *
+	 * It was the one pre-2.0.0 set with no shape to land on, so it was parked
+	 * on circles and every site using it silently lost the thing it had chosen.
+	 *
+	 * @return void
+	 */
+	public function test_the_numbers_set_keeps_its_digits() {
+		$this->assertSame( 'number', WP_PostRatings_Shapes::from_legacy( 'numbers' ), 'The numbers set maps onto the numeric shape.' );
+		$this->assertSame( 'number', WP_PostRatings_Template::resolve_shape( 'numbers' ), 'And the resolver the template goes through agrees.' );
 	}
 
 	/**

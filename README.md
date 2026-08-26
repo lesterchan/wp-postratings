@@ -17,7 +17,7 @@ WP-PostRatings adds a rating control to any post, page or custom post type. Visi
 
 ### Features
 
-* Nine rating shapes, drawn with CSS rather than shipped as images, so they stay sharp at any size and cost no HTTP requests.
+* Ten rating shapes, drawn with CSS rather than shipped as images, so they stay sharp at any size and cost no HTTP requests — numbers among them, for a scale whose points are read rather than counted.
 * A scale, or a two-way up/down control, with the rated and unrated colours as settings.
 * Template tags and a shortcode for the highest rated, most rated, lowest rated and highest scoring posts, optionally within a category, a tag or a time range.
 * A rating log with sortable columns, filters, bulk delete and Screen Options.
@@ -124,6 +124,21 @@ add_filter( 'wp_postratings_shapes', function ( $shapes ) {
 ```
 
 The path is SVG path data drawn in a 24x24 box. For an up/down control use `'type' => 'updown'` and supply `'up'` and `'down'` paths instead of `'path'`.
+
+For a scale whose points are numbers rather than a repeated glyph, use `'type' => 'numeric'` and supply no path at all — the position is the glyph:
+
+```php
+add_filter( 'wp_postratings_shapes', function ( $shapes ) {
+	$shapes['points'] = array(
+		'type'  => 'numeric',
+		'label' => 'Points',
+	);
+
+	return $shapes;
+} );
+```
+
+A numeric shape is still a scale, so it appears under **Scale** on the settings screen and everything that reads a rating goes on reading it the same way. Only the drawing changes.
 
 
 ### Every visitor can rate over and over, or every rating log entry shows the same IP
@@ -477,6 +492,9 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 
 ## Changelog
 ### 2.0.1
+* NEW: **Numbers is a rating shape again.** It was the one pre-2.0.0 image set with no shape to land on — every other set was a glyph repeated once per point, and a CSS mask cannot differ per position — so it was parked on circles, and a site that had chosen numbers came back from the update to five identical circles with no way to get the digits back. Numbers is now a shape of its own, offered under **Scale** beside the others, and the `numbers` image set maps onto it. Sites already migrated onto circles can simply select it; nothing about their ratings changes, only what those ratings are drawn with
+* NEW: `wp_postratings_shapes` accepts `'type' => 'numeric'`, for a scale drawn as its own positions. Such a shape needs no path, and the digits follow the site's locale
+* FIXED: The shape picker grouped its rows by the shape's exact type rather than by the control it is — a scale, or a pair of opposing actions. Any shape whose type was neither of the two words the radios offer landed in a group no radio could select and stayed hidden
 * NEW: A Settings link on the plugin's row on the Plugins screen
 * CHANGED: A stylesheet named `wp-postratings.css` in the parent theme now overrides the plugin's copy too; a child theme's copy still wins over both
 * FIXED: The comment author ratings display, which is off unless a theme opts in, still cost its query: every page with a loop fetched every rating the displayed post had ever received, then threw them away. Sites that have not opted in no longer pay it — one query fewer on every page, and on a heavily rated post it was not a small one.
@@ -491,7 +509,7 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 * NEW: A `postratings/v1` REST API for reading a post's rating and casting one. The `admin-ajax.php` `wp_postratings` action is unchanged and still supported.
 * NEW: A **Ratings** block for the editor, with the post id and a results-only toggle in the sidebar. It renders on the server through the same code the shortcode does, so the editor preview is the real rating. The `[ratings]` shortcode is unchanged and still supported — the block is an addition beside it, nothing needs migrating, and posts already holding a shortcode need no edit.
 * BREAKING: Requires WordPress 6.8 and PHP 8.2.
-* BREAKING: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 9 SVG shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
+* BREAKING: The rating images are gone. All 16 image sets and their 121 GIF and PNG files are replaced by 10 shapes drawn with CSS, so ratings are sharp on every screen and cost no HTTP requests. Your chosen set is migrated automatically to the matching shape: stars, stars_crystal, stars_dark, stars_png and stars_flat_png all become `star`, thumbs becomes `thumb`, and so on. If you added your own folder to `images/` it will fall back to stars; see the FAQ for how to register a custom shape properly, which unlike the old folder survives an update.
 * BREAKING: The rating markup has changed completely. A scale is now a group of radio buttons and an up/down is a pair of buttons, so the control announces itself correctly to screen readers and works from the keyboard. Every class and element id is now prefixed with the plugin slug: `.post-ratings` is `.wp-postratings`, `.post-ratings-image` no longer exists at all, and the wrapper id is `wp-postratings-123` rather than `post-ratings-123`. Colour, size and spacing are CSS custom properties, which is usually a one-line replacement; see the FAQ.
 * BREAKING: The vote images no longer carry inline `onmouseover`/`onclick` attributes; hovering and clicking are handled by one delegated listener. Custom CSS or JavaScript that targeted those inline handlers, or that called `current_rating()` or `rate_post()` directly, needs updating.
 * BREAKING: The `rate_post` action is renamed `wp_postratings_rate_post` and the old name is gone, with no deprecation shim. Its three arguments are unchanged.
@@ -545,7 +563,7 @@ Requires WordPress 6.8 and PHP 8.2.
 
 If you filtered `wp_postratings_schema_itemtype` to a supported type, you *were* getting a real rich result, and it stops until you select that same type in the new setting. The filter still runs and still has the last word. Pick a type only if the content genuinely is that thing: marking a blog post as a `Product` to collect stars is spammy structured markup, and it costs a manual action.
 
-**Rating images are now CSS shapes.** The 16 image sets are 9 shapes; whichever set you had is mapped to the matching shape automatically. A custom image folder falls back to stars — the FAQ shows how to register a shape instead, which survives updates.
+**Rating images are now CSS shapes.** The 16 image sets are 10 shapes; whichever set you had is mapped to the matching shape automatically. A custom image folder falls back to stars — the FAQ shows how to register a shape instead, which survives updates.
 
 **Custom CSS needs updating.** Every class and id is slug-prefixed now:
 

@@ -34,6 +34,18 @@ class WP_PostRatings_Shapes {
 	const UPDOWN = 'updown';
 
 	/**
+	 * Numeric shapes: the position on the scale, drawn as its own number.
+	 *
+	 * The odd one out, and deliberately so. Every other shape is one path
+	 * repeated once per point, which is why a set of digits could not be one:
+	 * the glyph has to differ per position, and a mask by definition does not.
+	 * So a numeric shape carries no path at all and the position supplies the
+	 * glyph -- which also means it needs no artwork, and reads in whatever
+	 * digits the site's locale uses.
+	 */
+	const NUMERIC = 'numeric';
+
+	/**
 	 * Every shape the plugin knows, including any a site has registered.
 	 *
 	 * The paths are all drawn in a 24x24 viewBox so one set of CSS sizing rules
@@ -57,11 +69,13 @@ class WP_PostRatings_Shapes {
 		 * into the plugin directory, which did not survive an update. A shape
 		 * is an array of:
 		 *
-		 *     'type'  => WP_PostRatings_Shapes::SCALE or ::UPDOWN
+		 *     'type'  => WP_PostRatings_Shapes::SCALE, ::UPDOWN or ::NUMERIC
 		 *     'label' => Name shown on the settings screen
 		 *     'path'  => SVG path data in a 24x24 viewBox   (SCALE)
 		 *     'up'    => SVG path data for the positive glyph (UPDOWN)
 		 *     'down'  => SVG path data for the negative glyph (UPDOWN)
+		 *
+		 * A NUMERIC shape needs no artwork: the position is the glyph.
 		 *
 		 * Colour, size and spacing are CSS custom properties on
 		 * .wp-postratings, so restyling an existing shape needs no PHP at all.
@@ -92,6 +106,12 @@ class WP_PostRatings_Shapes {
 
 		if ( self::UPDOWN === $shape['type'] ) {
 			return ! empty( $shape['up'] ) && ! empty( $shape['down'] );
+		}
+
+		// A numeric shape is complete without a path, because the position it
+		// is drawn at is the whole of its artwork.
+		if ( self::NUMERIC === $shape['type'] ) {
+			return true;
 		}
 
 		return self::SCALE === $shape['type'] && ! empty( $shape['path'] );
@@ -129,6 +149,12 @@ class WP_PostRatings_Shapes {
 				'type'  => self::SCALE,
 				'label' => __( 'Circles', 'wp-postratings' ),
 				'path'  => 'M12 2.5A9.5 9.5 0 1 1 12 21.5 9.5 9.5 0 0 1 12 2.5z',
+			),
+
+			// --- numeric shapes -----------------------------------------------
+			'number'    => array(
+				'type'  => self::NUMERIC,
+				'label' => __( 'Numbers', 'wp-postratings' ),
 			),
 
 			// --- up/down shapes -----------------------------------------------
@@ -198,6 +224,24 @@ class WP_PostRatings_Shapes {
 	}
 
 	/**
+	 * Whether a shape draws the position rather than a mask.
+	 *
+	 * It is still a scale -- one value out of N -- so everything that asks
+	 * whether this is an up/down pair goes on getting no for an answer. What
+	 * changes is only what a point on it is drawn with, which is why this is a
+	 * separate question rather than a third branch of is_updown().
+	 *
+	 * @param string $name Shape name.
+	 *
+	 * @return bool
+	 */
+	public static function is_numeric_shape( $name ) {
+		$shape = self::get( $name );
+
+		return $shape && self::NUMERIC === $shape['type'];
+	}
+
+	/**
 	 * A shape's SVG as a data URI, for use as a CSS mask.
 	 *
 	 * Encoded only where it must be, which is smaller and more legible than
@@ -213,7 +257,7 @@ class WP_PostRatings_Shapes {
 	public static function data_uri( $name, $variant = '' ) {
 		$shape = self::get( $name );
 
-		if ( ! $shape ) {
+		if ( ! $shape || self::NUMERIC === $shape['type'] ) {
 			return '';
 		}
 
@@ -253,9 +297,7 @@ class WP_PostRatings_Shapes {
 			'heart_crystal'     => 'heart',
 			'squares'           => 'square',
 			'bars'              => 'bar',
-			// Numbers had no shape of its own; a circle carrying the position
-			// reads closest without shipping a font.
-			'numbers'           => 'circle',
+			'numbers'           => 'number',
 			'thumbs'            => 'thumb',
 			'plusminus'         => 'plusminus',
 			'plusminus_crystal' => 'plusminus',
