@@ -135,6 +135,21 @@ async function hoverStep( page, postId, step ) {
 }
 
 /**
+ * Click a point on a scale, the way a visitor does.
+ *
+ * The radio itself is visually hidden behind its label -- that is how the shapes
+ * are drawn -- so the label is what takes the click.
+ *
+ * @param {import('@playwright/test').Page} page   Page showing the control.
+ * @param {number}                          postId Post being rated.
+ * @param {number}                          step   Which point to click.
+ * @return {Promise<void>} Resolves once the click has been sent.
+ */
+async function clickStep( page, postId, step ) {
+	await page.locator( `label[for="wp-postratings-${ postId }-${ step }"]` ).click();
+}
+
+/**
  * Give a post a score without going through the control.
  *
  * @param {number} postId  Post to seed.
@@ -449,6 +464,53 @@ test.describe( 'What a shape shows for a score', () => {
 			expect( await filledShare( page ) ).toBeCloseTo( 0.7, 2 );
 		} );
 	}
+
+	test( 'a numeric vote comes back as digits, in place', async ( { page, requestUtils } ) => {
+		await configure( page, { shape: 'number', check: CHECK.never, allow: ALLOW.everyone } );
+
+		const post = await createRatedPost( requestUtils, uniqueTitle( 'Voted in numbers' ) );
+		await page.goto( post.link );
+
+		await expect( page.locator( '.wp-postratings-scale' ) ).toBeVisible( { timeout: 15_000 } );
+
+		await clickStep( page, post.id, 4 );
+
+		/*
+		 * The reply is rendered in the vote request, not the page request.
+		 *
+		 * Nothing reloads: the script posts the vote and puts whatever comes back
+		 * into the container. So the shape has to survive a second trip through
+		 * the renderer in a different request, and for a numeric scale that is the
+		 * one path in the plugin where no page load has drawn the digits first.
+		 */
+		await expect(
+			page.getByRole( 'img', { name: /average: 4\.00/ } ),
+		).toBeVisible( { timeout: 15_000 } );
+
+		// The control is gone, replaced rather than added to.
+		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+
+		// And what replaced it is still a numeric scale: digits, and no mask.
+		expect( await glyphText( page, '.wp-postratings-strip' ) ).toEqual( [
+			'1',
+			'2',
+			'3',
+			'4',
+			'5',
+			'1',
+			'2',
+			'3',
+			'4',
+			'5',
+		] );
+
+		( await masks( page, '.wp-postratings-strip' ) ).forEach( ( mask ) =>
+			expect( mask ).toBe( 'none' ),
+		);
+
+		// Four of five, painted rather than rounded to the nearest whole digit.
+		expect( await filledShare( page ) ).toBeCloseTo( 0.8, 2 );
+	} );
 
 	test( 'an up or down button takes its own colour under the pointer', async ( {
 		page,
