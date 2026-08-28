@@ -112,13 +112,28 @@
 	gap: var( --wp-postratings-gap, 0 );
 }
 
+/*
+ * One box, drawn once, by one mechanism.
+ *
+ * The sides used to be a border on the container and the top and bottom inset
+ * shadows on the track: the same colour, but the sides fell on the page
+ * background and the top and bottom on the fill's own tint, so the sides came
+ * out at roughly four times the contrast and the box read as two heavy verticals
+ * with nothing joining them. An outline draws all four at once, over whatever is
+ * behind them, and -- unlike the border it replaces -- costs no layout width, so
+ * the track is no longer two pixels narrower than the box around it.
+ *
+ * outline-offset pulls it inside the border box. It is an outline rather than an
+ * inset shadow on the track because a descendant's background paints over an
+ * inset shadow, and the items each carry one; the outline paints after them.
+ */
 .wp-postratings-numeric.wp-postratings-strip,
 .wp-postratings-numeric.wp-postratings-scale {
-	border-inline: 1px solid var( --wp-postratings-color-off, #d4d4d8 );
+	outline: 1px solid var( --wp-postratings-color-off, #d4d4d8 );
+	outline-offset: -1px;
 }
 
-.wp-postratings-numeric .wp-postratings-track,
-.wp-postratings-numeric .wp-postratings-fill,
+/* The scale's steps are separate boxes, so each still draws its own edges. */
 .wp-postratings-numeric.wp-postratings-scale label {
 	box-shadow:
 		inset 0 1px 0 var( --wp-postratings-color-off, #d4d4d8 ),
