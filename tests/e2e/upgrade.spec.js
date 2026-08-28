@@ -206,6 +206,60 @@ test.describe( 'The pre-2.0.0 upgrade', () => {
 		expect( names ).not.toContain( 'wp_postratings_options' );
 	} );
 
+	test( 'a stored permission template gains the reason variable', async ( {
+		page,
+	} ) => {
+		// The settings row as an already-migrated 2.0.0 site holds it: the
+		// defaults were written into it when that version installed, so the
+		// sentence is frozen there and changing the shipped default reaches
+		// nobody. This is the step that corrects the stored copy.
+		//
+		// Seeded and stamped in one call for the reason the fixture above gives:
+		// a second `wp eval` would run the upgrade itself and leave the browser
+		// request below with nothing to do.
+		wpEval(
+			`$options = WP_PostRatings_Options::get();
+			$options['templates']['permission'] = '%RATINGS_IMAGES%<br /><em>' . __( 'You need to be a registered member to rate this.', 'wp-postratings' ) . '</em>';
+			WP_PostRatings_Options::update( $options );
+			update_option( WP_PostRatings_Options::VERSION, array(
+				'plugin' => '2.0.0',
+				'db'     => WP_POSTRATINGS_DB_VERSION,
+			) );
+			echo '<<<done>>>';`,
+		);
+
+		// A front-end request, not the dashboard: the upgrade runs on `init`,
+		// and the whole point of it being there is that a site nobody logs into
+		// still migrates.
+		await page.goto( '/' );
+
+		const template = rawOptions().templates.permission;
+
+		expect( template ).toContain( '%RATINGS_PERMISSION%' );
+		expect( template ).not.toContain( 'registered member' );
+	} );
+
+	test( 'a permission template the site reworded is left as it is', async ( {
+		page,
+	} ) => {
+		const reworded = '%RATINGS_IMAGES%<br /><em>Sorry, no rating for you.</em>';
+
+		wpEval(
+			`$options = WP_PostRatings_Options::get();
+			$options['templates']['permission'] = '${ reworded }';
+			WP_PostRatings_Options::update( $options );
+			update_option( WP_PostRatings_Options::VERSION, array(
+				'plugin' => '2.0.0',
+				'db'     => WP_POSTRATINGS_DB_VERSION,
+			) );
+			echo '<<<done>>>';`,
+		);
+
+		await page.goto( '/' );
+
+		expect( rawOptions().templates.permission ).toBe( reworded );
+	} );
+
 	test( 'an install already on this version is left alone', async ( { page } ) => {
 		// A legacy row that should never be read, alongside markers saying the
 		// upgrade has already happened. maybe_upgrade() returning early is what
