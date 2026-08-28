@@ -678,7 +678,7 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 	/**
 	 * A template with nothing to adopt costs no write of its own.
 	 *
-	 * str_replace() is a no-op when the sentence is absent, so the outcome is
+	 * Replacing a sentence that is not there changes nothing, so the outcome is
 	 * the same either way and no assertion on the stored value can tell the
 	 * guard apart from its absence -- which is why this counts writes instead.
 	 * The upgrade writes the row once through the option migration whatever
