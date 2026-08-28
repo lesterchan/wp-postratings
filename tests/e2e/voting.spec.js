@@ -485,7 +485,7 @@ test.describe( 'Casting a vote', () => {
 		const guest = await asGuest( browser, post.link );
 
 		await expect( guest.page.locator( '.wp-postratings' ).first() ).toContainText(
-			'You need to be a registered member to rate this.',
+			'You need to be logged in to rate this.',
 		);
 		await expect( guest.page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
 
@@ -502,6 +502,14 @@ test.describe( 'Casting a vote', () => {
 		await page.goto( post.link );
 
 		await expect( page.locator( '.wp-postratings-vote' ) ).toHaveCount( 0 );
+
+		// The reason, not merely the absence of the form. Asserting only that
+		// the form was gone is what let this case tell a logged-in member to go
+		// and register for a year: the refusal was right and the sentence
+		// explaining it was the one written for the opposite setting.
+		await expect( page.locator( '.wp-postratings' ).first() ).toContainText(
+			'Only visitors who are not logged in may rate this.',
+		);
 	} );
 
 	test( 'a guest may rate when everyone is allowed', async ( { page, browser, requestUtils } ) => {
