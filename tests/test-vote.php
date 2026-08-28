@@ -595,4 +595,123 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 
 		$this->assertFalse( $fired, 'rate_post was dropped outright in 2.0.0, with no shim' );
 	}
+
+
+	/**
+	 * An existing site's stored template gains the token.
+	 *
+	 * The defaults are written into the option row at install, not read back
+	 * lazily, so changing the shipped default reaches new installs and nobody
+	 * else. Without this step the reason-specific sentences would be live for a
+	 * fresh install while every site already running the plugin -- which is all
+	 * of them -- kept the sentence that is wrong for two of the three refusals.
+	 */
+	public function test_an_existing_permission_template_gains_the_token() {
+		$options                            = WP_PostRatings_Options::get();
+		$options['templates']['permission'] = '%RATINGS_IMAGES% (<em>x</em>)<br /><em>You need to be a registered member to rate this.</em>';
+		WP_PostRatings_Options::update( $options );
+
+		update_option(
+			WP_PostRatings_Options::VERSION,
+			array(
+				'plugin' => '2.0.0',
+				'db'     => '1',
+			)
+		);
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame(
+			'%RATINGS_IMAGES% (<em>x</em>)<br /><em>%RATINGS_PERMISSION%</em>',
+			WP_PostRatings_Options::template( 'permission' ),
+			'an existing site kept the sentence that is wrong for two of the three refusals'
+		);
+	}
+
+	/**
+	 * A site that reworded the sentence keeps its own wording.
+	 *
+	 * Rewording it is a deliberate act, and the upgrade has no business
+	 * deciding it knows better.
+	 */
+	public function test_a_reworded_permission_template_is_left_alone() {
+		$custom                             = '%RATINGS_IMAGES% Sorry, no rating for you.';
+		$options                            = WP_PostRatings_Options::get();
+		$options['templates']['permission'] = $custom;
+		WP_PostRatings_Options::update( $options );
+
+		update_option(
+			WP_PostRatings_Options::VERSION,
+			array(
+				'plugin' => '2.0.0',
+				'db'     => '1',
+			)
+		);
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame( $custom, WP_PostRatings_Options::template( 'permission' ), 'the upgrade overwrote a template the site had reworded' );
+	}
+
+	/**
+	 * A template that already carries the token is not rewritten again.
+	 */
+	public function test_a_template_holding_the_token_is_untouched() {
+		$already                            = '%RATINGS_IMAGES%<br /><em>%RATINGS_PERMISSION%</em>';
+		$options                            = WP_PostRatings_Options::get();
+		$options['templates']['permission'] = $already;
+		WP_PostRatings_Options::update( $options );
+
+		update_option(
+			WP_PostRatings_Options::VERSION,
+			array(
+				'plugin' => '2.0.0',
+				'db'     => '1',
+			)
+		);
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame( $already, WP_PostRatings_Options::template( 'permission' ), 'a template already holding the token was rewritten' );
+	}
+
+	/**
+	 * A template with nothing to adopt costs no write of its own.
+	 *
+	 * str_replace() is a no-op when the sentence is absent, so the outcome is
+	 * the same either way and no assertion on the stored value can tell the
+	 * guard apart from its absence -- which is why this counts writes instead.
+	 * The upgrade writes the row once through the option migration whatever
+	 * happens; the count is one rather than zero for that reason, and the guard
+	 * is what stops it becoming two on every upgrade of every site that has
+	 * reworded the template.
+	 */
+	public function test_adopting_the_token_writes_nothing_when_there_is_nothing_to_adopt() {
+		$options                            = WP_PostRatings_Options::get();
+		$options['templates']['permission'] = '%RATINGS_IMAGES% Sorry, no rating for you.';
+		WP_PostRatings_Options::update( $options );
+
+		update_option(
+			WP_PostRatings_Options::VERSION,
+			array(
+				'plugin' => '2.0.0',
+				'db'     => '1',
+			)
+		);
+
+		$writes = 0;
+
+		add_filter(
+			'pre_update_option_' . WP_PostRatings_Options::OPTION,
+			static function ( $value ) use ( &$writes ) {
+				++$writes;
+
+				return $value;
+			}
+		);
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame( 1, $writes, 'the upgrade rewrote the settings row a second time to store what it already held' );
+	}
 }

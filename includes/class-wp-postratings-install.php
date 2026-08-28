@@ -169,8 +169,51 @@ class WP_PostRatings_Install {
 		}
 
 		self::install();
+		self::adopt_permission_token();
 
 		self::unlock();
+	}
+
+	/**
+	 * Put %RATINGS_PERMISSION% into a stored permission template that still
+	 * carries the sentence it replaces.
+	 *
+	 * The defaults are written into the option row when a site installs or
+	 * migrates, not read back lazily, so changing the shipped default reaches
+	 * new installs and nobody else. Without this the reason-specific sentences
+	 * would be live for a fresh install and every existing site would keep the
+	 * one that is wrong for two of the three refusals.
+	 *
+	 * Only the sentence is touched, and only where it is still exactly the one
+	 * this plugin shipped -- translated through the same call that wrote it, so
+	 * a site running in French matches its French row. A site that reworded it
+	 * meant to, and is left alone; so is a site whose locale has changed since
+	 * the row was written, because then the sentence will not match and nothing
+	 * happens. Both are the safe direction: the worst case is that a site keeps
+	 * the wording it already has.
+	 *
+	 * @since 2.0.1
+	 *
+	 * @return void
+	 */
+	protected static function adopt_permission_token() {
+		$stored = WP_PostRatings_Options::template( 'permission' );
+
+		// The exact string the old default built, in this site's language. This
+		// is the whole test: an empty template, a reworded one, and one already
+		// holding the token all fail it, so none of them needs a guard of its
+		// own -- and a guard no test can tell apart from this one is a branch
+		// pretending to be a decision.
+		$shipped = __( 'You need to be a registered member to rate this.', 'wp-postratings' );
+
+		if ( false === strpos( $stored, $shipped ) ) {
+			return;
+		}
+
+		$options                            = WP_PostRatings_Options::get();
+		$options['templates']['permission'] = str_replace( $shipped, '%RATINGS_PERMISSION%', $stored );
+
+		WP_PostRatings_Options::update( $options );
 	}
 
 	/**

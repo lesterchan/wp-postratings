@@ -66,6 +66,23 @@ single-source-of-truth tidiness.
   `settings_errors( self::PAGE )`, and a transient carries the queue across the
   redirect. Getting this wrong prints every notice twice or none at all; carry a
   test asserting "the notice appears exactly once".
+* **The defaults are written into the option row, not read back lazily.**
+  Install and the migration both store `merge( defaults(), … )`, so changing a
+  shipped default reaches new installs and nobody else — every existing site
+  keeps whatever was frozen into its row. A default that is *wrong* therefore
+  needs an upgrade step to correct the stored copy, or the fix ships looking
+  complete and changes nothing for anyone already running the plugin. That is
+  what `adopt_permission_token()` is; it replaces only the exact sentence the
+  plugin shipped, translated through the same call that wrote it, so a site
+  that reworded the template is left alone.
+* **One refusal template, three reasons.** `can_rate()` turns a visitor away for
+  three different reasons and they all render the same template, so the sentence
+  inside it cannot be written for one of them. It comes from
+  `%RATINGS_PERMISSION%`, which asks `permission_message()` at render time —
+  that also makes it the one part of the template translated in the *visitor's*
+  locale, because every other word in there was translated once when the row was
+  written and frozen. A test that asserts on any-sentence-at-all passes for every
+  branch and tells you nothing: assert the reason for the refusal you set up.
 * **`WP_PostRatings_Shapes::all()` is the single enumeration of shapes.** The
   settings picker, the sanitizer's allow-list and the stylesheet all read from
   it, so a shape registered through the filter is immediately selectable *and*
