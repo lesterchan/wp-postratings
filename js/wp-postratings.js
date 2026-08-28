@@ -1,13 +1,8 @@
 /**
- * WP-PostRatings front end.
+ * WP-PostRatings front end: posts the vote and swaps in the result.
  *
- * Considerably smaller since 2.0.0. Hovering and filling the scale are CSS --
- * `label:hover ~ label` on a reversed row -- so this no longer rewrites image
- * sources on every mouse move. All it does is post the vote and swap in the
- * result.
- *
- * One delegated listener on document covers every rating on the page, whether
- * it was in the original markup or arrived later.
+ * Hover and fill are CSS, so nothing here runs on mouse move. One delegated
+ * listener on document covers ratings added after load.
  */
 ( function() {
 	'use strict';
@@ -47,10 +42,8 @@
 
 		inFlight.add( postId );
 
-		// aria-busy rather than an opacity tween: it dims the control through
-		// CSS *and* tells assistive technology the region is updating. Always
-		// set, because the second half of that is not a preference. A site that
-		// wants no dimming styles .wp-postratings[aria-busy="true"].
+		// aria-busy, not an opacity tween: it dims through CSS and tells
+		// assistive technology the region is updating.
 		container.setAttribute( 'aria-busy', 'true' );
 
 		const body = new URLSearchParams();
@@ -98,9 +91,8 @@
 	 * @return {void}
 	 */
 	function start() {
-		// A scale is radio inputs, so "change" is the right signal: it fires
-		// for a click and for arrow-key navigation alike, which is what makes
-		// the control usable from the keyboard without any extra handling.
+		// "change" covers click and arrow-key alike, so the scale is keyboard
+		// usable with no extra handling.
 		document.addEventListener( 'change', function( event ) {
 			const input = event.target.closest( '.wp-postratings-scale input[type="radio"]' );
 

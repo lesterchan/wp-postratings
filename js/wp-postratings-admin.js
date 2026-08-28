@@ -12,9 +12,8 @@
 	/**
 	 * How many steps the table should have after a change.
 	 *
-	 * Counted from the rows on screen rather than from a Max field, because the
-	 * table is the scale: a separate number telling it how long to be is a
-	 * second place holding one fact.
+	 * Counted from the rows on screen: the table is the scale, and a separate
+	 * Max field would be a second place holding one fact.
 	 *
 	 * @param {number} delta Steps to add, or a negative number to remove.
 	 * @return {number} The number of steps to render.
@@ -22,11 +21,8 @@
 	function steps( delta ) {
 		const chosen = document.querySelector( '.wp-postratings-shape-choice:checked' );
 
-		// A type change starts the new type from its own default length -- five
-		// for a scale, two for an up/down pair -- rather than from however many
-		// rows the old type happened to have. Anything else keeps what is on
-		// screen, so changing one scale's shape for another does not throw the
-		// table away.
+		// A type change restarts from that type's own default length; anything
+		// else keeps what is on screen.
 		if ( 'reset' === delta ) {
 			return chosen ? Number( chosen.dataset.max ) : 0;
 		}
@@ -71,17 +67,9 @@
 			shape: shape.value,
 		} );
 
-		/*
-		 * The table's current state travels with the request only when a step is
-		 * being added or removed. Then it is the same rating with one row more or
-		 * fewer, so every label, value and colour the site has typed should
-		 * survive -- including on the rows that are not changing.
-		 *
-		 * A change of shape is not that. It is a different rating, with different
-		 * labels ("1 Star" means nothing on a thumbs set) and, crossing between
-		 * the two types, different values: an up/down vote is signed, so carrying
-		 * its -1 into a scale left the first row at -1.
-		 */
+		/* The typed table travels only when adding or removing a step. A change
+		   of shape is a different rating -- and an up/down vote is signed, so
+		   carrying its -1 into a scale left the first row at -1. */
 		if ( 'reset' !== delta ) {
 			[ 'text', 'value', 'color', 'color_off' ].forEach( function( field ) {
 				Array.prototype.forEach.call(
@@ -89,11 +77,7 @@
 					function( input, index ) {
 						if ( 'number' !== typeof removed || index !== removed ) {
 							// field[] rather than field: PHP builds an array
-							// from repeated parameters only when they carry
-							// brackets. Without them it keeps the last value
-							// alone, so a three row table arrived as one string
-							// and the first row came back holding the last
-							// row's label.
+							// from repeated parameters only with brackets.
 							query.append( field + '[]', input.value );
 						}
 					},
@@ -125,9 +109,8 @@
 	/**
 	 * Paint a swatch's colour onto the preview in its own row.
 	 *
-	 * The preview is the same markup the front end renders, and it takes its
-	 * colours from two custom properties, so setting them on the cell shows the
-	 * real thing rather than an approximation of it.
+	 * The preview is the front end's own markup, so setting the two custom
+	 * properties on the cell shows the real thing.
 	 *
 	 * @param {Element} input The colour input that changed.
 	 * @return {void}
