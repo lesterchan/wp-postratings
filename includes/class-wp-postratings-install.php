@@ -15,6 +15,16 @@ defined( 'ABSPATH' ) || exit;
 class WP_PostRatings_Install {
 
 	/**
+	 * Row held for the duration of an upgrade, so only one request runs it.
+	 */
+	const UPGRADE_LOCK = 'wp_postratings_upgrade_lock';
+
+	/**
+	 * How long a held lock is believed before it is treated as abandoned.
+	 */
+	const UPGRADE_LOCK_TIMEOUT = 300;
+
+	/**
 	 * Run on activation, for one site or every site on the network.
 	 *
 	 * @param bool $network_wide Whether the plugin is being activated network-wide.
@@ -135,13 +145,82 @@ class WP_PostRatings_Install {
 	 * @return void
 	 */
 	public static function maybe_upgrade() {
-		$markers = WP_PostRatings_Options::markers();
+		if ( ! self::is_behind() ) {
+			return;
+		}
 
-		if ( WP_POSTRATINGS_VERSION === $markers['plugin'] && WP_POSTRATINGS_DB_VERSION === $markers['db'] ) {
+		// Everything install() does is guarded by a check on the state it is about
+		// to change, and two requests can be between the check and the change at
+		// once. maybe_add_indexes() is the one that matters: both read SHOW INDEX,
+		// both find the index missing, and both issue the ALTER. One gets a
+		// duplicate key error -- but on a ratings table with any size to it the
+		// second also sits on the metadata lock for the length of the first, and
+		// this runs on every front-end request until the markers move.
+		if ( ! self::lock() ) {
+			return;
+		}
+
+		// Re-read behind the lock: the request that held it may have finished the
+		// whole upgrade between the check above and the lock coming free.
+		if ( ! self::is_behind() ) {
+			self::unlock();
+
 			return;
 		}
 
 		self::install();
+
+		self::unlock();
+	}
+
+	/**
+	 * Whether the stored markers are behind the running code.
+	 *
+	 * @return bool
+	 */
+	protected static function is_behind() {
+		$markers = WP_PostRatings_Options::markers();
+
+		return WP_POSTRATINGS_VERSION !== $markers['plugin'] || WP_POSTRATINGS_DB_VERSION !== $markers['db'];
+	}
+
+	/**
+	 * Take the upgrade lock for this site.
+	 *
+	 * The atomic half is add_option(): the options table has a unique key on
+	 * option_name, so a second request's INSERT fails rather than overwriting,
+	 * and only one caller is told it succeeded. wp_cache_add() would not do --
+	 * with no persistent object cache it succeeds in every request, and a site
+	 * with no object cache is exactly the one at risk.
+	 *
+	 * Activation does not come through here: activate() calls install() outright,
+	 * because an activation must always run whatever a stale lock says.
+	 *
+	 * @return bool Whether this request now holds the lock.
+	 */
+	protected static function lock() {
+		$held = get_option( self::UPGRADE_LOCK, false );
+
+		if ( false !== $held ) {
+			// A request that died mid-upgrade must not stop every later one from
+			// ever finishing it.
+			if ( ( time() - (int) $held ) < self::UPGRADE_LOCK_TIMEOUT ) {
+				return false;
+			}
+
+			delete_option( self::UPGRADE_LOCK );
+		}
+
+		return add_option( self::UPGRADE_LOCK, time(), '', false );
+	}
+
+	/**
+	 * Release the upgrade lock.
+	 *
+	 * @return void
+	 */
+	protected static function unlock() {
+		delete_option( self::UPGRADE_LOCK );
 	}
 
 	/**

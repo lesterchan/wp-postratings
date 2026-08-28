@@ -327,4 +327,72 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		$this->assertSame( 0, $writes, 'the migration rewrote an already-migrated install' );
 		$this->assertSame( $before, WP_PostRatings_Options::get(), 'An already migrated install writes nothing.' );
 	}
+
+	/**
+	 * A second request does not upgrade while another one holds the lock.
+	 *
+	 * Everything install() does is a check on the state it is about to change,
+	 * and it runs on every front-end request until the markers move:
+	 * maybe_add_indexes() reads SHOW INDEX and then ALTERs. Two requests
+	 * between the read and the ALTER both issue it.
+	 */
+	public function test_a_request_does_not_upgrade_while_another_holds_the_lock() {
+		add_option( WP_PostRatings_Install::UPGRADE_LOCK, time(), '', false );
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertNotSame(
+			WP_POSTRATINGS_VERSION,
+			WP_PostRatings_Options::markers()['plugin'],
+			'the upgrade ran while another request held the lock'
+		);
+	}
+
+	/**
+	 * A lock left behind by a request that died is taken back.
+	 *
+	 * Otherwise one fatal during the upgrade would stop every later request
+	 * from ever finishing it, and the site would stay behind for good.
+	 */
+	public function test_a_lock_left_by_a_dead_request_is_taken_back() {
+		add_option( WP_PostRatings_Install::UPGRADE_LOCK, time() - ( WP_PostRatings_Install::UPGRADE_LOCK_TIMEOUT + 1 ), '', false );
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame(
+			WP_POSTRATINGS_VERSION,
+			WP_PostRatings_Options::markers()['plugin'],
+			'an abandoned lock is believed rather than stolen'
+		);
+		$this->assertFalse( get_option( WP_PostRatings_Install::UPGRADE_LOCK, false ), 'and the lock is released afterwards' );
+	}
+
+	/**
+	 * The lock is released whichever way the upgrade leaves.
+	 *
+	 * A lock held past the end of the request that took it is a lock nothing
+	 * releases for five minutes, so every request in that window skips an
+	 * upgrade it should have run.
+	 */
+	public function test_the_upgrade_lock_is_never_left_held() {
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertFalse( get_option( WP_PostRatings_Install::UPGRADE_LOCK, false ), 'the lock survived a completed upgrade' );
+
+		// And again on the path where nothing is owed at all.
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertFalse( get_option( WP_PostRatings_Install::UPGRADE_LOCK, false ), 'the lock survived a no-op run' );
+	}
+
+	/**
+	 * Uninstall takes the lock row with it.
+	 */
+	public function test_uninstall_removes_the_upgrade_lock() {
+		$this->assertContains(
+			WP_PostRatings_Install::UPGRADE_LOCK,
+			WP_PostRatings_Options::all_option_names(),
+			'the lock is not on the list uninstall deletes'
+		);
+	}
 }

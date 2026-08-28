@@ -941,6 +941,10 @@ class WP_PostRatings_Options {
 			array(
 				self::OPTION,
 				self::VERSION,
+				// The upgrade's own bookkeeping, absent on a site that finished one --
+				// but a site uninstalling part way through an interrupted upgrade
+				// would otherwise keep it.
+				WP_PostRatings_Install::UPGRADE_LOCK,
 				'widget_ratings',
 				'widget_ratings-widget',
 				'widget_ratings_highest_rated',
