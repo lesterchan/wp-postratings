@@ -294,6 +294,97 @@ class WP_PostRatings_Vote_Test extends WP_PostRatings_TestCase {
 		$this->assertFalse( WP_PostRatings_Rating::can_rate(), 'With guests-only set, a member is refused.' );
 	}
 
+	/**
+	 * Each refusal explains itself, rather than all three sharing one sentence.
+	 *
+	 * The permission template covers every reason a visitor may not rate, so
+	 * before %RATINGS_PERMISSION% existed it carried one hard-coded sentence
+	 * written for the logged-in-only case. Guests Only refuses a logged-in
+	 * member and then told them to register, which is the one thing that would
+	 * not help.
+	 *
+	 * @return void
+	 */
+	public function test_each_refusal_gets_its_own_reason() {
+		$this->set_options( array( 'allowtorate' => 0 ) );
+		wp_set_current_user( self::factory()->user->create() );
+
+		$this->assertSame(
+			'Only visitors who are not logged in may rate this.',
+			WP_PostRatings_Rating::permission_message(),
+			'Guests Only told a logged-in member to register.'
+		);
+
+		$this->set_options( array( 'allowtorate' => 1 ) );
+		wp_set_current_user( 0 );
+
+		$this->assertSame(
+			'You need to be logged in to rate this.',
+			WP_PostRatings_Rating::permission_message(),
+			'Logged-in Only did not tell a guest to log in.'
+		);
+	}
+
+	/**
+	 * A visitor who may rate is told nothing.
+	 *
+	 * The token sits in a template that is only rendered on refusal, but it is
+	 * a template a site can edit and paste anywhere, so it must not produce a
+	 * sentence contradicting a control the reader can see.
+	 *
+	 * @return void
+	 */
+	public function test_a_visitor_who_may_rate_gets_no_reason() {
+		$this->set_options( array( 'allowtorate' => 2 ) );
+		wp_set_current_user( 0 );
+
+		$this->assertTrue( WP_PostRatings_Rating::can_rate(), 'the fixture is not one where rating is allowed' );
+		$this->assertSame( '', WP_PostRatings_Rating::permission_message(), 'A visitor who may rate was given a reason not to.' );
+	}
+
+	/**
+	 * The reason is filterable.
+	 *
+	 * @return void
+	 */
+	public function test_the_reason_is_filterable() {
+		$this->set_options( array( 'allowtorate' => 1 ) );
+		wp_set_current_user( 0 );
+
+		add_filter( 'wp_postratings_permission_message', static fn() => 'Members only, sorry.' );
+
+		$this->assertSame( 'Members only, sorry.', WP_PostRatings_Rating::permission_message(), 'the filter did not run' );
+	}
+
+	/**
+	 * The shipped permission template carries the token, not a fixed sentence.
+	 *
+	 * @return void
+	 */
+	public function test_the_default_permission_template_uses_the_token() {
+		$this->assertStringContainsString(
+			'%RATINGS_PERMISSION%',
+			WP_PostRatings_Options::template( 'permission' ),
+			'the default template went back to a hard-coded sentence'
+		);
+	}
+
+	/**
+	 * And the token is expanded when the template is rendered.
+	 *
+	 * @return void
+	 */
+	public function test_the_token_is_expanded_in_the_rendered_template() {
+		$this->set_options( array( 'allowtorate' => 0 ) );
+		wp_set_current_user( self::factory()->user->create() );
+
+		$post_id = $this->make_rated_post( 0, 0 );
+		$output  = WP_PostRatings_Template::expand( WP_PostRatings_Options::template( 'permission' ), $post_id );
+
+		$this->assertStringNotContainsString( '%RATINGS_PERMISSION%', $output, 'the token survived into the output' );
+		$this->assertStringContainsString( 'Only visitors who are not logged in may rate this.', $output, 'the reason did not reach the output' );
+	}
+
 	// --- logging methods --------------------------------------------------
 
 	/**

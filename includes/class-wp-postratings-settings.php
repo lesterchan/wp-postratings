@@ -795,7 +795,7 @@ class WP_PostRatings_Settings {
 		return array(
 			'vote'         => '%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_SCORE%</strong> ' . $rating . $comma . ' <strong>%RATINGS_USERS%</strong> ' . $votes . ')<br />%RATINGS_TEXT%',
 			'text'         => '%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> ' . $rating . $comma . ' <strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' <strong>' . $rated . '</strong></em>)',
-			'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> ' . $rating . $comma . ' <strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' <strong>' . $rated . '</strong></em>)<br /><em>' . __( 'You need to be a registered member to rate this.', 'wp-postratings' ) . '</em>',
+			'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_SCORE%</strong> ' . $rating . $comma . ' <strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' <strong>' . $rated . '</strong></em>)<br /><em>%RATINGS_PERMISSION%</em>',
 			'none'         => '%RATINGS_IMAGES_VOTE% (' . __( 'No Ratings Yet', 'wp-postratings' ) . ')<br />%RATINGS_TEXT%',
 			'highestrated' => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> (%RATINGS_SCORE% ' . $rating . $comma . ' %RATINGS_USERS% ' . $votes . ')</li>',
 			'mostrated'    => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> - %RATINGS_USERS% ' . $votes . '</li>',
@@ -826,7 +826,7 @@ class WP_PostRatings_Settings {
 			),
 			'permission'   => array(
 				__( 'Ratings No Permission Text:', 'wp-postratings' ),
-				array( '%RATINGS_IMAGES%', '%RATINGS_MAX%', '%RATINGS_SCORE%', '%RATINGS_USERS%', '%RATINGS_AVERAGE%', '%RATINGS_PERCENTAGE%' ),
+				array( '%RATINGS_IMAGES%', '%RATINGS_MAX%', '%RATINGS_SCORE%', '%RATINGS_USERS%', '%RATINGS_AVERAGE%', '%RATINGS_PERCENTAGE%', '%RATINGS_PERMISSION%' ),
 			),
 			'none'         => array(
 				__( 'Ratings None:', 'wp-postratings' ),

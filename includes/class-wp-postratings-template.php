@@ -945,6 +945,7 @@ class WP_PostRatings_Template {
 				'%RATINGS_AVERAGE%',
 				'%RATINGS_PERCENTAGE%',
 				'%RATINGS_USERS%',
+				'%RATINGS_PERMISSION%',
 			),
 			array(
 				$post_ratings_alt_text,
@@ -954,6 +955,7 @@ class WP_PostRatings_Template {
 				number_format_i18n( $post_ratings_average, 2 ),
 				number_format_i18n( $post_ratings_percentage, 2 ),
 				number_format_i18n( $post_ratings_users ),
+				WP_PostRatings_Rating::permission_message(),
 			),
 			$value
 		);

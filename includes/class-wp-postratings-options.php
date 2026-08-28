@@ -368,7 +368,7 @@ class WP_PostRatings_Options {
 			'templates'        => array(
 				'vote'         => '%RATINGS_IMAGES_VOTE% (<strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%)<br />%RATINGS_TEXT%',
 				'text'         => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%' . $comma . ' <strong>' . $rated . '</strong></em>)',
-				'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%</em>)<br /><em>' . __( 'You need to be a registered member to rate this.', 'wp-postratings' ) . '</em>',
+				'permission'   => '%RATINGS_IMAGES% (<em><strong>%RATINGS_USERS%</strong> ' . $votes . $comma . ' ' . $average . ': <strong>%RATINGS_AVERAGE%</strong> ' . $out_of . ' %RATINGS_MAX%</em>)<br /><em>%RATINGS_PERMISSION%</em>',
 				'none'         => '%RATINGS_IMAGES_VOTE% (' . __( 'No Ratings Yet', 'wp-postratings' ) . ')<br />%RATINGS_TEXT%',
 				'highestrated' => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> %RATINGS_IMAGES% (%RATINGS_AVERAGE% ' . $out_of . ' %RATINGS_MAX%)</li>',
 				'mostrated'    => '<li><a href="%POST_URL%" title="%POST_TITLE%">%POST_TITLE%</a> - %RATINGS_USERS% ' . $votes . '</li>',

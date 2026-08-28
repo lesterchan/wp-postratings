@@ -79,6 +79,50 @@ class WP_PostRatings_Rating {
 	}
 
 	/**
+	 * Why the current visitor may not rate, as a sentence to show them.
+	 *
+	 * One template covers every refusal, so before this existed it carried one
+	 * hard-coded sentence for all of them -- and that sentence was written for
+	 * the logged-in-only case. A site set to Guests Only refuses a logged-in
+	 * member and then told them to become a registered member, which is the
+	 * opposite of what would let them rate.
+	 *
+	 * Empty when the visitor may rate: the token expands to nothing rather than
+	 * to a sentence contradicting a control the reader can see.
+	 *
+	 * @since 2.0.1
+	 *
+	 * @return string
+	 */
+	public static function permission_message() {
+		if ( self::can_rate() ) {
+			$message = '';
+		} else {
+			switch ( (int) WP_PostRatings_Options::get( 'allowtorate' ) ) {
+				case 0:
+					$message = __( 'Only visitors who are not logged in may rate this.', 'wp-postratings' );
+					break;
+				case 3:
+					$message = __( 'You need to be a member of this site to rate this.', 'wp-postratings' );
+					break;
+				case 1:
+				default:
+					$message = __( 'You need to be logged in to rate this.', 'wp-postratings' );
+					break;
+			}
+		}
+
+		/**
+		 * Filters the sentence explaining why the visitor may not rate.
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param string $message The sentence, or '' when the visitor may rate.
+		 */
+		return (string) apply_filters( 'wp_postratings_permission_message', $message );
+	}
+
+	/**
 	 * Whether a post is one that may be rated.
 	 *
 	 * Publicly viewable, or readable by whoever is asking. The guard is there to

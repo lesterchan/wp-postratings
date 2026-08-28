@@ -204,6 +204,11 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 	/**
 	 * A visitor who may not rate gets the permission template.
 	 *
+	 * Asserting on the reason for *this* refusal, not on any sentence: the
+	 * template used to carry one hard-coded line for all three refusals, and a
+	 * test that accepted it whatever the setting was is what let the Guests
+	 * Only case tell a logged-in member to go and register.
+	 *
 	 * @return void
 	 */
 	public function test_a_visitor_without_permission_sees_the_notice() {
@@ -212,7 +217,7 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$post_id = $this->make_rated_post( 1, 4 );
 
-		$this->assertStringContainsString( 'registered member', the_ratings( 'div', $post_id, false ), 'A visitor without permission is told why rather than shown the form.' );
+		$this->assertStringContainsString( 'You need to be logged in to rate this.', the_ratings( 'div', $post_id, false ), 'A visitor without permission is told why rather than shown the form.' );
 	}
 
 	/**
