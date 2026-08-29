@@ -138,7 +138,9 @@ class WP_PostRatings {
 	 * block in the current post; anything rendering later than the head -- a
 	 * theme's template tag, a loop page, the comment author strip -- asks via
 	 * WP_PostRatings_Template::request_assets() and footer_scripts() picks it
-	 * up.
+	 * up. A rating neither pass can reach, such as markup fetched over AJAX
+	 * into a page that shows none itself, says so through the
+	 * `wp_postratings_needs_assets` filter.
 	 *
 	 * @return void
 	 */
@@ -156,6 +158,32 @@ class WP_PostRatings {
 	 * @return bool
 	 */
 	protected function needs_assets() {
+		/**
+		 * Filters whether the head enqueues the front end assets.
+		 *
+		 * The shapes detected here are the ones a plugin can see before the
+		 * page is built. Something that renders a rating by another route --
+		 * markup fetched over AJAX into an already loaded page, a template
+		 * that builds its own -- is invisible to all of them, and returning
+		 * true says so.
+		 *
+		 * Returning false suppresses the head enqueue only. Any rating that
+		 * then renders still asks for the assets from the footer, so this is
+		 * not a way to keep the stylesheet off a page that shows a rating.
+		 *
+		 * @since 2.0.2
+		 *
+		 * @param bool $needs_assets Whether a rating was detected.
+		 */
+		return (bool) apply_filters( 'wp_postratings_needs_assets', $this->detect_rating() );
+	}
+
+	/**
+	 * Whether a rating is visible in the request before the page is built.
+	 *
+	 * @return bool
+	 */
+	protected function detect_rating() {
 		if ( is_active_widget( false, false, 'ratings-widget', true ) ) {
 			return true;
 		}

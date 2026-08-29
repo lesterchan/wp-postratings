@@ -220,6 +220,27 @@ If you do want to replace the stylesheet wholesale, WP-PostRatings loads `wp-pos
 
 Note the filename changed in 2.0.0: it was `postratings-css.css` before. A theme still shipping the old name is simply ignored, and the plugin's own stylesheet loads instead. There is no separate RTL stylesheet any more either, because the rules use logical properties.
 
+### My own code renders a rating and the page loads no stylesheet or script
+The head pass looks for the ratings widget, a `[ratings]` shortcode and the block, and
+anything rendering after it — a template tag, a rating in a loop page, the comment
+author strip — asks for the assets as it renders and gets them from the footer.
+
+Neither reaches rating markup fetched over `admin-ajax.php` or the REST API into a page
+that itself shows no rating: the fetch has no footer to enqueue into, and the page
+carried nothing for the head to find. The symptom is a rating that will not vote, drawn
+as bare radio buttons because every rating shape is a CSS mask in that stylesheet.
+
+Say so from the page that will hold the rating:
+
+```php
+add_filter( 'wp_postratings_needs_assets', '__return_true' );
+```
+
+Anywhere the rating can be predicted this early will do. Code that already runs later in
+the page — a `the_content` filter inserting a placeholder, say — can call
+`WP_PostRatings_Template::request_assets()` instead, which is the same request the render
+paths make and is picked up by the footer pass.
+
 ### How To Use Ratings Stats With Widgets?
 1. Go to `WP-Admin -> Appearance -> Widgets`
 2. The widget name is Ratings.
