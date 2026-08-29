@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, vote, ajax, post  
 Requires at least: 6.8  
 Tested up to: 7.1  
-Stable tag: 2.0.1  
+Stable tag: 2.0.2  
 Requires PHP: 8.2  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -512,6 +512,9 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 5. The Ratings block in the editor, previewing the control for the post it is pointed at, with the sidebar choosing that post and whether the rating can be cast or only read
 
 ## Changelog
+### 2.0.2
+* NEW: A `wp_postratings_needs_assets` filter, for code that renders a rating where WP-PostRatings cannot see it coming. 2.0.0 loads the stylesheet and the rating script only where it finds the ratings widget, a `[ratings]` shortcode, the block, or a rating rendering during the page itself. Rating markup fetched over `admin-ajax.php` or the REST API into a page that shows no rating of its own is none of those, and got neither file — leaving a rating that cannot vote and, since every shape is a CSS mask, draws as a bare row of radio buttons. Returning true from the filter is how such a page asks for them.
+
 ### 2.0.1
 * NEW: **Numbers is a rating shape again.** It was the one pre-2.0.0 image set with no shape to land on — every other set was a glyph repeated once per point, and a CSS mask cannot differ per position — so it was parked on circles, and a site that had chosen numbers came back from the update to five identical circles with no way to get the digits back. Numbers is now a shape of its own, offered under **Scale** beside the others, and the `numbers` image set maps onto it. It draws as one continuous bar of cells rather than five floating glyphs, and takes its colours from the Rated and Not rated settings like every other shape, so it has no palette of its own. Sites already migrated onto circles can simply select it; nothing about their ratings changes, only what those ratings are drawn with
 * NEW: `wp_postratings_shapes` accepts `'type' => 'numeric'`, for a scale drawn as its own positions. Such a shape needs no path, and the digits follow the site's locale
