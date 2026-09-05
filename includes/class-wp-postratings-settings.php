@@ -77,6 +77,11 @@ class WP_PostRatings_Settings {
 	const SECTION_SNIPPETS = 'wp_postratings_snippets';
 
 	/**
+	 * Living with a page cache in front of the site.
+	 */
+	const SECTION_CACHING = 'wp_postratings_caching';
+
+	/**
 	 * What this plugin contributes to WP-Stats.
 	 */
 	const SECTION_STATS = 'wp_postratings_stats';
@@ -226,6 +231,7 @@ class WP_PostRatings_Settings {
 			array( self::SECTION_RATINGS, __( 'Individual Rating Text and Value', 'wp-postratings' ), $settings ),
 			array( self::SECTION_VOTING, __( 'Who May Rate', 'wp-postratings' ), $settings ),
 			array( self::SECTION_SNIPPETS, __( 'Google Rich Snippets', 'wp-postratings' ), $settings ),
+			array( self::SECTION_CACHING, __( 'Page Caching', 'wp-postratings' ), $settings ),
 			array( self::SECTION_STATS, __( 'WP-Stats', 'wp-postratings' ), $settings ),
 			array( self::SECTION_TEMPLATES, '', $templates ),
 		);
@@ -242,6 +248,7 @@ class WP_PostRatings_Settings {
 			array( 'check_method', __( 'Check For Repeat Votes:', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'ip_header', __( 'Header That Contains The IP', 'wp-postratings' ), self::SECTION_VOTING, $settings ),
 			array( 'schema_type', __( 'Show ratings in Google results?', 'wp-postratings' ), self::SECTION_SNIPPETS, $settings ),
+			array( 'page_cache', __( 'Are Your Pages Cached?', 'wp-postratings' ), self::SECTION_CACHING, $settings ),
 			array( 'stats_display', __( 'Show A Ratings Section On The Stats Page?', 'wp-postratings' ), self::SECTION_STATS, $settings ),
 			array( 'stats_most_limit', __( 'Entries Per Stats List:', 'wp-postratings' ), self::SECTION_STATS, $settings ),
 		);
@@ -298,12 +305,12 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * Intro for the AJAX section.
+	 * Intro for the page caching section.
 	 *
 	 * @return void
 	 */
-	public static function section_ajax() {
-		echo '<p>' . esc_html__( 'Votes are posted in the background; this is what the visitor sees while that happens.', 'wp-postratings' ) . '</p>';
+	public static function section_caching() {
+		echo '<p>' . esc_html__( 'A rating is built for the visitor who asked for the page. A page cache then shows that same copy to everybody else.', 'wp-postratings' ) . '</p>';
 	}
 
 	/**
@@ -598,6 +605,29 @@ class WP_PostRatings_Settings {
 		</p>
 		<p class="description">
 			<?php esc_html_e( 'Marking a post as something it is not, to collect stars, is what Google calls spammy structured markup, and it costs a manual action rather than a ranking.', 'wp-postratings' ); ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Whether the front end corrects its ratings after the page loads.
+	 *
+	 * @return void
+	 */
+	public static function field_page_cache() {
+		?>
+		<?php /* A hidden 0 sharing the name, for the reason given at field_stats_display(). */ ?>
+		<input type="hidden" name="<?php echo esc_attr( self::name( 'page_cache' ) ); ?>" value="0" />
+		<label>
+			<input type="checkbox" id="wp_postratings_page_cache" name="<?php echo esc_attr( self::name( 'page_cache' ) ); ?>"
+				value="1" <?php checked( (int) WP_PostRatings_Options::get( 'page_cache' ), 1 ); ?> />
+			<?php esc_html_e( 'My pages are served from a cache', 'wp-postratings' ); ?>
+		</label>
+		<p class="description">
+			<?php esc_html_e( 'Tick this if a caching plugin, a CDN or your host serves your pages from a cache. Each rating then asks the site what it should be showing once the page has loaded, so visitors see the current vote count rather than the one that was cached, and their vote is accepted however long the page has been sitting in the cache.', 'wp-postratings' ); ?>
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'Leave it off otherwise. It costs one extra request per page, and a site with no page cache in front of it has nothing to correct.', 'wp-postratings' ); ?>
 		</p>
 		<?php
 	}

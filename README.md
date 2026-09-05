@@ -4,7 +4,7 @@ Donate link: https://lesterchan.net/site/donation/
 Tags: ratings, rating, vote, ajax, post  
 Requires at least: 6.8  
 Tested up to: 7.1  
-Stable tag: 2.0.2  
+Stable tag: 2.1.0  
 Requires PHP: 8.2  
 License: GPLv2 or later  
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -74,12 +74,15 @@ A rating lives in two places — the running totals each post displays, and a ro
 ### REST API
 ```
 GET  /wp-json/postratings/v1/post/<id>
+GET  /wp-json/postratings/v1/posts?ids=<id>,<id>,<id>
 POST /wp-json/postratings/v1/post/<id>/rate
 ```
 
 Reading is public, because a rating is public. Rating takes the same `wp_postratings_<id>-nonce` the rendered control already carries, passed as a `nonce` parameter, and is subject to the same eligibility and repeat-rating settings as rating through the page.
 
-Each response carries the rendered markup as well as the numbers, because your templates and your chosen shape decide what a rating looks like.
+Each response carries the rendered markup as well as the numbers, because your templates and your chosen shape decide what a rating looks like. `html` is the read-only result; `visitor_html` and `nonce` are what *this* visitor should be looking at, which is the control if they may still rate. The batch read leaves out an id naming nothing ratable rather than failing the whole request, and answers for at most 100 posts.
+
+The read routes send `Cache-Control: no-store, private`, because `has_rated`, `can_rate` and the nonce are answered for one visitor.
 
 **A refusal answers 403**, not 400 — a rating already cast, a rating off the end of the scale, a bad nonce. 400 is kept for a parameter this plugin never had a chance to look at. A post that does not exist answers 404, and so does one you are not allowed to rate — a draft belonging to somebody else answers exactly as a deleted post does, rather than confirming it is there.
 
@@ -154,6 +157,24 @@ If you are behind a proxy, name the exact header your proxy sets, for example `H
 
 Because the stored value has changed shape, rating logs recorded through such a header before 2.0.0 will not match any more, and some visitors may be able to rate one more time. Logs recorded without the field set are unaffected.
 
+
+### My ratings show "No Ratings Yet" or the wrong vote count, or voting says "Failed To Verify Referrer"
+
+Both are the same cause: a page cache in front of your site.
+
+A rating is built at the moment the page is generated. It holds the vote count as it stood then, the choice between the voting control and the read-only result for the visitor who asked, and a token that authorises that visitor's vote. A page cache stores all of it and serves the same copy to everybody until something purges it — and a vote does not purge anything, so the count on the page falls behind the count in the database. The token expires within a day whatever the cache does, which is when voting starts failing outright.
+
+Tick **Are Your Pages Cached?** under **Ratings -> Settings -> Page Caching**. Each rating then asks the site what it should be showing once the page has finished loading, so the count, the control and the token are all the ones the visitor should have had. This applies to any page cache — a caching plugin, a CDN, a reverse proxy, or one your host runs for you.
+
+Leave it off if you do not cache pages. It costs one extra request per page, and without a cache the rating was already correct.
+
+If some of your pages are excluded from the cache and you would rather they skipped the request, `wp_postratings_refreshes_ratings` decides it per request:
+
+```php
+add_filter( 'wp_postratings_refreshes_ratings', function ( $refresh ) {
+	return $refresh && ! is_singular( 'post' );
+} );
+```
 
 ### How To Change Schema Type?
 
@@ -512,6 +533,13 @@ These examples use `WP_Query` rather than `query_posts()`, which the old ones ca
 5. The Ratings block in the editor, previewing the control for the post it is pointed at, with the sidebar choosing that post and whether the rating can be cast or only read
 
 ## Changelog
+### 2.1.0
+* NEW: **A page cache no longer freezes your ratings.** A rating is built for whoever asked for the page -- their vote count at that moment, whether they have already rated, and a token that lets them vote -- and a page cache then serves that one copy to everybody until something purges it. Nothing votes to trigger a purge, so a post could sit showing "No Ratings Yet" with votes already recorded against it, and once the cached token had aged past its lifetime every vote from that page came back "Failed To Verify Referrer" instead of a rating. Tick **Are Your Pages Cached?** under **Ratings -> Settings -> Page Caching** and each rating asks the site what it should be showing once the page has loaded, which puts all three right. Off by default: it costs one request per page, and a site with no page cache in front of it has nothing to correct.
+* NEW: A `postratings/v1/posts?ids=1,2,3` route, reading several posts' ratings at once, so a page showing ten of them corrects itself in one request rather than ten.
+* NEW: The read routes return `visitor_html` and `nonce` beside the figures -- what this particular visitor should be looking at, which is the control if they have not rated and the result if they have. `html` is unchanged and still the read-only result.
+* CHANGED: The read routes send `Cache-Control: no-store, private`. Everything in the response is answered for one visitor, and WordPress only sends no-cache headers on a REST response when the request is logged in -- which these are not.
+* NEW: `wp_postratings_refreshes_ratings` filters that behaviour per request, for a page excluded from the cache, or a cache the setting has not been told about.
+
 ### 2.0.2
 * NEW: A `wp_postratings_needs_assets` filter, for code that renders a rating where WP-PostRatings cannot see it coming. 2.0.0 loads the stylesheet and the rating script only where it finds the ratings widget, a `[ratings]` shortcode, the block, or a rating rendering during the page itself. Rating markup fetched over `admin-ajax.php` or the REST API into a page that shows no rating of its own is none of those, and got neither file — leaving a rating that cannot vote and, since every shape is a CSS mask, draws as a bare row of radio buttons. Returning true from the filter is how such a page asks for them.
 

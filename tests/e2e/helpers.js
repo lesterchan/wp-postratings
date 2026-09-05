@@ -153,6 +153,7 @@ async function configure( page, settings = {} ) {
 		check = CHECK.never,
 		schema = '',
 		ipHeader = '',
+		pageCache = false,
 	} = settings;
 
 	await openSettings( page );
@@ -168,6 +169,10 @@ async function configure( page, settings = {} ) {
 	// matched against, so a test that set one and did not clear it would keep
 	// deciding that for every test after it.
 	await page.locator( '#wp_postratings_ip_header' ).fill( ipHeader );
+
+	// Same reasoning: left ticked it would put a REST request on every front
+	// end page for every test after the one that wanted it.
+	await page.locator( '#wp_postratings_page_cache' ).setChecked( pageCache );
 
 	await saveSettings( page );
 }

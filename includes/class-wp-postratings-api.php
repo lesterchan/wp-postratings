@@ -8,7 +8,8 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Exposes reading a post's rating and casting one over the REST API.
+ * Exposes reading a post's rating -- one at a time or several at once -- and
+ * casting one, over the REST API.
  *
  * The namespace is the bare noun `postratings/v1` rather than the plugin slug.
  * A `wp-` prefix is a wordpress.org directory convention for keeping one
@@ -36,6 +37,16 @@ class WP_PostRatings_API {
 	 * @var string
 	 */
 	const REST_NAMESPACE = 'postratings/v1';
+
+	/**
+	 * The most posts one batch read will answer for.
+	 *
+	 * A ceiling rather than an error: the caller is a page listing the ratings
+	 * it is showing, and no page shows a hundred.
+	 *
+	 * @var int
+	 */
+	const MAX_BATCH = 100;
 
 	/**
 	 * Register the routes once the REST API is up.
@@ -68,6 +79,26 @@ class WP_PostRatings_API {
 				'callback'            => array( $this, 'get_rating' ),
 				'permission_callback' => '__return_true',
 				'args'                => $id,
+			)
+		);
+
+		// A page showing ten ratings is one request, not ten. The read route
+		// exists so a cached page can correct itself, and an archive is
+		// exactly where a page cache pays off most -- charging it a round trip
+		// per rating would take back what the cache was for.
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'posts',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_ratings' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'ids' => array(
+						'required'    => true,
+						'description' => __( 'Post ids to read, comma separated.', 'wp-postratings' ),
+					),
+				),
 			)
 		);
 
@@ -133,30 +164,106 @@ class WP_PostRatings_API {
 			return $post;
 		}
 
-		$rating = WP_PostRatings_Data::get( $post_id );
+		return $this->no_store( rest_ensure_response( $this->rating_payload( $post_id ) ) );
+	}
 
-		return rest_ensure_response(
-			array(
-				'post_id'   => $post_id,
-				'users'     => $rating['users'],
-				'score'     => $rating['score'],
-				'average'   => $rating['average'],
-				'has_rated' => (bool) WP_PostRatings_Rating::has_rated( $post_id ),
-				'can_rate'  => (bool) WP_PostRatings_Rating::can_rate(),
-				// The markup is returned as well as the numbers because the
-				// rating templates and the shape are the site's to change: a
-				// client rebuilding the stars itself would ignore both.
-				'html'      => WP_PostRatings_Template::expand(
-					WP_PostRatings_Options::template( 'text' ),
-					$post_id,
-					(object) array(
-						'ratings_users'   => $rating['users'],
-						'ratings_score'   => $rating['score'],
-						'ratings_average' => $rating['average'],
-					)
-				),
-			)
+	/**
+	 * Return several posts' ratings in one response.
+	 *
+	 * An id naming nothing ratable is left out rather than failing the batch.
+	 * The caller is a page correcting the ratings it is showing, and one post
+	 * deleted since the page was cached must not cost the other nine theirs.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function get_ratings( $request ) {
+		$ids = array_slice(
+			array_unique(
+				array_filter(
+					array_map( 'absint', explode( ',', (string) $request['ids'] ) )
+				)
+			),
+			0,
+			self::MAX_BATCH
 		);
+
+		$posts = array();
+
+		foreach ( $ids as $post_id ) {
+			if ( ! WP_PostRatings_Rating::is_ratable( $post_id ) ) {
+				continue;
+			}
+
+			$posts[] = $this->rating_payload( $post_id );
+		}
+
+		return $this->no_store( rest_ensure_response( array( 'posts' => $posts ) ) );
+	}
+
+	/**
+	 * One post's rating, as both routes report it.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param int $post_id Post being read.
+	 * @return array
+	 */
+	private function rating_payload( $post_id ) {
+		$rating = WP_PostRatings_Data::get( $post_id );
+		$block  = WP_PostRatings_Template::block( $post_id );
+
+		return array(
+			'post_id'      => $post_id,
+			'users'        => $rating['users'],
+			'score'        => $rating['score'],
+			'average'      => $rating['average'],
+			'has_rated'    => (bool) WP_PostRatings_Rating::has_rated( $post_id ),
+			'can_rate'     => (bool) WP_PostRatings_Rating::can_rate(),
+			// The markup is returned as well as the numbers because the
+			// rating templates and the shape are the site's to change: a
+			// client rebuilding the stars itself would ignore both.
+			'html'         => WP_PostRatings_Template::expand(
+				WP_PostRatings_Options::template( 'text' ),
+				$post_id,
+				(object) array(
+					'ratings_users'   => $rating['users'],
+					'ratings_score'   => $rating['score'],
+					'ratings_average' => $rating['average'],
+				)
+			),
+			// `html` is the read-only result and stays that, because it has
+			// been that since 2.0.0 and something is reading it. This is the
+			// other question: not "what does this rating say" but "what should
+			// this visitor be looking at" -- which for somebody who has not
+			// rated yet is the control, and a control needs its nonce.
+			'visitor_html' => $block['html'],
+			'nonce'        => $block['nonce'],
+		);
+	}
+
+	/**
+	 * Forbid storing a read response.
+	 *
+	 * Core sends no-cache headers on a REST response only when the request is
+	 * logged in -- `rest_send_nocache_headers` defaults to
+	 * `is_user_logged_in()` -- and these routes are read by exactly the
+	 * logged-out visitors that default excludes. Everything in the payload is
+	 * answered for one visitor: whether they have rated, whether they may, and
+	 * a nonce. A CDN holding one copy of that and serving it to the next
+	 * visitor would undo the whole point of asking.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param WP_REST_Response $response Response to mark.
+	 * @return WP_REST_Response
+	 */
+	private function no_store( $response ) {
+		$response->header( 'Cache-Control', 'no-store, private' );
+
+		return $response;
 	}
 
 	/**

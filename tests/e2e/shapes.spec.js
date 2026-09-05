@@ -608,11 +608,14 @@ test.describe( 'What a shape shows for a score', () => {
 		// Five more steps, through the screen that adds them.
 		await openSettings( page );
 
+		// One click at a time. Each rebuilds the table over AJAX, and a click
+		// sent while the last rebuild is still in flight lands on a row that is
+		// about to be replaced and is lost -- which shows up as a scale two
+		// steps short, several assertions later.
 		for ( let i = 0; i < 5; i++ ) {
 			await page.locator( '#wp-postratings-add-step' ).click();
+			await expect( page.locator( '#wp-postratings-rating-fields tbody tr' ) ).toHaveCount( 6 + i );
 		}
-
-		await expect( page.locator( '#wp-postratings-rating-fields tbody tr' ) ).toHaveCount( 10 );
 		await saveSettings( page );
 
 		const post = await createResultsPost( requestUtils, uniqueTitle( 'Rated out of ten' ) );

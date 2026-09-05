@@ -36,7 +36,27 @@ export function l10nFixture() {
 		textWait: 'Please rate only 1 item at a time.',
 		showLoading: '1',
 		showFading: '1',
+		restUrl: 'https://example.com/wp-json/postratings/v1/posts',
+		// '' rather than false, because wp_localize_script() casts every
+		// scalar it is given to a string. Off unless a test asks for it.
+		refresh: '',
 	};
+}
+
+/**
+ * The markup the PHP side emits for a post this visitor has already rated.
+ *
+ * No control and no data-nonce: there is nothing left for them to vote with.
+ *
+ * @param {number} postId Post id.
+ * @return {string} Markup.
+ */
+export function resultsMarkup( postId = 4 ) {
+	return (
+		'<span id="wp-postratings-' + postId + '" class="wp-postratings">' +
+		'<span class="wp-postratings-strip"></span> (<em>4 votes</em>)' +
+		'</span>'
+	);
 }
 
 /**

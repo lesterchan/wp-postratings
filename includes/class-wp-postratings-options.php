@@ -345,6 +345,11 @@ class WP_PostRatings_Options {
 			'check_method'     => 3,
 			'ip_header'        => '',
 			'schema_type'      => '',
+			// Whether the front end corrects itself from the REST API after
+			// load. Off, because it costs a request and only a page cache
+			// makes it necessary -- and no page cache can be detected from
+			// here, so the site owner is the one who knows.
+			'page_cache'       => 0,
 			// The plugin's half of the WP-Stats contract. Its own setting now,
 			// not a slice of a row six plugins wrote to at once.
 			'stats_display'    => 1,
@@ -619,7 +624,7 @@ class WP_PostRatings_Options {
 			$clean['ip_header'] = preg_match( '/^[A-Z0-9_]*$/', $ip_header ) ? $ip_header : '';
 		}
 
-		foreach ( array( 'stats_display' ) as $key ) {
+		foreach ( array( 'page_cache', 'stats_display' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
 			}

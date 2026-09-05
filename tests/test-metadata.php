@@ -26,7 +26,7 @@ class WP_PostRatings_Metadata_Test extends Plugin_Metadata_TestCase {
 	 * @return string
 	 */
 	protected function expected_version() {
-		return '2.0.2';
+		return '2.1.0';
 	}
 
 	/**

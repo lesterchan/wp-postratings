@@ -249,8 +249,54 @@ class WP_PostRatings {
 				// scale or the plugin URL to rewrite <img> sources with.
 				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
 				'textWait' => __( 'Please rate only 1 item at a time.', 'wp-postratings' ),
+				'restUrl'  => rest_url( WP_PostRatings_API::REST_NAMESPACE . '/posts' ),
+				// '1' or '', not true or false: wp_localize_script() casts
+				// every scalar it is given to a string, so a boolean here
+				// would reach the browser as '1' and '' anyway. Said outright,
+				// because '' is falsy in JavaScript and 'false' would not be.
+				'refresh'  => $this->refreshes_ratings() ? '1' : '',
 			)
 		);
+	}
+
+	/**
+	 * Whether the front end should correct its ratings from the REST API.
+	 *
+	 * A rating is rendered for one visitor -- their vote count at that moment,
+	 * whether they have rated, and a nonce that expires -- and a page cache
+	 * then serves that to everybody until it is purged. Nothing votes to
+	 * trigger the purge, so the counts stay behind and, once the nonce has
+	 * aged past its tick, voting fails outright.
+	 *
+	 * The setting rather than detection because there is nothing to detect: a
+	 * CDN or a reverse proxy caching the page leaves no trace in the request
+	 * that produced it. Off by default, so a site that does not cache pays
+	 * nothing for a fix it does not need.
+	 *
+	 * Logged-in visitors are excluded whatever the setting says. Page caches
+	 * pass them through, so their markup was built for them and is already
+	 * right.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @return bool
+	 */
+	protected function refreshes_ratings() {
+		$refresh = (bool) WP_PostRatings_Options::get( 'page_cache' ) && ! is_user_logged_in();
+
+		/**
+		 * Filters whether the front end refreshes its ratings after load.
+		 *
+		 * The setting is a statement about the site: its pages are cached. This
+		 * is the same question per request, for the pages where the answer
+		 * differs -- one excluded from the cache has nothing to correct, and a
+		 * cache the setting does not know about can switch it on.
+		 *
+		 * @since 2.1.0
+		 *
+		 * @param bool $refresh Whether the setting is on and the visitor is logged out.
+		 */
+		return (bool) apply_filters( 'wp_postratings_refreshes_ratings', $refresh );
 	}
 
 	/**

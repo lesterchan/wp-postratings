@@ -84,6 +84,52 @@ class WP_PostRatings_Template {
 	}
 
 	/**
+	 * What a given visitor should be shown inside a rating's wrapper.
+	 *
+	 * Three outcomes -- the read-only result, the refusal, or the control --
+	 * and which one applies depends on the visitor rather than the post: the
+	 * cookie, the IP or the username the check method matches on. It is
+	 * therefore decided per request and cannot be cached with the page.
+	 *
+	 * Both callers need the same answer. the_ratings() renders it into the
+	 * page; the REST read route hands it to a client correcting a page that
+	 * was rendered for somebody else. Two copies of a three-way branch would
+	 * drift, and drift here means a visitor shown a control that will not
+	 * accept their vote.
+	 *
+	 * The nonce comes back beside the markup because only the third outcome
+	 * has one, and the caller has no other way to tell which outcome it got.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param int $post_id Post being rendered.
+	 *
+	 * @return array{html: string, nonce: string} Inner markup, and the vote nonce or ''.
+	 */
+	public static function block( $post_id ) {
+		$post_id = (int) $post_id;
+
+		if ( WP_PostRatings_Rating::has_rated( $post_id ) ) {
+			return array(
+				'html'  => the_ratings_results( $post_id ),
+				'nonce' => '',
+			);
+		}
+
+		if ( ! WP_PostRatings_Rating::can_rate() ) {
+			return array(
+				'html'  => the_ratings_results( $post_id, 0, 0, 0, 1 ),
+				'nonce' => '',
+			);
+		}
+
+		return array(
+			'html'  => the_ratings_vote( $post_id ),
+			'nonce' => wp_create_nonce( 'wp_postratings_' . $post_id . '-nonce' ),
+		);
+	}
+
+	/**
 	 * Resolve a stored name to a shape.
 	 *
 	 * Installs that have not run the 2.0.0 migration yet still store an image

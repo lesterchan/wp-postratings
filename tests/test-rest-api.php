@@ -85,7 +85,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 	}
 
 	/**
-	 * Both routes are registered.
+	 * Every route is registered.
 	 *
 	 * @return void
 	 */
@@ -93,6 +93,7 @@ class WP_PostRatings_REST_API_Test extends WP_PostRatings_TestCase {
 		$routes = rest_get_server()->get_routes();
 
 		$this->assertArrayHasKey( '/postratings/v1/post/(?P<id>\d+)', $routes, 'Reading a rating is routed.' );
+		$this->assertArrayHasKey( '/postratings/v1/posts', $routes, 'Reading several at once is routed.' );
 		$this->assertArrayHasKey( '/postratings/v1/post/(?P<id>\d+)/rate', $routes, 'And rating is routed.' );
 	}
 

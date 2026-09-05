@@ -13,6 +13,16 @@
 	const inFlight = new Set();
 
 	/**
+	 * Posts this visitor has voted on, and never emptied again.
+	 *
+	 * Separate from inFlight, which is emptied the moment the vote lands. A
+	 * refresh resolving a heartbeat later would then find nothing in the way
+	 * and paint the visitor's own result over with what the page should have
+	 * shown before they clicked.
+	 */
+	const voted = new Set();
+
+	/**
 	 * Post a vote and replace the control with whatever comes back.
 	 *
 	 * @param {Element} control The fieldset or button group that was used.
@@ -41,6 +51,7 @@
 		const nonce = container.dataset.nonce || container.getAttribute( 'data-nonce' );
 
 		inFlight.add( postId );
+		voted.add( postId );
 
 		// aria-busy, not an opacity tween: it dims through CSS and tells
 		// assistive technology the region is updating.
@@ -86,6 +97,77 @@
 	}
 
 	/**
+	 * Replace every rating on the page with one built for this visitor.
+	 *
+	 * Only runs where the site has said its pages are cached. The markup on a
+	 * cached page was rendered for whoever filled the cache: its vote counts
+	 * are that moment's, the choice between the control and the read-only
+	 * result is that visitor's, and its nonce has been ageing ever since. One
+	 * request answers for every rating on the page and puts all three right.
+	 *
+	 * A rating this visitor has voted on is skipped, whether that vote has
+	 * landed yet or not: they got there first, and their result is newer than
+	 * anything this was sent to say.
+	 *
+	 * @return {void}
+	 */
+	function refresh() {
+		const containers = new Map();
+
+		// The class, not an id prefix: every radio on a scale is
+		// wp-postratings-<post>-<step>, so a prefix match would offer up
+		// "4-2" as a post id and quietly ask about a post that is not there.
+		document.querySelectorAll( '.wp-postratings' ).forEach( function( el ) {
+			const postId = Number( el.id.slice( 'wp-postratings-'.length ) );
+
+			if ( ! postId ) {
+				return;
+			}
+
+			// A list rather than the element, because one post can be on the
+			// page twice -- a [ratings] shortcode and the block both point at
+			// whichever post they were given, and both are supported. Keeping
+			// only the last would correct one of them and leave the other
+			// showing what the cache had.
+			containers.set( postId, ( containers.get( postId ) || [] ).concat( el ) );
+		} );
+
+		if ( ! containers.size ) {
+			return;
+		}
+
+		const url = l10n.restUrl + ( l10n.restUrl.includes( '?' ) ? '&' : '?' ) +
+			'ids=' + [ ...containers.keys() ].join( ',' );
+
+		window
+			.fetch( url, { credentials: 'same-origin' } )
+			.then( function( response ) {
+				return response.json();
+			} )
+			.then( function( data ) {
+				( data.posts || [] ).forEach( function( post ) {
+					if ( voted.has( post.post_id ) ) {
+						return;
+					}
+
+					( containers.get( post.post_id ) || [] ).forEach( function( container ) {
+						container.innerHTML = post.visitor_html;
+
+						if ( post.nonce ) {
+							container.dataset.nonce = post.nonce;
+						} else {
+							delete container.dataset.nonce;
+						}
+					} );
+				} );
+			} )
+			.catch( function() {
+				// The cached markup stays. Stale counts are worse than fresh
+				// ones and better than an empty box.
+			} );
+	}
+
+	/**
 	 * Attach the delegated listeners.
 	 *
 	 * @return {void}
@@ -123,6 +205,10 @@
 				vote( control, Number( button.dataset.rating ) );
 			}
 		} );
+
+		if ( l10n.refresh ) {
+			refresh();
+		}
 	}
 
 	if ( 'loading' === document.readyState ) {

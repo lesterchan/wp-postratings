@@ -134,6 +134,22 @@ single-source-of-truth tidiness.
   `get_comment_type()`, `get_comment_author()` and `get_comment_author_IP()`,
   each of which otherwise falls back to that same global. A unit test cannot see
   this, because its comment loop is one the test set up by hand.
+* **A rendered rating is three per-visitor answers, and a page cache freezes all
+  three.** The vote count as it stood, which of the three templates that visitor
+  should see, and a nonce that expires within a day. Cached, they go stale, then
+  wrong, then voting fails outright with "Failed To Verify Referrer" — and no
+  vote purges the cache, so nothing corrects it. The fix is the `page_cache`
+  setting: the front end re-asks the REST read route after load and repaints.
+  **`WP_PostRatings_Template::block()` is the one place that three-way branch
+  lives**, because `the_ratings()` and the read route must not answer it
+  differently — drift there means a visitor handed a control their vote will be
+  refused from. Off by default and skipped for logged-in visitors, who bypass
+  every page cache and whose markup was therefore built for them.
+* **The REST read routes must send their own `no-store`.** Core sends no-cache
+  headers on a REST response only when `is_user_logged_in()`, and these routes
+  exist for logged-out visitors. The payload holds `has_rated`, `can_rate` and a
+  nonce — all answered for one visitor — so an intermediary caching it hands one
+  visitor's answers to the next and reintroduces the bug the route exists to fix.
 * **`setcookie()` is guarded by `headers_sent()`.**
 * **Only the first valid address in the trusted proxy header is read.** Logs
   recorded through the old whole-chain behaviour no longer match, so a few
@@ -188,8 +204,8 @@ too, where `styles()` has already run.
 
 ## WP-CLI and REST
 
-`wp postratings list|get|delete`, and `postratings/v1` with two routes: read a
-post's rating, cast one.
+`wp postratings list|get|delete`, and `postratings/v1` with three routes: read a
+post's rating, read several at once, cast one.
 
 **A rating lives in two places** -- the running totals in post meta and a row per
 vote in the log -- so "clear this post's ratings" is ambiguous until you say

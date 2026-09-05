@@ -38,8 +38,6 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 
 	$ratings_id = (int) $ratings_id;
 
-	$user_voted = check_rated( $ratings_id );
-
 	$attributes = 'id="wp-postratings-' . $ratings_id . '" class="wp-postratings"';
 
 	/** This filter is documented in includes/class-wp-postratings-template.php */
@@ -56,14 +54,16 @@ function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 		$attributes .= ' ' . $itemtype;
 	}
 
-	if ( $user_voted ) {
-		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id ) . '</' . $start_tag . '>';
-	} elseif ( ! check_allowtorate() ) {
-		$output = "<$start_tag $attributes>" . the_ratings_results( $ratings_id, 0, 0, 0, 1 ) . '</' . $start_tag . '>';
-	} else {
-		$nonce  = wp_create_nonce( 'wp_postratings_' . $ratings_id . '-nonce' );
-		$output = "<$start_tag $attributes data-nonce=\"" . esc_attr( $nonce ) . '">' . the_ratings_vote( $ratings_id ) . '</' . $start_tag . '>';
+	// The same three-way branch the REST read route answers with, so a page
+	// correcting itself after a cache served it cannot be handed a different
+	// outcome than the one the page would have rendered uncached.
+	$block = WP_PostRatings_Template::block( $ratings_id );
+
+	if ( '' !== $block['nonce'] ) {
+		$attributes .= ' data-nonce="' . esc_attr( $block['nonce'] ) . '"';
 	}
+
+	$output = "<$start_tag $attributes>" . $block['html'] . '</' . $start_tag . '>';
 
 	if ( ! $display ) {
 		return $output;
