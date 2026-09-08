@@ -1,13 +1,19 @@
 name: Package
 
-# A zip somebody can install, built, filtered and transformed the way a
-# release is.
+# Builds the zip a release would have built: bin/build if this plugin has
+# blocks, the deploy's own exclusion list, the readme transform, then an
+# artifact named for the version and the commit.
 #
-# Run it from the Actions tab; there is no automatic trigger, because it exists
-# for the times a forum reporter needs a fix before it is on wordpress.org
-# rather than for every push. The artifact keeps for 90 days, the longest a
-# public repository may, and downloading it needs a GitHub account -- somebody
-# without one needs the zip re-hosted for them.
+# Run it from the Actions tab. It exists for the times somebody on the forum
+# needs a fix before it is on wordpress.org -- the GitHub source zip cannot
+# serve, because build/ is generated and absent from git, and because the zip
+# unpacks under a name WordPress installs beside the copy they already have
+# rather than over it. Downloading the artifact needs a GitHub account.
+#
+# The job itself lives in lesterchan/wordpress-plugins. The exclusion list it
+# applies is already a copy of the one in the release procedure, and a copy of a
+# copy in nineteen repositories is how one skip list ends up with five
+# spellings.
 
 on:
   workflow_dispatch:
@@ -17,117 +23,4 @@ permissions:
 
 jobs:
   package:
-    name: Build an installable zip
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install dev dependencies
-        run: npm ci --no-fund --no-audit
-
-      # bin/build, not wp-scripts directly: the compile is only half of what
-      # that script does, and CI has already shipped a build/ with no index.php
-      # in it once by taking the shortcut.
-      - name: Build blocks
-        run: bin/build
-
-      # The release procedure's own exclusion list, copied. Two copies of one
-      # decision will drift, and the direction they drift matters: a dev file
-      # this list has not learned about yet ends up in the zip, which costs a
-      # few kilobytes. The alternative -- listing what to include -- fails the
-      # other way, silently omitting a directory added later, and hands a
-      # reporter a plugin that is not the one they were asked to test.
-      #
-      # src is excluded and build is not. build/ is what
-      # register_block_type_from_metadata() loads; unbuilt JSX is of no use to a
-      # site. Never add build here however symmetrical the pair looks. bin is
-      # excluded, which is safe only because the build step above already ran.
-      #
-      # The config entries are globbed rather than named: these tools take a
-      # base config plus variants, and an exact name shipped the variant --
-      # phpunit-multisite.xml.dist is the one that proved it.
-      #
-      # Assembled under artifacts/ on purpose. The deploy rsyncs the working
-      # tree rather than a clean export, so any directory left on disk that the
-      # list above does not name ships to wordpress.org -- and that list already
-      # names this one, because it is where Playwright leaves its traces. A
-      # staging directory called dist/ would have been a nested copy of the
-      # plugin waiting for the next release to pick it up.
-      - name: Assemble the plugin directory
-        run: |
-          mkdir -p artifacts/package/wp-postratings
-          rsync --recursive \
-            --exclude='*.git*' --exclude='vendor' --exclude='.idea' --exclude='.travis.yml' \
-            --exclude='.editorconfig' --exclude='phpcs*.xml*' --exclude='node_modules' \
-            --exclude='package.json' --exclude='package-lock.json' --exclude='.nvmrc' \
-            --exclude='.eslintrc*' --exclude='.eslintignore' --exclude='eslint.config.*' \
-            --exclude='.prettierrc*' --exclude='prettier.config.*' --exclude='tests' \
-            --exclude='phpunit*.xml*' --exclude='.phpunit.result.cache' \
-            --exclude='composer.json' --exclude='composer.lock' --exclude='.wp-env*.json' \
-            --exclude='playwright.config.*' --exclude='vitest.config.*' --exclude='vite.config.*' \
-            --exclude='src' --exclude='bin' \
-            --exclude='CLAUDE.md' --exclude='AGENTS.md' --exclude='.claude' \
-            --exclude='artifacts' --exclude='.DS_Store' \
-            ./ artifacts/package/wp-postratings/
-
-      # What trunk holds is not what the rsync copied. The release drops
-      # anything a .svnignore names -- no lesterchan plugin has one today, so
-      # the loop is guarded rather than left to fail quietly -- and renames the
-      # readme, because wordpress.org reads readme.txt.
-      #
-      # The fence expression matches any language and is anchored at the line
-      # start. Naming the languages it knew is what once let a ```css fence
-      # through as ~~~css, and this plugin has one.
-      #
-      # sed -i takes no argument here. The release runs on macOS, where -i
-      # requires one and is written `-i ''`; that is a syntax error on the
-      # runner, which is GNU.
-      - name: Apply the release's readme transform
-        run: |
-          cd artifacts/package/wp-postratings
-          if [ -f ../../../.svnignore ]; then
-            while read -r f; do rm -rf "$f"; done < ../../../.svnignore
-          fi
-          if [ -f README.md ]; then
-            mv README.md readme.txt
-            sed -i -E 's/^```[a-zA-Z0-9+#-]*/~~~/' readme.txt
-          fi
-
-      # An exclusion list cannot tell a missing file from an excluded one, so
-      # the two that would make the zip worthless are checked by name: the
-      # plugin cannot load without its main file, and the blocks register from
-      # build/ and would fail silently without it.
-      - name: Check the zip is worth shipping
-        run: |
-          for path in wp-postratings.php readme.txt includes build/ratings/block.json; do
-            if [ ! -e "artifacts/package/wp-postratings/$path" ]; then
-              echo "Assembled tree is missing $path" >&2
-              exit 1
-            fi
-          done
-
-      # Named for the version and the commit, so a zip that turns up in a
-      # support thread three weeks from now can still be traced to what built it.
-      - name: Zip it
-        id: zip
-        run: |
-          version=$(sed -n 's/^ \* Version: *//p' wp-postratings.php | head -1)
-          name="wp-postratings-${version}-${GITHUB_SHA::7}"
-          (cd artifacts/package && zip -rq "${name}.zip" wp-postratings)
-          echo "name=${name}" >> "$GITHUB_OUTPUT"
-
-      # The zip is uploaded as a file, not as a directory: GitHub zips an
-      # artifact itself, and a directory arrives as a zip whose top level is the
-      # plugin's contents, which WordPress cannot install. One unwrap and the
-      # file inside is the installable one.
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.zip.outputs.name }}
-          path: artifacts/package/${{ steps.zip.outputs.name }}.zip
-          retention-days: 90
-          if-no-files-found: error
+    uses: lesterchan/wordpress-plugins/.github/workflows/package.yml@main
