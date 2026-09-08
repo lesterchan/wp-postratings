@@ -91,14 +91,17 @@ test.describe( 'The pre-2.0.0 upgrade', () => {
 		expect( stored ).not.toBe( false );
 		expect( stored.ratings.text[ 0 ] ).toBe( 'Awful' );
 
-		// Strings, not integers, and that is WordPress rather than this plugin:
-		// a scalar option round-trips through the database as text, so what the
-		// fold-in reads out of postratings_max is "5" whatever was written. The
-		// rows that were arrays -- the two parallel ratings lists -- keep their
-		// types, because those are serialised. Every reader casts, which is why
-		// it has never mattered, and why a test asserting 5 here would be
-		// asserting something untrue of every install in the world.
-		expect( stored.max ).toBe( '5' );
+		// The scale is an integer and its neighbour is a string, and the
+		// difference is deliberate. A scalar option round-trips through the
+		// database as text, so what the fold-in reads out of postratings_max is
+		// "5" whatever was written -- and every reader casts, which is why it
+		// has never mattered for allowtorate and does not here. The scale is the
+		// exception because the fold-in now checks it rather than copying it:
+		// 1.x saved whatever its Max field posted, including 0 when the field
+		// posted nothing, and a zero has no floor anywhere downstream. Checking
+		// it means casting it, and the row is a serialised array, so the integer
+		// is what comes back out.
+		expect( stored.max ).toBe( 5 );
 		expect( stored.allowtorate ).toBe( '1' );
 
 		// logging_method became check_method: the setting never chose whether to
