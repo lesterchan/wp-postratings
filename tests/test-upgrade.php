@@ -104,6 +104,50 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 		update_option( 'postratings_template_mostrated', '<li>M %POST_TITLE%</li>' );
 	}
 
+	// --- a site already on 2.x --------------------------------------------
+
+	/**
+	 * An install already migrated with a broken scale is repaired by the next
+	 * update, without the owner touching anything.
+	 *
+	 * This is the state a site is in after 2.0.x carried a legacy zero across:
+	 * the fifteen loose rows are gone, so there is nothing left to migrate --
+	 * and the zero is in the consolidated row, where merge() will keep handing
+	 * it back over the default for good. The upgrade markers move on every
+	 * release, so the migration is reached again, and it now reads its own
+	 * stored value rather than only the rows it is folding in.
+	 *
+	 * @return void
+	 */
+	public function test_the_next_update_repairs_a_scale_already_carried_across() {
+		WP_PostRatings_Install::maybe_upgrade();
+
+		// Delete the legacy rows the way a completed 2.0.x migration leaves the
+		// site, then break the scale in the consolidated row it wrote.
+		foreach ( WP_PostRatings_Options::all_option_names() as $name ) {
+			if ( 0 === strpos( $name, 'postratings_' ) ) {
+				delete_option( $name );
+			}
+		}
+
+		update_option(
+			WP_PostRatings_Options::OPTION,
+			array_merge( WP_PostRatings_Options::get(), array( 'max' => 0 ) )
+		);
+
+		// And put the markers back to where the previous release left them.
+		delete_option( WP_PostRatings_Options::VERSION );
+
+		WP_PostRatings_Install::maybe_upgrade();
+
+		$this->assertSame( 5, WP_PostRatings_Options::get( 'max' ), 'the next update left the broken scale in place' );
+		$this->assertSame(
+			array( 'Awful', 'Poor', 'OK', 'Good', 'Superb' ),
+			WP_PostRatings_Options::get( 'ratings' )['text'],
+			'repairing the scale disturbed the rating labels'
+		);
+	}
+
 	// --- the settings survive ---------------------------------------------
 
 	/**
@@ -116,7 +160,7 @@ class WP_PostRatings_Upgrade_Test extends WP_PostRatings_TestCase {
 
 		$options = WP_PostRatings_Options::get();
 
-		$this->assertSame( '5', $options['max'], 'The scale survives the upgrade.' );
+		$this->assertSame( 5, $options['max'], 'The scale survives the upgrade.' );
 		$this->assertSame( '1', $options['allowtorate'], 'The permission setting.' );
 		$this->assertSame( '2', $options['check_method'], 'The check method.' );
 		$this->assertSame( 'HTTP_CF_CONNECTING_IP', $options['ip_header'], 'And the header setting.' );

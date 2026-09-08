@@ -830,9 +830,13 @@ class WP_PostRatings_Template {
 		// every early return had to remember to put it back. get_the_content(),
 		// get_the_post_thumbnail() and get_post() all take a post, so the
 		// template reads another post without the loop ever noticing.
-		$options        = WP_PostRatings_Options::get();
-		$ratings_image  = $options['shape'];
-		$ratings_max    = (int) $options['max'];
+		$options       = WP_PostRatings_Options::get();
+		$ratings_image = $options['shape'];
+		// Floored, because a zero divides the percentage below and reaches the
+		// structured data as bestRating="0". The migration repairs the stored
+		// scale of an install that carried one across from 1.x; this covers a row
+		// edited by hand or filtered by something else.
+		$ratings_max    = max( 1, (int) $options['max'] );
 		$ratings_custom = (int) $options['customrating'];
 
 		$post_id = is_object( $post_data ) ? (int) $post_data->ID : (int) $post_data;
@@ -1168,7 +1172,9 @@ class WP_PostRatings_Template {
 
 		$ratings_meta = '';
 
-		if ( $post_ratings_average > 0 ) {
+		// A one point scale has nothing to say: bestRating would equal
+		// worstRating, which Google reads as malformed rather than as a rating.
+		if ( $post_ratings_average > 0 && $ratings_max > 1 ) {
 			$ratings_meta .= '<div class="wp-postratings-schema" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">';
 			$ratings_meta .= '<meta itemprop="bestRating" content="' . esc_attr( $ratings_max ) . '" />';
 			$ratings_meta .= '<meta itemprop="worstRating" content="1" />';

@@ -875,6 +875,43 @@ class WP_PostRatings_Options {
 			$merged['shape'] = WP_PostRatings_Template::resolve_shape( $merged['shape'] );
 		}
 
+		/*
+		 * The scale is clamped here because it is clamped nowhere else.
+		 *
+		 * This is the one write that does not pass through sanitize(): update()
+		 * is reached from init, and the sanitize callback is not registered
+		 * until admin_init. Everything the loop above copied arrives exactly as
+		 * 1.x left it, and 1.x left the scale in whatever state its screen
+		 * happened to post -- including 0, which is what it wrote whenever the
+		 * field was absent from the submission. A custom image set made that
+		 * field readonly and filled it from the folder's file count, so a folder
+		 * the site had since deleted counted nothing and saved a zero.
+		 *
+		 * Left alone the zero is permanent, because merge() only fills in keys
+		 * that are missing: a stored 0 shadows the default however many times
+		 * the upgrade runs. It reaches the front end as bestRating="0" in the
+		 * structured data, which Search Console rejects, and as a division by
+		 * zero working out the percentage.
+		 *
+		 * Only a scale outside the permitted range is touched, so a site that
+		 * deliberately rates on four of its five labels keeps doing that. The
+		 * repair counts the labels, because the table is the scale now; a site
+		 * with no usable table lands on the default rather than the floor, since
+		 * 0 means the scale was never validly set and five is what 1.x wrote on
+		 * activation.
+		 */
+		$scale = (int) ( $merged['max'] ?? 0 );
+
+		if ( WP_PostRatings_Shapes::is_updown( WP_PostRatings_Template::resolve_shape( $merged['shape'] ?? '' ) ) ) {
+			$merged['max'] = 2;
+		} elseif ( $scale >= self::MIN_SCALE && $scale <= self::max_scale() ) {
+			$merged['max'] = $scale;
+		} elseif ( self::table_fits_type( $merged, 'star' ) ) {
+			$merged['max'] = count( $merged['ratings']['text'] );
+		} else {
+			$merged['max'] = self::defaults()['max'];
+		}
+
 		$merged = self::migrate_stats_settings( $merged );
 
 		self::update( self::merge( self::defaults(), $merged ) );

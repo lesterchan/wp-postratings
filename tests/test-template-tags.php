@@ -369,4 +369,58 @@ class WP_PostRatings_Template_Tags_Test extends WP_PostRatings_TestCase {
 
 		$this->assertSame( 10, (int) get_ratings_users( false ), 'The site total is every vote added up.' );
 	}
+
+	// --- a broken scale on the front end ----------------------------------
+
+	/**
+	 * A stored scale of zero neither fatals nor reaches the markup.
+	 *
+	 * The percentage divides by the scale, so on PHP 8 a zero is a
+	 * DivisionByZeroError on any rated post -- and on PHP 7 it was an INF that
+	 * carried on and wrote bestRating="0" into the structured data, which Search
+	 * Console rejects. The migration repairs the stored value of an install that
+	 * carried one across from 1.x; this is the row that got there some other
+	 * way.
+	 *
+	 * @return void
+	 */
+	public function test_a_zero_scale_does_not_reach_the_structured_data() {
+		$post_id = $this->make_rated_post( 4, 18 );
+
+		// Written past update() on purpose: sanitize() would refuse it, which is
+		// the whole reason a row in this state is worth a test.
+		update_option(
+			WP_PostRatings_Options::OPTION,
+			array_merge(
+				WP_PostRatings_Options::get(),
+				array(
+					'max'         => 0,
+					'schema_type' => 'Product',
+				)
+			)
+		);
+
+		$this->go_to( get_permalink( $post_id ) );
+
+		$rendered = WP_PostRatings_Template::expand( '%RATINGS_IMAGES%', $post_id );
+
+		$this->assertStringNotContainsString( 'bestRating', $rendered, 'a one point scale still claimed a best rating' );
+		$this->assertStringNotContainsString( 'aggregateRating', $rendered, 'an aggregate rating was published with nothing to aggregate against' );
+	}
+
+	/**
+	 * A scale the site does have is published as the best rating.
+	 *
+	 * @return void
+	 */
+	public function test_the_scale_is_the_best_rating() {
+		$post_id = $this->make_rated_post( 4, 18 );
+
+		$this->set_options( array( 'schema_type' => 'Product' ) );
+		$this->go_to( get_permalink( $post_id ) );
+
+		$rendered = WP_PostRatings_Template::expand( '%RATINGS_IMAGES%', $post_id );
+
+		$this->assertStringContainsString( '<meta itemprop="bestRating" content="5" />', $rendered, 'the best rating did not follow the scale' );
+	}
 }

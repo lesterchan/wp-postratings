@@ -69,10 +69,98 @@ class WP_PostRatings_Options_Test extends WP_PostRatings_TestCase {
 		$options = WP_PostRatings_Options::get();
 
 		$this->assertSame( 'thumb', $options['shape'], 'the up/down set did not map to its shape' );
-		$this->assertSame( '2', $options['max'], 'The customised scale carries across the migration.' );
+		$this->assertSame( 2, $options['max'], 'The customised scale carries across the migration.' );
 		$this->assertSame( '4', $options['check_method'], 'The check method.' );
 		$this->assertSame( array( 'Vote Down', 'Vote Up' ), $options['ratings']['text'], 'The rating labels.' );
 		$this->assertSame( array( -1, 1 ), $options['ratings']['value'], 'And the values behind them.' );
+	}
+
+	/**
+	 * A 1.x scale of zero is repaired rather than carried across.
+	 *
+	 * The old screen wrote whatever was posted and wrote 0 when the field was
+	 * absent, which a custom image set made it: the field went readonly and was
+	 * filled from the folder's file count, so a deleted folder counted nothing.
+	 * The migration is the one write that does not pass through sanitize(), and
+	 * merge() only fills in keys that are missing, so a zero that arrives here
+	 * is a zero the site keeps for good -- reaching the front end as
+	 * bestRating="0" and as a division by zero.
+	 *
+	 * The table is the scale, so the labels are what it is rebuilt from.
+	 *
+	 * @return void
+	 */
+	public function test_a_zero_scale_is_rebuilt_from_the_rating_table() {
+		$this->build_stock_legacy_install();
+
+		update_option( 'postratings_max', '0' );
+		update_option( 'postratings_ratingstext', array( 'A', 'B', 'C', 'D', 'E', 'F', 'G' ) );
+		update_option( 'postratings_ratingsvalue', array( 1, 2, 3, 4, 5, 6, 7 ) );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 7, WP_PostRatings_Options::get( 'max' ), 'a zero scale survived the migration' );
+	}
+
+	/**
+	 * With no table to count either, it lands on the default.
+	 *
+	 * Not on MIN_SCALE: zero means the scale was never validly set, and five is
+	 * what 1.x wrote on activation, so five is the honest answer.
+	 *
+	 * @return void
+	 */
+	public function test_a_zero_scale_with_no_usable_table_falls_back_to_the_default() {
+		$this->build_stock_legacy_install();
+
+		update_option( 'postratings_max', '0' );
+		update_option( 'postratings_ratingstext', array( 'Only', 'Two' ) );
+		update_option( 'postratings_ratingsvalue', array( 1, 2 ) );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame(
+			WP_PostRatings_Options::defaults()['max'],
+			WP_PostRatings_Options::get( 'max' ),
+			'a zero scale with no table to count did not fall back to the default'
+		);
+	}
+
+	/**
+	 * A scale the site meant is left exactly as it was.
+	 *
+	 * 1.x let the number and the table disagree, and a site rating on four of
+	 * its five labels was doing that on purpose. Only a scale outside the
+	 * permitted range is touched.
+	 *
+	 * @return void
+	 */
+	public function test_a_valid_scale_is_not_rewritten_to_match_the_table() {
+		$this->build_stock_legacy_install();
+
+		update_option( 'postratings_max', '4' );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 4, WP_PostRatings_Options::get( 'max' ), 'a deliberate scale was overwritten by the label count' );
+	}
+
+	/**
+	 * A scale past the cap is repaired the same way a zero is.
+	 *
+	 * Out of range is out of range: fifty is a misconfiguration rather than a
+	 * preference, and the table is what it comes back to.
+	 *
+	 * @return void
+	 */
+	public function test_an_oversized_legacy_scale_is_brought_back() {
+		$this->build_stock_legacy_install();
+
+		update_option( 'postratings_max', '50' );
+
+		WP_PostRatings_Options::maybe_migrate();
+
+		$this->assertSame( 5, WP_PostRatings_Options::get( 'max' ), 'a scale of fifty came through the migration untouched' );
 	}
 
 	/**
