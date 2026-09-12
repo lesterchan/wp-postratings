@@ -229,14 +229,14 @@ class WP_PostRatings_Command extends WP_CLI_Command {
 	 * @return int The post id.
 	 */
 	private function post_or_die( $post_id ) {
-		$post = get_post( (int) $post_id );
+		$post_id = (int) $post_id;
 
-		if ( ! $post ) {
+		if ( ! get_post( $post_id ) instanceof WP_Post ) {
 			/* translators: %d: the post id that was asked for. */
-			WP_CLI::error( sprintf( __( 'No post with id %d.', 'wp-postratings' ), (int) $post_id ) );
+			WP_CLI::error( sprintf( __( 'No post with id %d.', 'wp-postratings' ), $post_id ) );
 		}
 
-		return (int) $post->ID;
+		return $post_id;
 	}
 
 	/**

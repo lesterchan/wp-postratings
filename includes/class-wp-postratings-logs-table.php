@@ -216,7 +216,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 	/**
 	 * The row checkbox.
 	 *
-	 * @param object $item Log row.
+	 * @param stdClass $item Log row.
 	 *
 	 * @return string
 	 */
@@ -227,15 +227,15 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 	/**
 	 * Fallback renderer for the plain columns.
 	 *
-	 * @param object $item        Log row.
-	 * @param string $column_name Column being rendered.
+	 * @param stdClass $item        Log row.
+	 * @param string   $column_name Column being rendered.
 	 *
 	 * @return string
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'rating_id':
-				return (int) $item->rating_id;
+				return (string) (int) $item->rating_id;
 
 			case 'rating_username':
 				// Rows written before 2.0.0 stored the name slashed.
@@ -271,7 +271,7 @@ class WP_PostRatings_Logs_Table extends WP_List_Table {
 	/**
 	 * The rating column, drawn with the rating images.
 	 *
-	 * @param object $item Log row.
+	 * @param stdClass $item Log row.
 	 *
 	 * @return string
 	 */

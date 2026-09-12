@@ -813,11 +813,14 @@ class WP_PostRatings_Template {
 	/**
 	 * Replace the %TOKEN% variables in a template.
 	 *
-	 * @param string      $template            Template with %TOKEN% placeholders.
-	 * @param int|WP_Post $post_data           Post id or object.
-	 * @param object|null $post_ratings_data   Pre-computed rating figures.
-	 * @param int         $max_post_title_chars Truncate the title to this many characters.
-	 * @param bool        $is_main_loop        Whether this is the main loop, for rich snippets.
+	 * @param string               $template             Template with %TOKEN% placeholders.
+	 * @param int|WP_Post|stdClass $post_data            Post id, post object, or a post merged
+	 *                                                   with the rating figures. The widget and
+	 *                                                   the stats lists pass the merged form,
+	 *                                                   which is read in preference to a lookup.
+	 * @param stdClass|null        $post_ratings_data    Pre-computed rating figures.
+	 * @param int                  $max_post_title_chars Truncate the title to this many characters.
+	 * @param bool                 $is_main_loop         Whether this is the main loop, for rich snippets.
 	 *
 	 * @return string
 	 */

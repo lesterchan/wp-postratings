@@ -518,7 +518,7 @@ class WP_PostRatings_Rating {
 		}
 
 		ftruncate( $handle, 0 );
-		fwrite( $handle, microtime( true ) );
+		fwrite( $handle, (string) microtime( true ) );
 		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 
 		return $handle;
@@ -666,6 +666,11 @@ class WP_PostRatings_Rating {
 			}
 
 			$post = get_post( $post_id );
+
+			if ( ! $post instanceof WP_Post ) {
+				/* translators: %s: post id. */
+				throw new InvalidArgumentException( esc_html( sprintf( __( 'This Post Cannot Be Rated (#%s).', 'wp-postratings' ), $post_id ) ) );
+			}
 
 			$totals = self::record( $post, $rate, $ratings_values[ $rate - 1 ] );
 

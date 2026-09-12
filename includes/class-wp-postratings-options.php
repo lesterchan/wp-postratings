@@ -23,6 +23,26 @@ defined( 'ABSPATH' ) || exit;
  * writes the other, and neither can corrupt the other.
  *
  * @since 2.0.0
+ *
+ * The stored settings, written once here so every consumer reads the same shape
+ * rather than an untyped array. Kept beside defaults(), which is the only place
+ * the keys are actually enumerated -- if one gains a key and this does not, the
+ * analysis says so.
+ *
+ * @phpstan-type PostRatingsSettings array{
+ *     shape: string,
+ *     max: int,
+ *     customrating: int,
+ *     allowtorate: int,
+ *     check_method: int,
+ *     ip_header: string,
+ *     schema_type: string,
+ *     page_cache: int,
+ *     stats_display: int,
+ *     stats_most_limit: int,
+ *     ratings: array{text: list<string>, value: list<int>, color: list<string>, color_off: list<string>},
+ *     templates: array{vote: string, text: string, permission: string, none: string, highestrated: string, mostrated: string}
+ * }
  */
 class WP_PostRatings_Options {
 
@@ -328,7 +348,7 @@ class WP_PostRatings_Options {
 	 * changing it would silently alter the markup of every install that never
 	 * customised it.
 	 *
-	 * @return array
+	 * @return PostRatingsSettings
 	 */
 	public static function defaults() {
 		$comma   = __( ',', 'wp-postratings' );
@@ -389,7 +409,25 @@ class WP_PostRatings_Options {
 	 *
 	 * @param string|null $key Setting to return, or null for all of them.
 	 *
-	 * @return mixed
+	 * The conditional return is what lets a caller write get( 'max' ) and be
+	 * handed an int rather than a mixed it has to cast. Every key of the shape
+	 * is named; anything else is still mixed, which is the honest answer for a
+	 * key a filter invented.
+	 *
+	 * @return ($key is null ? PostRatingsSettings
+	 *     : ($key is 'shape' ? string
+	 *     : ($key is 'max' ? int
+	 *     : ($key is 'customrating' ? int
+	 *     : ($key is 'allowtorate' ? int
+	 *     : ($key is 'check_method' ? int
+	 *     : ($key is 'ip_header' ? string
+	 *     : ($key is 'schema_type' ? string
+	 *     : ($key is 'page_cache' ? int
+	 *     : ($key is 'stats_display' ? int
+	 *     : ($key is 'stats_most_limit' ? int
+	 *     : ($key is 'ratings' ? array{text: list<string>, value: list<int>, color: list<string>, color_off: list<string>}
+	 *     : ($key is 'templates' ? array{vote: string, text: string, permission: string, none: string, highestrated: string, mostrated: string}
+	 *     : mixed)))))))))))))
 	 */
 	public static function get( $key = null ) {
 		$stored = get_option( self::OPTION, array() );

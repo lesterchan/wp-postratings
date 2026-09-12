@@ -474,26 +474,6 @@ class WP_PostRatings_Settings {
 	}
 
 	/**
-	 * A yes/no select for one key of a nested group.
-	 *
-	 * @param string $key    Nested key.
-	 * @param array  $values Stored group.
-	 * @param string $group  Top level key.
-	 *
-	 * @return void
-	 */
-	private static function yes_no( $key, $values, $group ) {
-		$id      = 'wp_postratings_' . $key;
-		$current = isset( $values[ $key ] ) ? (int) $values[ $key ] : 0;
-		?>
-		<select id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( self::name( $group, $key ) ); ?>">
-			<option value="0" <?php selected( $current, 0 ); ?>><?php esc_html_e( 'No', 'wp-postratings' ); ?></option>
-			<option value="1" <?php selected( $current, 1 ); ?>><?php esc_html_e( 'Yes', 'wp-postratings' ); ?></option>
-		</select>
-		<?php
-	}
-
-	/**
 	 * Who may cast a vote.
 	 *
 	 * @return void

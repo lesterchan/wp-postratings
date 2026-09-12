@@ -1,0 +1,733 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:column_sortable\(\) has parameter \$columns with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:column_sortable\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:column_title\(\) has parameter \$columns with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:column_title\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:delete_data\(\) has parameter \$post_ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_Admin\:\:delete_data\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Static property WP_PostRatings_Admin\:\:\$screen_hooks \(array\<string\>\) does not accept array\<bool\|string\>\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: includes/class-wp-postratings-admin.php
+
+		-
+			message: '#^Method WP_PostRatings_API\:\:rating_payload\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-api.php
+
+		-
+			message: '#^Method WP_PostRatings_Blocks\:\:render_ratings\(\) has parameter \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-blocks.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:delete\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:delete\(\) has parameter \$assoc_args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:get\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:get\(\) has parameter \$assoc_args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:list_\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:list_\(\) has parameter \$assoc_args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:print_rows\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Method WP_PostRatings_Command\:\:print_rows\(\) has parameter \$rows with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-command.php
+
+		-
+			message: '#^Property WP_PostRatings_Comments\:\:\$ratings type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-comments.php
+
+		-
+			message: '#^Constant WP_PostRatings_Data\:\:META_KEYS type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:delete_log_entries\(\) has parameter \$rating_ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:delete_log_rows\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:delete_logs\(\) has parameter \$post_ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:delete_ratings\(\) has parameter \$post_ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:get\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Method WP_PostRatings_Data\:\:top\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-data.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: includes/class-wp-postratings-install.php
+
+		-
+			message: '#^Method WP_PostRatings_Logs_Table\:\:current_filters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Method WP_PostRatings_Logs_Table\:\:get_bulk_actions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Method WP_PostRatings_Logs_Table\:\:get_columns\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Method WP_PostRatings_Logs_Table\:\:get_sortable_columns\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_html expects string, int\|string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Property WP_PostRatings_Logs_Table\:\:\$sortable_map type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-logs-table.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:all_option_names\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:defaults_for_type\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:legacy_map\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:markers\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:merge\(\) has parameter \$defaults with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:merge\(\) has parameter \$stored with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:merge\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:migrate_stats_settings\(\) has parameter \$merged with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:migrate_stats_settings\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:sanitize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:schema_types\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:table_fits_type\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Method WP_PostRatings_Options\:\:update\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Property WP_PostRatings_Options\:\:\$legacy_options type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^Property WP_PostRatings_Options\:\:\$shared_options type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-options.php
+
+		-
+			message: '#^@param string \$hostname does not accept actual type of parameter\: string\|false\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: includes/class-wp-postratings-rating.php
+
+		-
+			message: '#^Method WP_PostRatings_Rating\:\:record\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-rating.php
+
+		-
+			message: '#^Parameter \#2 \$value of function setcookie expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-rating.php
+
+		-
+			message: '#^Property WP_PostRatings_Rating\:\:\$bots type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-rating.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:rating_types\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:render_rating_fields\(\) has parameter \$colors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:render_rating_fields\(\) has parameter \$colors_off with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:render_rating_fields\(\) has parameter \$texts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:render_rating_fields\(\) has parameter \$values with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:tabs\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:template_fields\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:templates_for_type\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Settings\:\:updown_templates\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 8
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Parameter \#3 \$callback of function add_settings_field expects callable\(\)\: mixed, array\{''WP_PostRatings_Settings'', non\-falsy\-string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Parameter \#3 \$callback of function add_settings_section expects callable\(\)\: mixed, array\{''WP_PostRatings_Settings'', non\-falsy\-string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-settings.php
+
+		-
+			message: '#^Method WP_PostRatings_Shapes\:\:all\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-shapes.php
+
+		-
+			message: '#^Method WP_PostRatings_Shapes\:\:builtin\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-shapes.php
+
+		-
+			message: '#^Method WP_PostRatings_Shapes\:\:get\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-shapes.php
+
+		-
+			message: '#^Method WP_PostRatings_Shapes\:\:legacy_map\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-shapes.php
+
+		-
+			message: '#^Method WP_PostRatings_Shapes\:\:names\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-shapes.php
+
+		-
+			message: '#^Method WP_PostRatings_Stats\:\:output\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-stats.php
+
+		-
+			message: '#^Method WP_PostRatings_Stats\:\:query\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-stats.php
+
+		-
+			message: '#^Method WP_PostRatings_Stats\:\:query\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-stats.php
+
+		-
+			message: '#^Method WP_PostRatings_Stats\:\:render\(\) has parameter \$results with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-stats.php
+
+		-
+			message: '#^@param array\|string \$thumbnail does not accept actual type of parameter\: ''''\|array\{string, int, int, bool\}\|false\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^@param string \$site_logo does not accept actual type of parameter\: string\|false\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Access to an undefined property stdClass\|WP_Post\:\:\$ratings_average\.$#'
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Access to an undefined property stdClass\|WP_Post\:\:\$ratings_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Template\:\:ratings_images_vote\(\) has parameter \$ratings_texts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Template\:\:scale_control\(\) has parameter \$ratings_texts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Template\:\:structured_data\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Template\:\:style_for\(\) has parameter \$extra with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Template\:\:updown_control\(\) has parameter \$ratings_texts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$attachment_id of function wp_get_attachment_image_src expects int, int\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$number of function number_format_i18n expects float, int\<min, 0\>\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$post of function get_permalink expects int\|WP_Post, int\|stdClass\|WP_Post given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$post of function get_the_title expects int\|WP_Post, int\|stdClass\|WP_Post given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int given\.$#'
+			identifier: argument.type
+			count: 5
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int\<2, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 2
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#1 \$url of function esc_url expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function str_replace expects array\<string\>\|string, array\<int, int\<min, 0\>\|string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#2 \$replace of function str_replace expects array\<string\>\|string, array\<int, int\|string\|false\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#3 \$number of function _n expects int, int\<min, 0\>\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Parameter \#4 \$post_link of static method WP_PostRatings_Template\:\:structured_data\(\) expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings-template.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:defaults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:form\(\) has parameter \$instance with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:types\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:update\(\) has parameter \$new_instance with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:update\(\) has parameter \$old_instance with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:update\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:widget\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_Widget\:\:widget\(\) has parameter \$instance with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Return type \(void\) of method WP_PostRatings_Widget\:\:form\(\) should be compatible with return type \(string\|null\) of method WP_Widget\<array\<string, mixed\>\>\:\:form\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: includes/class-wp-postratings-widget.php
+
+		-
+			message: '#^Method WP_PostRatings_WPStats\:\:register_section\(\) has parameter \$sections with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-wpstats.php
+
+		-
+			message: '#^Method WP_PostRatings_WPStats\:\:register_section\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings-wpstats.php
+
+		-
+			message: '#^Method WP_PostRatings\:\:query_vars\(\) has parameter \$vars with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings.php
+
+		-
+			message: '#^Method WP_PostRatings\:\:query_vars\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings.php
+
+		-
+			message: '#^Method WP_PostRatings\:\:shortcode\(\) has parameter \$atts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/class-wp-postratings.php
+
+		-
+			message: '#^Parameter \#1 \$post_id of static method WP_PostRatings\:\:render_ratings\(\) expects int, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/class-wp-postratings.php
+
+		-
+			message: '#^Function get_ratings_images_vote\(\) has parameter \$ratings_texts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/deprecated.php
+
+		-
+			message: '#^Function get_highest_rated_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_highest_rated_range_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_highest_rated_tag\(\) has parameter \$tag_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_highest_score_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_highest_score_range_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_lowest_rated_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_lowest_rated_tag\(\) has parameter \$tag_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_most_rated_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function get_most_rated_range_category\(\) has parameter \$category_id with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php
+
+		-
+			message: '#^Function ratings_images_folder\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: includes/template-tags.php

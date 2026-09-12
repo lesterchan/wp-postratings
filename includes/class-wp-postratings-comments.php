@@ -136,7 +136,7 @@ class WP_PostRatings_Comments {
 	 * @return string
 	 */
 	public static function author_ratings( $comment_author_specific = '', $comment = null ) {
-		if ( 'comment' !== get_comment_type( $comment ) ) {
+		if ( 'comment' !== get_comment_type( $comment ?? 0 ) ) {
 			return '';
 		}
 
@@ -144,7 +144,7 @@ class WP_PostRatings_Comments {
 		$ratings_max    = (int) $options['max'];
 		$ratings_custom = (int) $options['customrating'];
 
-		$comment_author = '' !== $comment_author_specific ? $comment_author_specific : get_comment_author( $comment );
+		$comment_author = '' !== $comment_author_specific ? $comment_author_specific : get_comment_author( $comment ?? 0 );
 		$rating         = self::rating_for( $comment_author, $comment );
 
 		if ( 0 === $rating ) {

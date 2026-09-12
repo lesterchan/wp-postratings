@@ -134,11 +134,15 @@ class WP_PostRatings_API {
 	 */
 	private function post_or_404( $post_id ) {
 		$post_id = (int) $post_id;
+		$post    = get_post( $post_id );
 
 		// The same question the AJAX path asks; see is_ratable(). A 404 rather
 		// than a 403 for a post that exists but may not be rated, because the
-		// distinction would tell a stranger which drafts exist.
-		if ( ! WP_PostRatings_Rating::is_ratable( $post_id ) ) {
+		// distinction would tell a stranger which drafts exist. An id that
+		// resolves to nothing leaves by the same door: is_ratable() rejects it
+		// too, and a null returned here would be a WP_Post as far as every
+		// caller's signature was concerned.
+		if ( ! $post instanceof WP_Post || ! WP_PostRatings_Rating::is_ratable( $post_id ) ) {
 			return new WP_Error(
 				'wp_postratings_not_ratable',
 				/* translators: %s: post id. */
@@ -147,7 +151,7 @@ class WP_PostRatings_API {
 			);
 		}
 
-		return get_post( $post_id );
+		return $post;
 	}
 
 	/**

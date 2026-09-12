@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @param int    $custom_id Post id, or 0 for the current post.
  * @param bool   $display   Whether to echo.
  *
- * @return string|void
+ * @return ($display is true ? void : string)
  */
 function the_ratings( $start_tag = 'div', $custom_id = 0, $display = true ) {
 	global $id;
@@ -148,11 +148,11 @@ function check_rated( $post_id ) {
 /**
  * Replace the %TOKEN% variables in a rating template.
  *
- * @param string      $template             Template with %TOKEN% placeholders.
- * @param int|WP_Post $post_data            Post id or object.
- * @param object|null $post_ratings_data    Pre-computed figures.
- * @param int         $max_post_title_chars Truncate the title.
- * @param bool        $is_main_loop         Whether this is the main loop.
+ * @param string        $template             Template with %TOKEN% placeholders.
+ * @param int|WP_Post   $post_data            Post id or object.
+ * @param stdClass|null $post_ratings_data    Pre-computed figures.
+ * @param int           $max_post_title_chars Truncate the title.
+ * @param bool          $is_main_loop         Whether this is the main loop.
  *
  * @return string
  */
@@ -204,7 +204,7 @@ if ( ! function_exists( 'get_ratings_users' ) ) {
 	 *
 	 * @param bool $display Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_ratings_users( $display = true ) {
 		return WP_PostRatings_Stats::ratings_users( $display );
@@ -221,7 +221,7 @@ if ( ! function_exists( 'get_most_rated' ) ) {
 	 * @param int    $chars     Title truncation.
 	 * @param bool   $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_most_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -249,7 +249,7 @@ if ( ! function_exists( 'get_most_rated_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_most_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -278,7 +278,7 @@ if ( ! function_exists( 'get_most_rated_range' ) ) {
 	 * @param int    $chars   Title truncation.
 	 * @param bool   $display Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_most_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -307,7 +307,7 @@ if ( ! function_exists( 'get_most_rated_range_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_most_rated_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -337,7 +337,7 @@ if ( ! function_exists( 'get_highest_rated' ) ) {
 	 * @param int    $chars     Title truncation.
 	 * @param bool   $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -365,7 +365,7 @@ if ( ! function_exists( 'get_highest_rated_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -394,7 +394,7 @@ if ( ! function_exists( 'get_highest_rated_range' ) ) {
 	 * @param int    $chars   Title truncation.
 	 * @param bool   $display Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -423,7 +423,7 @@ if ( ! function_exists( 'get_highest_rated_range_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_rated_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -453,7 +453,7 @@ if ( ! function_exists( 'get_lowest_rated' ) ) {
 	 * @param int    $chars     Title truncation.
 	 * @param bool   $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_lowest_rated( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -481,7 +481,7 @@ if ( ! function_exists( 'get_lowest_rated_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_lowest_rated_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -510,7 +510,7 @@ if ( ! function_exists( 'get_lowest_rated_range' ) ) {
 	 * @param int    $chars   Title truncation.
 	 * @param bool   $display Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_lowest_rated_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -538,7 +538,7 @@ if ( ! function_exists( 'get_highest_score' ) ) {
 	 * @param int    $chars     Title truncation.
 	 * @param bool   $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_score( $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -566,7 +566,7 @@ if ( ! function_exists( 'get_highest_score_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_score_category( $category_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -595,7 +595,7 @@ if ( ! function_exists( 'get_highest_score_range' ) ) {
 	 * @param int    $chars   Title truncation.
 	 * @param bool   $display Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_score_range( $time = '1 day', $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -624,7 +624,7 @@ if ( ! function_exists( 'get_highest_score_range_category' ) ) {
 	 * @param int       $chars       Title truncation.
 	 * @param bool      $display     Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_score_range_category( $time = '1 day', $category_id = 0, $mode = '', $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -655,7 +655,7 @@ if ( ! function_exists( 'get_highest_rated_tag' ) ) {
 	 * @param int       $chars     Title truncation.
 	 * @param bool      $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_highest_rated_tag( $tag_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
@@ -685,7 +685,7 @@ if ( ! function_exists( 'get_lowest_rated_tag' ) ) {
 	 * @param int       $chars     Title truncation.
 	 * @param bool      $display   Whether to echo.
 	 *
-	 * @return string|void
+	 * @return ($display is true ? null : string)
 	 */
 	function get_lowest_rated_tag( $tag_id = 0, $mode = '', $min_votes = 0, $limit = 10, $chars = 0, $display = true ) {
 		return WP_PostRatings_Stats::output(
